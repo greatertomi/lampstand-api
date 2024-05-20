@@ -1,7 +1,5 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
-
 import 'reflect-metadata';
-
 import envConfig from './config/envConfig';
 
 // Make sure to set this to false in production
