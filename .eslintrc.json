@@ -7,7 +7,8 @@
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "airbnb-typescript",
-    "plugin:unicorn/recommended"
+    "plugin:unicorn/recommended",
+    "plugin:sonarjs/recommended"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
@@ -17,7 +18,8 @@
   },
   "plugins": [
     "@typescript-eslint",
-    "unicorn"
+    "unicorn",
+    "sonarjs"
   ],
   "rules": {
     "unicorn/filename-case": "off",
@@ -35,6 +37,9 @@
     "import/extensions": "off",
     "comma-dangle": "off",
     "@typescript-eslint/comma-dangle": "off",
-    "react/jsx-filename-extension": "off"
+    "react/jsx-filename-extension": "off",
+    "indent": "off",
+    "@typescript-eslint/indent": "off",
+    "unicorn/no-anonymous-default-export": "off"
   }
 }

@@ -1,0 +1,9 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+npx --no-install commitlint --edit "$1"
+
+if git rev-list --all --grep="^$(cat $1)$" | grep -q -v $(git rev-parse HEAD); then
+  echo "ERROR: Duplicate commit message detected!" >&2
+  exit 1
+fi

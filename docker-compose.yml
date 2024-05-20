@@ -13,13 +13,13 @@ services:
     expose:
       - ${PORT}
     ports:
-      - ${PORT}:4000
+      - ${PORT}:${PORT}
     volumes:
       - ./src:/app/src
       - ./nodemon.json:/app/nodemon.json
     command: npm run dev
   postgres:
-    container_name: db
+    container_name: postgres
     image: 'postgres:13'
     restart: always
     ports:

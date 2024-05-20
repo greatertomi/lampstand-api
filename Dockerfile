@@ -4,7 +4,7 @@ WORKDIR '/app'
 
 COPY package*.json ./
 
-RUN npm i
+RUN yarn install
 
 COPY . .
 
@@ -12,4 +12,4 @@ FROM base as production
 
 ENV NODE_PATH=./dist
 
-RUN npm run build
+RUN yarn run build
