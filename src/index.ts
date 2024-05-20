@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import envConfig from './config/envConfig';
 import dataSource from './data-source';
 import routes from './routes';
+import logger from './utils/logger';
 
 const { PORT } = envConfig;
 
@@ -26,10 +27,10 @@ export const main = async () => {
     );
 
     app.listen(PORT, () => {
-      console.log(`Server listening on port http://localhost:${PORT}`);
+      logger.info(`Server listening on port http://localhost:${PORT}`);
     });
   } catch (error) {
-    console.error(error);
+    logger.error(error);
   }
 };
 
