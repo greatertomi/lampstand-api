@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
@@ -22,8 +21,8 @@ export const main = async () => {
 
     app.use((req, res) =>
       res.status(404).send({
-        message: `This route does not exist: [${req.method}] ${req.url}`
-      })
+        message: `This route does not exist: [${req.method}] ${req.url}`,
+      }),
     );
 
     app.listen(PORT, () => {

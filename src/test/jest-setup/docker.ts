@@ -10,7 +10,7 @@ const CONTAINER_NAME = 'typeorm-test';
 export const removePostgresContainer = async (): Promise<void> => {
   const docker = new Docker();
   try {
-    const container = await docker.getContainer(CONTAINER_NAME);
+    const container = docker.getContainer(CONTAINER_NAME);
     try {
       await container.stop();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -24,18 +24,6 @@ export const removePostgresContainer = async (): Promise<void> => {
     // 404 = container not found
     if (error.statusCode !== 404) throw error;
   }
-};
-
-export const ensureDatabaseExistence = async (
-  container: Docker.Container,
-  user: string,
-  database: string
-) => {
-  await containerExec(container, [
-    'bash',
-    '-c',
-    `until psql -U ${user} -t -c "SELECT datname FROM pg_catalog.pg_database WHERE datname='${database}'" | grep ${database} ; do echo "waiting ${database} db to be created"; sleep 1 ; done`
-  ]);
 };
 
 const ensurePgServiceReadiness = async (container: Docker.Container, user: string) => {
