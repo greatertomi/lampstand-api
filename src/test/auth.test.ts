@@ -11,8 +11,8 @@ describe('Testing the users route', () => {
     factory.close().then(done);
   });
 
-  it('should be able to fetch all users', async () => {
-    const response = await factory.app.get('/users');
+  it('should be able to signup user', async () => {
+    const response = await factory.app.get('/auth/signup');
     expect(response.status).toBe(200);
   });
 });
