@@ -3,9 +3,9 @@ import cors from 'cors';
 import helmet from 'helmet';
 import envConfig from './config/envConfig';
 import dataSource from './data-source';
+import { errorHandler } from './middleware';
 import routes from './routes';
-// import router from './routes';
-import logger from './utils/logger';
+import { logger } from './services';
 
 const { PORT } = envConfig;
 
@@ -25,6 +25,7 @@ export const main = async () => {
         message: `This route does not exist: [${req.method}] ${req.url}`
       })
     );
+    app.use(errorHandler);
 
     app.listen(PORT, () => {
       logger.info(`Server listening on port http://localhost:${PORT}`);

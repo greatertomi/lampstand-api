@@ -9,7 +9,7 @@ const colorsConfig = {
 
 const colorizer = winston.format.colorize({ all: true, colors: colorsConfig });
 
-const logger = winston.createLogger({
+export const logger = winston.createLogger({
   level: 'info',
   format: winston.format.combine(
     winston.format.timestamp(),
@@ -26,5 +26,3 @@ const logger = winston.createLogger({
     new winston.transports.File({ filename: 'logs/combined.log' })
   ]
 });
-
-export default logger;

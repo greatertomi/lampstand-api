@@ -15,23 +15,30 @@ jobs:
         node-version: [18.x, 20.x]
 
     steps:
-      - name: Checkout Repository
+      - name: 📦 Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      - name: 🚀 Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'yarn'
 
-      - name: Install Packages
+      - name: 📚 Install Packages
         run: yarn install
 
-      - name: Check for linting issues
+      - name: 🕵️ Check for linting issues
         run: yarn run lint
 
-      - name: Build dist
+      - name: 🏗️ Build dist
         run: yarn run build
 
-#      - name: Run tests
-#        run: yarn test
+      - name: 🧪 Run tests
+        env:
+          CI: true
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_PORT: ${{ secrets.POSTGRES_PORT }}
+        run: yarn test
