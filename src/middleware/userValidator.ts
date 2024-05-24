@@ -3,6 +3,7 @@ import { body } from 'express-validator';
 export const userValidationRules = () => [
     body('fullName')
         .exists().withMessage('Full name is required')
+        .notEmpty().withMessage('Full name cannot be empty')
         .isString().withMessage('Full name must be a string'),
     body('email')
         .isEmail().withMessage('This must be a proper email address'),
