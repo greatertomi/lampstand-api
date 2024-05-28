@@ -1,9 +1,9 @@
 import { ValidationError } from 'express-validator';
-import { HTTP_ERRORS } from '../constants';
+import { HTTP_STATUS } from '../constants';
 import { CustomError } from './custom-error';
 
 export class RequestValidationError extends CustomError {
-  statusCode = HTTP_ERRORS.UNPROCESSABLE_ENTITY;
+  statusCode = HTTP_STATUS.UNPROCESSABLE_ENTITY;
 
   constructor(public errors: ValidationError[]) {
     super('Invalid request parameters');

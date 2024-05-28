@@ -1,5 +1,5 @@
 import { NextFunction, Request, RequestHandler, Response } from 'express';
-import { CustomError, HTTP_ERRORS } from '../lib/responses';
+import { CustomError, HTTP_STATUS } from '../lib/responses';
 import { logger } from '../services';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -10,7 +10,7 @@ export const errorHandler = (error: Error, req: Request, res: Response, _: NextF
 
   logger.error(error.message);
   res
-    .status(HTTP_ERRORS.INTERNAL_SERVER_ERROR)
+    .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
     .send({ errors: [{ message: 'Something went wrong' }] });
 };
 

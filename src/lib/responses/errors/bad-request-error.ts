@@ -1,8 +1,8 @@
-import { HTTP_ERRORS } from '../constants';
+import { HTTP_STATUS } from '../constants';
 import { CustomError } from './custom-error';
 
 export class BadRequestError extends CustomError {
-  statusCode = HTTP_ERRORS.BAD_REQUEST;
+  statusCode = HTTP_STATUS.BAD_REQUEST;
 
   constructor(public message: string) {
     super(message);
