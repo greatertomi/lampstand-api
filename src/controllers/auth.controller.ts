@@ -1,40 +1,32 @@
+
 import { Request, Response } from 'express';
 import handleGetRepository from '../utils/handleGetRepository';
-import { UserEntity }  from '../entities';
-import { logger } from '../services';
-import bcrypt from 'bcryptjs';
+import { UserEntity } from '../entities';
+import BcryptHelper from '../lib/responses/constants';
+import { HTTP_ERRORS } from '../lib/responses';
 
 export const signup = async (req: Request, res: Response) => {
   const { fullName, email, password, agreedToTerms } = req.body;
+  const hashedPassword = await BcryptHelper.hash(password);
 
-  const saltRounds = 10;
-  const hashedPassword = await bcrypt.hash(password, saltRounds);
+  const userRepository = handleGetRepository(UserEntity);
+  const newUser = userRepository.create({
+    fullName,
+    emailAddress: email,
+    password: hashedPassword,
+    agreedToTerms
+  });
 
-  // Create a new user instance
-  const user = new UserEntity();
-  user.fullName = fullName;
-  user.emailAddress = email;
-  user.agreedToTerms = agreedToTerms;
-  user.password = hashedPassword;
-  try {
-    // Save the user to the database
-    const userRepository = handleGetRepository(UserEntity);
-    await userRepository.save(user);
+  await userRepository.save(newUser);
 
-    // Return the response
-    const response = {
-      message: 'User created',
-      data: {
-        id: user.id,
-        fullName: user.fullName,
-        email: user.emailAddress,
-      },
-    };
+  const response = {
+    message: 'User created',
+    data: {
+      id: newUser.id,
+      fullName: newUser.fullName,
+      email: newUser.emailAddress
+    }
+  };
 
-    res.status(201).json(response);
-  } catch (error) {
-    // Handle any errors that occurred during the process
-    logger.error('Error creating user:', error);
-    res.status(500).json({ message: 'An error occurred while creating the user.' });
-  }
+  res.status(HTTP_ERRORS.CREATED).json(response);
 };

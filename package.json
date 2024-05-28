@@ -14,11 +14,7 @@
     "docker:run": "docker-compose up",
     "docker:stop": "docker-compose down",
     "prepare": "husky install",
-    "typeorm": "npm run build && npx typeorm -d dist/data-source.js",
-    "migration:generate": "POSTGRES_HOST=localhost npm run typeorm -- migration:generate",
-    "migration:run": "POSTGRES_HOST=localhost npm run typeorm -- migration:run",
-    "migration:revert": "POSTGRES_HOST=localhost npm run typeorm -- migration:revert",
-    "clear-cache": "rm -rf node_modules/.cache"
+    "cleanup": "rm -rf node_modules yarn.lock"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
