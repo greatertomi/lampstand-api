@@ -1,9 +1,8 @@
-
 import { Request, Response } from 'express';
-import handleGetRepository from '../utils/handleGetRepository';
 import { UserEntity } from '../entities';
-import BcryptHelper from '../lib/responses/constants';
+import { BcryptHelper } from '../lib';
 import { HTTP_ERRORS } from '../lib/responses';
+import handleGetRepository from '../utils/handleGetRepository';
 
 export const signup = async (req: Request, res: Response) => {
   const { fullName, email, password, agreedToTerms } = req.body;

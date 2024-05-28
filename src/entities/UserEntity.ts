@@ -7,18 +7,25 @@ export class UserEntity {
 
   @Column()
   fullName: string;
+
   @Column({ unique: true })
   emailAddress: string;
+
   @Column()
   password: string;
+
   @Column({ nullable: true })
   phoneNumber?: string;
+
   @Column({ default: false })
   agreedToTerms: boolean;
+
   @Column({ default: false })
   isEmailVerified: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
+
   @UpdateDateColumn()
   updatedAt: Date;
 }
