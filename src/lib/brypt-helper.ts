@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 
 export const BcryptHelper = {
   async hash(password: string): Promise<string> {
-    const saltRounds = 11; // Increased salt rounds from 10 to 11
+    const saltRounds = 11;
     return bcrypt.hash(password, saltRounds);
   },
 

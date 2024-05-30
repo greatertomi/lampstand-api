@@ -1,10 +1,10 @@
 import { HTTP_STATUS } from '../../lib/responses';
 import { TestFactory } from '../factory';
-import { UserEntity } from '../../entities';
-import handleGetRepository from '../../utils/handleGetRepository';
+import { testUser } from '../test-utils/test-data';
 
 describe('Testing the users route', () => {
   const factory: TestFactory = new TestFactory();
+  const createRoute = '/auth/signup';
 
   beforeEach((done) => {
     factory.init().then(done);
@@ -15,61 +15,29 @@ describe('Testing the users route', () => {
   });
 
   describe('POST /Signup', () => {
-    // eslint-disable-next-line sonarjs/no-duplicate-string
-    describe('Signup endpoint testing', () => {
+    it('should register a new user successfully', async () => {
+      const res = await factory.app.post(createRoute).send(testUser).expect(HTTP_STATUS.CREATED);
 
-      it('should register a new user successfully', async () => {
-        const userData = {
-          fullName: 'David Brown',
-          email: 'david.brown@email.com',
-          // eslint-disable-next-line sonarjs/no-duplicate-string
-          password: 'Str0ngP@ssw0rd!',
-          agreedToTerms: true,
-        };
-
-        // eslint-disable-next-line sonarjs/no-duplicate-string
-        const res = await factory.app.post('/auth/signup')
-          .send(userData)
-          .expect(201);
-
-        expect(res.body).toHaveProperty('message', 'User created');
-        expect(res.body.data).toHaveProperty('id');
-        expect(res.body.data).toHaveProperty('fullName', userData.fullName);
-        expect(res.body.data).toHaveProperty('email', userData.email);
-
-      });
+      expect(res.body).toHaveProperty('message', 'User created');
+      expect(res.body.data).toHaveProperty('id');
+      expect(res.body.data).toHaveProperty('fullName', testUser.fullName);
+      expect(res.body.data).toHaveProperty('email', testUser.email);
     });
 
-    describe('check if user exist', () => {
-      it('should return an error if the user already exists', async () => {
+    it('should return an error if the user already exists', async () => {
+      await factory.app.post(createRoute).send(testUser).expect(HTTP_STATUS.CREATED);
 
-        const existingUser = new UserEntity();
-        existingUser.fullName = 'John Doe';
-        existingUser.emailAddress = 'john.doe@example.com';
-        existingUser.password = 'Str0ngP@ssw0rd!';
-        existingUser.agreedToTerms = true;
-        const userRepository = handleGetRepository(UserEntity);
-        await userRepository.save(existingUser);
+      const res = await factory.app.post(createRoute).send(testUser);
 
-        const userData = {
-          fullName: 'John Doe',
-          email: 'john.doe@example.com',
-          password: 'Str0ngP@ssw0rd!',
-          agreedToTerms: true,
-        };
-
-        const res = await factory.app.post('/auth/signup')
-          .send(userData)
-          .expect(422);
-
-        expect(res.body).toHaveProperty('errors');
-        expect(res.body.errors).toHaveProperty('email', 'Email address already in use');
-      });
+      expect(res.status).toEqual(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(res.body).toHaveProperty('errors');
+      expect(res.body.errors).toHaveProperty('email', 'Email address already in use');
     });
+
     describe('should return an error if submitted data has missing values', () => {
       it('should return an error if only full name is provided', async () => {
-        const res = await factory.app.post('/auth/signup').send({
-          fullName: 'John Doe'
+        const res = await factory.app.post(createRoute).send({
+          fullName: testUser.fullName
         });
 
         expect(res.status).toEqual(HTTP_STATUS.UNPROCESSABLE_ENTITY);
@@ -78,53 +46,49 @@ describe('Testing the users route', () => {
         expect(res.body.errors.agreedToTerms).toBe('Agreed to terms should be a boolean');
       });
 
-      describe('check errors for email and agreed to terms', () => {
-        it('should return an error if email and agreedToTerms is invalid', async () => {
-          const invalidData = {
-            fullName: 'John Doe',
-            email: 'john',
-            password: 'Str0ngP@ssw0rd!',
-            agreedToTerms: 'yes'
-          };
+      it('should return an error if email and agreedToTerms is invalid', async () => {
+        const invalidData = {
+          ...testUser,
+          email: 'john',
+          agreedToTerms: 'yes'
+        };
 
-          const response = await factory.app.post('/auth/signup')
-            .send(invalidData)
-            .expect(422);
+        const response = await factory.app
+          .post(createRoute)
+          .send(invalidData)
+          .expect(HTTP_STATUS.UNPROCESSABLE_ENTITY);
 
-          expect(response.body).toHaveProperty('errors');
-
-          expect(response.body.errors).toHaveProperty('email', 'This must be a proper email address');
-
-          expect(response.body.errors).toHaveProperty('agreedToTerms', 'Agreed to terms should be a boolean');
-        });
+        expect(response.body).toHaveProperty('errors');
+        expect(response.body.errors).toHaveProperty('email', 'This must be a proper email address');
+        expect(response.body.errors).toHaveProperty(
+          'agreedToTerms',
+          'Agreed to terms should be a boolean'
+        );
       });
 
-      describe('Check for weak password', () => {
-        it('should return an error if the password is weak', async () => {
-          const PasswordData = {
-            fullName: 'John Doe',
-            email: 'test@test.com',
-            password: 'password',
-            agreedToTerms: 'true',
-          };
+      it('should return an error if the password is weak', async () => {
+        const PasswordData = {
+          ...testUser,
+          password: 'password'
+        };
 
-          const res = await factory.app.post('/auth/signup')
-            .send(PasswordData)
-            .expect(422);
+        const res = await factory.app
+          .post(createRoute)
+          .send(PasswordData)
+          .expect(HTTP_STATUS.UNPROCESSABLE_ENTITY);
 
-          expect(res.body).toHaveProperty('errors');
-          expect(res.body.errors).toHaveProperty('password');
+        expect(res.body).toHaveProperty('errors');
+        expect(res.body.errors).toHaveProperty('password');
 
-          const passwordErrorMessage = res.body.errors.password;
-          const expectedErrorMessages = [
-            'Password must be at least 8 characters long',
-            'Password must have at least one uppercase letter',
-            'Password must have at least one number',
-            'Password must have at least one special character',
-          ];
+        const passwordErrorMessage = res.body.errors.password;
+        const expectedErrorMessages = [
+          'Password must be at least 8 characters long',
+          'Password must have at least one uppercase letter',
+          'Password must have at least one number',
+          'Password must have at least one special character'
+        ];
 
-          expect(expectedErrorMessages).toContain(passwordErrorMessage);
-        });
+        expect(expectedErrorMessages).toContain(passwordErrorMessage);
       });
     });
   });
