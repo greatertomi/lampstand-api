@@ -1,4 +1,4 @@
-import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity({ name: 'users' })
 export class UserEntity {
@@ -6,11 +6,26 @@ export class UserEntity {
   id: string;
 
   @Column()
-  firstName: string;
+  fullName: string;
+
+  @Column({ unique: true })
+  emailAddress: string;
 
   @Column()
-  lastName: string;
+  password: string;
+
+  @Column({ nullable: true })
+  phoneNumber?: string;
+
+  @Column({ default: false })
+  agreedToTerms: boolean;
+
+  @Column({ default: false })
+  isEmailVerified: boolean;
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

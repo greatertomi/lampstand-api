@@ -1,11 +1,10 @@
 import express from 'express';
 import supertest from 'supertest';
 import { DataSource } from 'typeorm';
-
 import { Server, createServer } from 'node:http';
 import { createDatabase } from 'typeorm-extension';
-
 import dataSource, { testDatabaseConfig } from '../data-source';
+import { errorHandler } from '../middleware';
 import routes from '../routes';
 
 export class TestFactory {
@@ -40,6 +39,7 @@ export class TestFactory {
       this._app.use(express.json());
       this._app.use(express.urlencoded({ extended: true }));
       this._app.use('/', routes);
+      this._app.use(errorHandler);
       this._server = createServer(this._app).listen(3010);
     } catch (error) {
       // eslint-disable-next-line no-console
