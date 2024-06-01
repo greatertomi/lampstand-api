@@ -3,7 +3,7 @@ import { UserEntity } from '../entities';
 import { BcryptHelper } from '../lib';
 import { HTTP_STATUS } from '../lib/responses';
 import handleGetRepository from '../utils/handleGetRepository';
-
+import { generateToken } from '../lib';
 export const signup = async (req: Request, res: Response) => {
   const { fullName, email, password, agreedToTerms } = req.body;
   const hashedPassword = await BcryptHelper.hash(password);
@@ -17,13 +17,16 @@ export const signup = async (req: Request, res: Response) => {
   });
 
   await userRepository.save(newUser);
+  // Generate JWT token
+  const token = generateToken(newUser.id);
 
   const response = {
     message: 'User created',
     data: {
       id: newUser.id,
       fullName: newUser.fullName,
-      email: newUser.emailAddress
+      email: newUser.emailAddress,
+      token
     }
   };
 
