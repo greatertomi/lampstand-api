@@ -1,6 +1,6 @@
 export const testUser = {
   fullName: 'David Brown',
-  email: 'david.brown@email.com',
+  email: 'caleboshalusi@gmail.com',
   password: 'Str0ngP@ssw0rd!',
   agreedToTerms: true
 };

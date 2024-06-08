@@ -1,6 +1,8 @@
 import { HTTP_STATUS } from '../../lib/responses';
 import { TestFactory } from '../factory';
 import { testUser } from '../test-utils/test-data';
+import * as emailModule from '../../../src/services/sendemail';
+
 
 describe('Testing the users route', () => {
   const factory: TestFactory = new TestFactory();
@@ -91,5 +93,34 @@ describe('Testing the users route', () => {
         expect(expectedErrorMessages).toContain(passwordErrorMessage);
       });
     });
+  });
+});
+
+
+describe('Testing the email verification', () => {
+  const factory: TestFactory = new TestFactory();
+  const signupRoute = '/auth/signup';
+
+  beforeEach((done) => {
+    factory.init().then(done);
+  });
+
+  afterEach((done) => {
+    factory.close().then(done);
+  });
+
+  describe('POST /Signup', () => {
+    it('should send a verification email after successful signup', async () => {
+      const sendVerificationEmailSpy = jest.spyOn(emailModule, 'sendVerificationEmail');
+
+      const res = await factory.app.post(signupRoute).send(testUser).expect(HTTP_STATUS.CREATED);
+      const userId = res.body.data.id;
+      const userEmail = testUser.email;
+
+      expect(sendVerificationEmailSpy).toHaveBeenCalledWith(userEmail, userId);
+
+      sendVerificationEmailSpy.mockRestore();
+    });
+
   });
 });
