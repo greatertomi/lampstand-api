@@ -1,17 +1,6 @@
-
-import FormData from 'form-data';
-import Mailgun from 'mailgun.js';
+import { mailgunClient } from '../config';
 import { JwtHelper } from '../lib';
 import { logger } from './logger';
-import envConfig from '../config/envConfig';
-
-const mailgun = new Mailgun(FormData); //
-
-const mg = mailgun.client({
-  username: 'api',
-  key: envConfig.MAILGUN_API_KEY,
-  url: envConfig.MAILGUN_API_URL,
-});
 
 export const sendVerificationEmail = async (email: string, userId: string) => {
   const verificationToken = JwtHelper.generateToken(userId);
@@ -49,7 +38,7 @@ export const sendVerificationEmail = async (email: string, userId: string) => {
   };
 
   try {
-    await mg.messages.create(process.env.MAILGUN_DOMAIN!, mailData);
+    await mailgunClient.messages.create(process.env.MAILGUN_DOMAIN!, mailData);
     logger.info('Verification email sent');
   } catch (error) {
     logger.error('Error sending verification email:', error);

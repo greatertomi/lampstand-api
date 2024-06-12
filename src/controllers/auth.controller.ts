@@ -1,15 +1,24 @@
 import { Request, Response } from 'express';
 import { UserEntity } from '../entities';
 import { BcryptHelper, JwtHelper } from '../lib';
-import { HTTP_STATUS, NotFoundError } from '../lib/responses';
+import { BadRequestError, HTTP_STATUS, NotFoundError } from '../lib/responses';
 import { sendVerificationEmail } from '../services/sendemail';
 import handleGetRepository from '../utils/handleGetRepository';
 
 export const signup = async (req: Request, res: Response) => {
   const { fullName, email, password, agreedToTerms } = req.body;
+  const userRepository = handleGetRepository(UserEntity);
+
+  const user = await userRepository.findOne({
+    where: { emailAddress: email }
+  });
+
+  if (user) {
+    throw new BadRequestError('Email address already in use');
+  }
+
   const hashedPassword = await BcryptHelper.hash(password);
 
-  const userRepository = handleGetRepository(UserEntity);
   const newUser = userRepository.create({
     fullName,
     emailAddress: email,
@@ -20,7 +29,6 @@ export const signup = async (req: Request, res: Response) => {
   await userRepository.save(newUser);
 
   const token = JwtHelper.generateToken(newUser.id);
-
   await sendVerificationEmail(newUser.emailAddress, newUser.id);
 
   const response = {
@@ -33,7 +41,7 @@ export const signup = async (req: Request, res: Response) => {
     }
   };
 
-  res.status(HTTP_STATUS.CREATED).json(response);
+  res.status(HTTP_STATUS.CREATED).send(response);
 };
 
 export const verifyEmail = async (req: Request, res: Response) => {
@@ -47,6 +55,9 @@ export const verifyEmail = async (req: Request, res: Response) => {
   if (!user) {
     throw new NotFoundError('User not found');
   }
+
   await userRepository.update(user.id, { isEmailVerified: true });
-  return res.status(HTTP_STATUS.OK).json({ message: 'Email verified successfully' });
+  return res
+    .status(HTTP_STATUS.OK)
+    .send({ message: 'Email verified successfully', data: { userId } });
 };

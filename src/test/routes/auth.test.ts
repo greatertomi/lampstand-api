@@ -1,19 +1,23 @@
+import { JwtHelper } from '../../lib';
 import { HTTP_STATUS } from '../../lib/responses';
+import * as sendEmailService from '../../services/sendemail';
 import { TestFactory } from '../factory';
 import { testUser } from '../test-utils/test-data';
-import * as emailModule from '../../../src/services/sendemail';
-
 
 describe('Testing the users route', () => {
   const factory: TestFactory = new TestFactory();
   const createRoute = '/auth/signup';
+  let sendVerificationEmail: jest.SpyInstance;
 
   beforeEach((done) => {
     factory.init().then(done);
+    sendVerificationEmail = jest.spyOn(sendEmailService, 'sendVerificationEmail');
+    sendVerificationEmail.mockImplementation(() => Promise.resolve());
   });
 
   afterEach((done) => {
     factory.close().then(done);
+    jest.clearAllMocks();
   });
 
   describe('POST /Signup', () => {
@@ -24,6 +28,7 @@ describe('Testing the users route', () => {
       expect(res.body.data).toHaveProperty('id');
       expect(res.body.data).toHaveProperty('fullName', testUser.fullName);
       expect(res.body.data).toHaveProperty('email', testUser.email);
+      expect(sendVerificationEmail).toHaveBeenCalledWith(testUser.email, expect.any(String));
     });
 
     it('should return an error if the user already exists', async () => {
@@ -31,9 +36,10 @@ describe('Testing the users route', () => {
 
       const res = await factory.app.post(createRoute).send(testUser);
 
-      expect(res.status).toEqual(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(res.status).toEqual(HTTP_STATUS.BAD_REQUEST);
       expect(res.body).toHaveProperty('errors');
-      expect(res.body.errors).toHaveProperty('email', 'Email address already in use');
+      expect(res.body.errors[0]).toHaveProperty('message', 'Email address already in use');
+      expect(sendVerificationEmail).toHaveBeenCalledTimes(1);
     });
 
     describe('should return an error if submitted data has missing values', () => {
@@ -46,6 +52,7 @@ describe('Testing the users route', () => {
         expect(Object.keys(res.body.errors).length).toBe(3);
         expect(res.body.errors.password).toBe('Password must have at least one special character');
         expect(res.body.errors.agreedToTerms).toBe('Agreed to terms should be a boolean');
+        expect(sendVerificationEmail).not.toHaveBeenCalled();
       });
 
       it('should return an error if email and agreedToTerms is invalid', async () => {
@@ -66,6 +73,7 @@ describe('Testing the users route', () => {
           'agreedToTerms',
           'Agreed to terms should be a boolean'
         );
+        expect(sendVerificationEmail).not.toHaveBeenCalled();
       });
 
       it('should return an error if the password is weak', async () => {
@@ -91,36 +99,28 @@ describe('Testing the users route', () => {
         ];
 
         expect(expectedErrorMessages).toContain(passwordErrorMessage);
+        expect(sendVerificationEmail).not.toHaveBeenCalled();
       });
     });
   });
-});
 
+  describe('GET /verify-email', () => {
+    it('should verify a user email successfully', async () => {
+      const res1 = await factory.app.post(createRoute).send(testUser);
+      expect(res1.status).toEqual(HTTP_STATUS.CREATED);
+      const userId = res1.body.data.id;
 
-describe('Testing the email verification', () => {
-  const factory: TestFactory = new TestFactory();
-  const signupRoute = '/auth/signup';
+      const token = JwtHelper.generateToken(userId);
+      const res2 = await factory.app.get(`/auth/verify-email?token=${token}`);
 
-  beforeEach((done) => {
-    factory.init().then(done);
-  });
-
-  afterEach((done) => {
-    factory.close().then(done);
-  });
-
-  describe('POST /Signup', () => {
-    it('should send a verification email after successful signup', async () => {
-      const sendVerificationEmailSpy = jest.spyOn(emailModule, 'sendVerificationEmail');
-
-      const res = await factory.app.post(signupRoute).send(testUser).expect(HTTP_STATUS.CREATED);
-      const userId = res.body.data.id;
-      const userEmail = testUser.email;
-
-      expect(sendVerificationEmailSpy).toHaveBeenCalledWith(userEmail, userId);
-
-      sendVerificationEmailSpy.mockRestore();
+      expect(res2.status).toEqual(HTTP_STATUS.OK);
+      expect(res2.body).toHaveProperty('message', 'Email verified successfully');
+      expect(res2.body.data).toEqual({ userId });
     });
 
+    it('should return an error if the user does not exist', async () => {
+      const res = await factory.app.get('/auth/verify-email?token=invalid-token');
+      expect(res.status).toEqual(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+    });
   });
 });

@@ -1,7 +1,4 @@
 import { body } from 'express-validator';
-import { UserEntity } from '../entities';
-import { BadRequestError } from '../lib/responses';
-import handleGetRepository from '../utils/handleGetRepository';
 
 export const userValidationRules = () => [
   body('fullName')
@@ -11,17 +8,7 @@ export const userValidationRules = () => [
     .withMessage('Full name cannot be empty')
     .isString()
     .withMessage('Full name must be a string'),
-  body('email')
-    .isEmail()
-    .withMessage('This must be a proper email address')
-    .custom(async (email: string) => {
-      const user = await handleGetRepository(UserEntity).findOne({
-        where: { emailAddress: email }
-      });
-      if (user) {
-        throw new BadRequestError('Email address already in use');
-      }
-    }),
+  body('email').isEmail().withMessage('This must be a proper email address'),
   body('password')
     .isLength({ min: 8 })
     .withMessage('Password must be at least 8 characters long')
