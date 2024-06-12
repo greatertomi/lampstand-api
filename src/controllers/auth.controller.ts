@@ -2,9 +2,8 @@ import { Request, Response } from 'express';
 import { UserEntity } from '../entities';
 import { BcryptHelper, JwtHelper } from '../lib';
 import { HTTP_STATUS, NotFoundError } from '../lib/responses';
-import handleGetRepository from '../utils/handleGetRepository';
 import { sendVerificationEmail } from '../services/sendemail';
-
+import handleGetRepository from '../utils/handleGetRepository';
 
 export const signup = async (req: Request, res: Response) => {
   const { fullName, email, password, agreedToTerms } = req.body;
@@ -30,9 +29,8 @@ export const signup = async (req: Request, res: Response) => {
       id: newUser.id,
       fullName: newUser.fullName,
       email: newUser.emailAddress,
-      token,
+      token
     }
-
   };
 
   res.status(HTTP_STATUS.CREATED).json(response);
@@ -40,7 +38,6 @@ export const signup = async (req: Request, res: Response) => {
 
 export const verifyEmail = async (req: Request, res: Response) => {
   const token = typeof req.query.token === 'string' ? req.query.token : '';
-
 
   const { userId } = JwtHelper.verifyToken(token);
 
