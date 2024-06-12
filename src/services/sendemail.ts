@@ -1,19 +1,20 @@
 
 import FormData from 'form-data';
 import Mailgun from 'mailgun.js';
-import { generateToken } from '../lib';
+import { JwtHelper } from '../lib';
 import { logger } from './logger';
+import envConfig from '../config/envConfig';
 
 const mailgun = new Mailgun(FormData); //
 
 const mg = mailgun.client({
   username: 'api',
-  key: process.env.MAILGUN_API_KEY,
-  url: process.env.MAILGUN_API_URL,
+  key: envConfig.MAILGUN_API_KEY,
+  url: envConfig.MAILGUN_API_URL,
 });
 
 export const sendVerificationEmail = async (email: string, userId: string) => {
-  const verificationToken = generateToken(userId);
+  const verificationToken = JwtHelper.generateToken(userId);
 
   const mailData = {
     from: 'caleboshalusi@gmail.com',

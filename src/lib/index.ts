@@ -1,3 +1,3 @@
 export * from './brypt-helper';
-export * from './jwt-auth';
+export * from './jwt-helper';
 
