@@ -8,6 +8,10 @@ type EnvConfig = {
   POSTGRES_HOST: string;
   POSTGRES_PORT: number;
   POSTGRES_DB: string;
+  JWT_SECRET: string;
+  MAILGUN_API_KEY: string;
+  MAILGUN_API_URL: string;
+  MAILGUN_DOMAIN: string;
 };
 
 type ENV = Partial<EnvConfig> & {
@@ -21,7 +25,11 @@ const getConfig = (): ENV => ({
   POSTGRES_PASSWORD: process.env.POSTGRES_PASSWORD,
   POSTGRES_HOST: process.env.POSTGRES_HOST,
   POSTGRES_DB: process.env.POSTGRES_DB,
-  NODE_ENV: process.env.NODE_ENV
+  NODE_ENV: process.env.NODE_ENV,
+  JWT_SECRET: process.env.JWT_SECRET,
+  MAILGUN_API_KEY: process.env.MAILGUN_API_KEY,
+  MAILGUN_API_URL: process.env.MAILGUN_API_URL,
+  MAILGUN_DOMAIN: process.env.MAILGUN_DOMAIN
 });
 
 const getSanitizedConfig = (config: ENV): EnvConfig => {
