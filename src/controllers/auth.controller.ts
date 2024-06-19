@@ -65,16 +65,19 @@ export const verifyEmail = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
-
   const userRepository = handleGetRepository(UserEntity);
 
   const user = await userRepository.findOne({
     where: { emailAddress: email }
   });
 
-  const checkPassword = await BcryptHelper.compare(password, user.password);
-  if (!checkPassword) {throw new BadRequestError('wrong password');}
+  // Check if the user exists
+  if (!user) {
+    throw new NotFoundError('Invalid login credentials');
+  }
 
+  const checkPassword = await BcryptHelper.compare(password, user.password);
+  if (!checkPassword) throw new BadRequestError('wrong password');
 
   const token = JwtHelper.generateToken(user.id);
 
