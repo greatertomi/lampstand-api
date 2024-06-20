@@ -2,7 +2,8 @@ import { JwtHelper } from '../../lib';
 import { HTTP_STATUS } from '../../lib/responses';
 import * as sendEmailService from '../../services/sendemail';
 import { TestFactory } from '../factory';
-import { testUser, createTestUser } from '../test-utils/test-data';
+import { testUser } from '../test-utils/test-data';
+import { createTestUser } from '../test-utils/helper-test';
 
 const passwordError = 'Password must have at least one special character';
 
@@ -128,11 +129,7 @@ describe('Testing the users route', () => {
   });
 
 
-
-
     describe('POST /login', () => {
-
-
       it('should return a token when the request data is valid', async () => {
         const { user, password } = await createTestUser(factory);
 
@@ -143,7 +140,6 @@ describe('Testing the users route', () => {
 
         expect(response.status).toEqual(HTTP_STATUS.OK);
         expect(response.body.token).toBeDefined();
-        expect(response.body.data).toBeDefined();
         expect(response.body.data).toMatchObject({
           id: user.id,
           fullName: user.fullName,
@@ -151,25 +147,23 @@ describe('Testing the users route', () => {
         });
       });
 
-      it('should return an error when the email is not found', async () => {
-        const response = await factory.app.post(loginRoute).send({
+      it('should return an error when the login credentials are invalid', async () => {
+        // Email not found / the two cant be together directly, different login data thats why i did it this way
+        const responseEmailNotFound = await factory.app.post(loginRoute).send({
           email: 'abc@gmail.com',
           password: 'pass12345@P',
         });
-        expect(response.status).toBe(HTTP_STATUS.NOT_FOUND);
-        expect(response.body).toHaveProperty('errors');
-        expect(response.body.errors[0]).toHaveProperty('message', 'Invalid login credentials');
-      });
+        expect(responseEmailNotFound.status).toBe(HTTP_STATUS.NOT_FOUND);
+        expect(responseEmailNotFound.body.errors[0]).toHaveProperty('message', 'Invalid login credentials');
 
-      it('should return an error when the password is incorrect', async () => {
+        // Incorrect password
         const { user } = await createTestUser(factory);
-        const response = await factory.app.post(loginRoute).send({
+        const responseIncorrectPassword = await factory.app.post(loginRoute).send({
           email: user.email,
           password: 'wrongPassword12345@P',
         });
-        expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
-        expect(response.body.errors[0]).toHaveProperty('message', 'wrong password');
-
+        expect(responseIncorrectPassword.status).toBe(HTTP_STATUS.NOT_FOUND);
+        expect(responseIncorrectPassword.body.errors[0]).toHaveProperty('message', 'Invalid login credentials');
       });
 
       it('should return an error when login data is invalid', async () => {
@@ -183,7 +177,6 @@ describe('Testing the users route', () => {
           password: passwordError,
         });
       });
-
   });
 
 });

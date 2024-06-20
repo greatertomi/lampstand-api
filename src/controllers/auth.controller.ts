@@ -71,14 +71,10 @@ export const login = async (req: Request, res: Response) => {
     where: { emailAddress: email }
   });
 
-  // Check if the user exists
-  if (!user) {
+  const checkPassword = user ? await BcryptHelper.compare(password, user.password) : false;
+  if (!user || !checkPassword) {
     throw new NotFoundError('Invalid login credentials');
   }
-
-  const checkPassword = await BcryptHelper.compare(password, user.password);
-  if (!checkPassword) throw new BadRequestError('wrong password');
-
   const token = JwtHelper.generateToken(user.id);
 
   res.status(HTTP_STATUS.OK).json({
