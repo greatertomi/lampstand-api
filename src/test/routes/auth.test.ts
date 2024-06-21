@@ -3,10 +3,14 @@ import { HTTP_STATUS } from '../../lib/responses';
 import * as sendEmailService from '../../services/sendemail';
 import { TestFactory } from '../factory';
 import { testUser } from '../test-utils/test-data';
+import { createTestUser } from '../test-utils/helper-test';
+
+const passwordError = 'Password must have at least one special character';
 
 describe('Testing the users route', () => {
   const factory: TestFactory = new TestFactory();
   const createRoute = '/auth/signup';
+  const loginRoute = '/auth/login';
   let sendVerificationEmail: jest.SpyInstance;
 
   beforeEach((done) => {
@@ -50,7 +54,7 @@ describe('Testing the users route', () => {
 
         expect(res.status).toEqual(HTTP_STATUS.UNPROCESSABLE_ENTITY);
         expect(Object.keys(res.body.errors).length).toBe(3);
-        expect(res.body.errors.password).toBe('Password must have at least one special character');
+        expect(res.body.errors.password).toBe(passwordError);
         expect(res.body.errors.agreedToTerms).toBe('Agreed to terms should be a boolean');
         expect(sendVerificationEmail).not.toHaveBeenCalled();
       });
@@ -95,7 +99,7 @@ describe('Testing the users route', () => {
           'Password must be at least 8 characters long',
           'Password must have at least one uppercase letter',
           'Password must have at least one number',
-          'Password must have at least one special character'
+          passwordError
         ];
 
         expect(expectedErrorMessages).toContain(passwordErrorMessage);
@@ -123,4 +127,57 @@ describe('Testing the users route', () => {
       expect(res.status).toEqual(HTTP_STATUS.INTERNAL_SERVER_ERROR);
     });
   });
+
+
+    describe('POST /login', () => {
+      it('should return a token when the request data is valid', async () => {
+        const { user, password } = await createTestUser(factory);
+
+        const response = await factory.app.post(loginRoute).send({
+          email: user.email,
+          password,
+        });
+
+        expect(response.status).toEqual(HTTP_STATUS.OK);
+        expect(response.body.token).toBeDefined();
+        expect(response.body.data).toMatchObject({
+          id: user.id,
+          fullName: user.fullName,
+          email: user.email,
+        });
+      });
+
+      it('should return an error when the login credentials are invalid', async () => {
+        // Email not found / the two cant be together directly, different login data thats why i did it this way
+        const responseEmailNotFound = await factory.app.post(loginRoute).send({
+          email: 'abc@gmail.com',
+          password: 'pass12345@P',
+        });
+        expect(responseEmailNotFound.status).toBe(HTTP_STATUS.NOT_FOUND);
+        expect(responseEmailNotFound.body.errors[0]).toHaveProperty('message', 'Invalid login credentials');
+
+        // Incorrect password
+        const { user } = await createTestUser(factory);
+        const responseIncorrectPassword = await factory.app.post(loginRoute).send({
+          email: user.email,
+          password: 'wrongPassword12345@P',
+        });
+        expect(responseIncorrectPassword.status).toBe(HTTP_STATUS.NOT_FOUND);
+        expect(responseIncorrectPassword.body.errors[0]).toHaveProperty('message', 'Invalid login credentials');
+      });
+
+      it('should return an error when login data is invalid', async () => {
+        const response = await factory.app.post(loginRoute).send({
+          email: 'abc@gmail',
+          password: 'wrongPassword',
+        });
+        expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+        expect(response.body.errors).toStrictEqual({
+          email: 'This must be a valid email address',
+          password: passwordError,
+        });
+      });
+  });
+
 });
+

@@ -4,3 +4,4 @@ export const testUser = {
   password: 'Str0ngP@ssw0rd!',
   agreedToTerms: true
 };
+

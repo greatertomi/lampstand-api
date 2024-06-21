@@ -61,3 +61,29 @@ export const verifyEmail = async (req: Request, res: Response) => {
     .status(HTTP_STATUS.OK)
     .send({ message: 'Email verified successfully', data: { userId } });
 };
+
+export const login = async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+
+  const userRepository = handleGetRepository(UserEntity);
+
+  const user = await userRepository.findOne({
+    where: { emailAddress: email }
+  });
+
+  const checkPassword = user ? await BcryptHelper.compare(password, user.password) : false;
+  if (!user || !checkPassword) {
+    throw new NotFoundError('Invalid login credentials');
+  }
+  const token = JwtHelper.generateToken(user.id);
+
+  res.status(HTTP_STATUS.OK).json({
+    message: 'Login successful',
+    token,
+    data: {
+      id: user.id,
+      fullName: user.fullName,
+      email: user.emailAddress,
+    }
+  });
+};
