@@ -19,7 +19,6 @@ Commit messages must meet [conventional commits](https://www.conventionalcommits
 Run `npm run prepare` to install husky hooks.
 
 ## Migrations
-Set `syncDatabase` to `false` in [data-source.ts](src/data-source.ts) to enable migrations. Then run the following commands
-- Run `npm run migration:generate -- ./src/migrations/<migration-name>` to generate a migration file. For example `npm run migration:generate -- ./src/migrations/create-users-table`
+- Run `npm run migration:generate` to generate a migration file. Migrations are generated in the `src/migrations` directory with a default name and timestamp prefix. You should change the name of the migration file to something more descriptive.
 - Run `npm run migration:run` to run migrations
 - Run `npm run migration:revert` to revert migrations

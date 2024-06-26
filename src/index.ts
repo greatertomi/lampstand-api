@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import envConfig from './config/envConfig';
-import dataSource from './data-source';
+import { AppDataSource } from './database';
 import { errorHandler } from './middleware';
 import routes from './routes';
 import { logger } from './services';
@@ -11,7 +11,7 @@ const { PORT } = envConfig;
 
 export const main = async () => {
   try {
-    await dataSource.AppDataSource.initialize();
+    await AppDataSource.initialize();
     const app = express();
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));

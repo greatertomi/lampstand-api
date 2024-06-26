@@ -3,7 +3,7 @@ import supertest from 'supertest';
 import { DataSource } from 'typeorm';
 import { Server, createServer } from 'node:http';
 import { createDatabase } from 'typeorm-extension';
-import dataSource, { testDatabaseConfig } from '../data-source';
+import { TestDataSource, testDatabaseConfig } from '../database';
 import { errorHandler } from '../middleware';
 import routes from '../routes';
 
@@ -27,7 +27,7 @@ export class TestFactory {
 
   private async startup(): Promise<void> {
     try {
-      this._connection = dataSource.TestDataSource;
+      this._connection = TestDataSource;
       await createDatabase({
         options: {
           type: 'postgres' as const,
