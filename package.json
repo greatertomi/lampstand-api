@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "API for the Lampstand project",
   "type": "commonjs",
+  "license": "MIT",
   "scripts": {
     "build": "rimraf dist && tsc",
     "dev": "nodemon src/index.ts",
@@ -14,7 +15,11 @@
     "docker:run": "docker-compose up",
     "docker:stop": "docker-compose down",
     "prepare": "husky install",
-    "cleanup": "rm -rf node_modules yarn.lock"
+    "cleanup": "rm -rf node_modules yarn.lock",
+    "typeorm": "yarn run build && POSTGRES_HOST=localhost SYNC_DATABASE=false npx typeorm -d dist/database/data-source.js",
+    "migration:generate": "yarn run typeorm migration:generate src/migrations/new-migration",
+    "migration:run": "yarn run typeorm migration:run",
+    "migration:revert": "yarn run typeorm migration:revert"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

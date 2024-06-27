@@ -1,6 +1,5 @@
 import { DataSourceOptions } from 'typeorm';
-
-import { testDatabaseConfig } from '../../data-source';
+import { testDatabaseConfig } from '../../database';
 import { setupPostgresContainer } from './docker';
 
 const connectionConfig: DataSourceOptions = { ...testDatabaseConfig };
