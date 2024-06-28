@@ -1,33 +1,35 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
 import { UserEntity } from './UserEntity';
+import { TokenStatus } from './types';
 
 @Entity('password_reset_tokens')
-export class PasswordResetToken {
+export class PasswordResetTokenEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @ManyToOne(() => UserEntity, { nullable: false })
 
-  @JoinColumn({ name: 'user_id' })
+  @JoinColumn({ name: 'userId' })
   user: UserEntity;
 
-  @Column({ type: 'bigint', nullable: false })
+  @Column({ type: 'integer' })
   token: number;
 
   @CreateDateColumn()
   createdAt: Date;
 
-  @Column({ type: 'timestamp', nullable: false })
+  @Column({ type: 'timestamp', })
   expiresAt: Date;
 
   @Column({ type: 'timestamp', nullable: true })
-  usedAt: Date | null;
+  usedAt: Date;
 
   @Column({
     type: 'enum',
-    enum: ['active', 'expired', 'used'],
-    default: 'active',
+    enum: TokenStatus,
+    default: TokenStatus.ACTIVE,
     nullable: false
   })
-  status: 'active' | 'expired' | 'used';
+  status: TokenStatus;
 }
+

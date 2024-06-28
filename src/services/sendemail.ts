@@ -45,7 +45,6 @@ export const sendVerificationEmail = async (email: string, userId: string) => {
   }
 };
 
-
 export const sendPasswordResetEmail = async (email: string, token: number) => {
   const mailData = {
     from: 'caleboshalusi@gmail.com',
@@ -84,7 +83,7 @@ export const sendPasswordResetEmail = async (email: string, token: number) => {
 
   try {
     await mailgunClient.messages.create(process.env.MAILGUN_DOMAIN!, mailData);
-    logger.info('Password reset email sent');
+    logger.debug('Password reset email sent');
   } catch (error) {
     logger.error('Error sending password reset email:', error);
     throw error; // Rethrow the error so it can be handled in the calling function

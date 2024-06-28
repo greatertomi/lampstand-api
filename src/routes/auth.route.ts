@@ -1,21 +1,38 @@
 import { Router } from 'express';
-import { signup, verifyEmail, login, requestPasswordReset, verifyResetToken, updatePassword } from '../controllers';
+import {
+  login,
+  requestPasswordReset,
+  signup,
+  updatePassword,
+  verifyEmail,
+  verifyResetToken
+} from '../controllers';
 import {
   asyncMiddleware,
   forgotPasswordValidationRules,
+  resetPasswordValidationRules,
   updatePasswordValidationRules
 } from '../middleware';
-import { userValidationRules, loginValidationRules, validate } from '../middleware';
-
+import { loginValidationRules, userValidationRules, validate } from '../middleware';
 
 const router = Router();
 
 router.get('/verify-email', asyncMiddleware(verifyEmail));
 
 router.post('/signup', userValidationRules(), validate, asyncMiddleware(signup));
-router.post('/login', loginValidationRules(), validate,  asyncMiddleware(login));
-router.post('/reset-password', forgotPasswordValidationRules(), validate, asyncMiddleware(requestPasswordReset));
-router.post('/verify-reset-token',  asyncMiddleware(verifyResetToken));
-router.put('/update-password',  updatePasswordValidationRules(), validate, updatePassword);
+router.post('/login', loginValidationRules(), validate, asyncMiddleware(login));
+router.post(
+  '/reset-password',
+  forgotPasswordValidationRules(),
+  validate,
+  asyncMiddleware(requestPasswordReset)
+);
+router.post(
+  '/verify-reset-token',
+  resetPasswordValidationRules,
+  validate,
+  asyncMiddleware(verifyResetToken)
+);
+router.put('/update-password', updatePasswordValidationRules(), validate, updatePassword);
 
 export default router;

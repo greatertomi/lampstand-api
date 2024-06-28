@@ -1,12 +1,26 @@
 import { Request, Response } from 'express';
-import { PasswordResetToken, UserEntity } from '../entities';
+import { PasswordResetTokenEntity, UserEntity } from '../entities';
+import { TokenStatus } from '../entities/types';
 import { BcryptHelper, JwtHelper } from '../lib';
 import { BadRequestError, HTTP_STATUS, NotFoundError } from '../lib/responses';
+import { logger } from '../services';
 import { sendPasswordResetEmail, sendVerificationEmail } from '../services/sendemail';
 import handleGetRepository from '../utils/handleGetRepository';
-import { logger } from '../services';
-const userNotFound = ('User not found');
 
+const userNotFound = 'User not found';
+
+async function generateUniqueToken(passwordResetTokenRepository: any): Promise<number> {
+  const token = Math.floor(100_000 + Math.random() * 900_000);
+  const existingToken = await passwordResetTokenRepository.findOne({
+    where: { token, status: TokenStatus.ACTIVE }
+  });
+
+  if (existingToken) {
+    return generateUniqueToken(passwordResetTokenRepository);
+  }
+
+  return token;
+}
 
 export const signup = async (req: Request, res: Response) => {
   const { fullName, email, password, agreedToTerms } = req.body;
@@ -86,16 +100,15 @@ export const login = async (req: Request, res: Response) => {
     data: {
       id: user.id,
       fullName: user.fullName,
-      email: user.emailAddress,
+      email: user.emailAddress
     }
   });
 };
 
-
- export const requestPasswordReset = async (req: Request, res: Response) => {
+export const requestPasswordReset = async (req: Request, res: Response) => {
   const { email } = req.body;
   const userRepository = handleGetRepository(UserEntity);
-  const passwordResetTokenRepository = handleGetRepository(PasswordResetToken);
+  const passwordResetTokenRepository = handleGetRepository(PasswordResetTokenEntity);
 
   const user = await userRepository.findOne({
     where: { emailAddress: email }
@@ -104,8 +117,7 @@ export const login = async (req: Request, res: Response) => {
   if (!user) {
     throw new NotFoundError('Email not found');
   }
-
-  const token = Math.floor(100_000 + Math.random() * 900_000);
+  const token = await generateUniqueToken(passwordResetTokenRepository);
 
   const expiresAt = new Date();
   expiresAt.setHours(expiresAt.getHours() + 12);
@@ -114,19 +126,14 @@ export const login = async (req: Request, res: Response) => {
     user,
     token,
     expiresAt,
-    status: 'active'
+    status: TokenStatus.ACTIVE
   });
 
   await passwordResetTokenRepository.save(passwordResetToken);
 
-  // Send email to the user
-  try {
-    await sendPasswordResetEmail(user.emailAddress, token);
-    logger.debug(`Password reset email sent to ${email}`);
-  } catch (error) {
-    logger.error(`Failed to send password reset email to ${email}`, error);
-    throw new BadRequestError('Failed to send reset email');
-  }
+  await sendPasswordResetEmail(user.emailAddress, token);
+  logger.debug(`Password reset email sent to ${email}`);
+
   const response = {
     success: true,
     message: 'A 6-digit code has been sent to your email address'
@@ -135,24 +142,23 @@ export const login = async (req: Request, res: Response) => {
   res.status(HTTP_STATUS.OK).send(response);
 };
 
-
 export const verifyResetToken = async (req: Request, res: Response) => {
   const { token } = req.body;
 
-  if (token === undefined || token === null) {
-    throw new BadRequestError('Token is missing in the request body');
-  }
+  //if (token === undefined || token === null) {
+  //  throw new BadRequestError('Token is missing in the request body');
+  // }
 
   const numericToken = Number(token);
-  if (Number.isNaN(numericToken) || numericToken <= 0) {
+  if (Number.isNaN(numericToken) || String(numericToken).length !== 6) {
     throw new BadRequestError('Token must be a valid number');
   }
 
-  const passwordResetTokenRepository = handleGetRepository(PasswordResetToken);
+  const passwordResetTokenRepository = handleGetRepository(PasswordResetTokenEntity);
   const userRepository = handleGetRepository(UserEntity);
 
   const resetToken = await passwordResetTokenRepository.findOne({
-    where: { token: token, status: 'active' },
+    where: { token: token, status: TokenStatus.ACTIVE },
     relations: ['user']
   });
 
@@ -161,8 +167,8 @@ export const verifyResetToken = async (req: Request, res: Response) => {
   }
 
   if (new Date() > resetToken.expiresAt) {
-    resetToken.status = 'expired';
-    await passwordResetTokenRepository.save(resetToken);
+    await passwordResetTokenRepository.update(resetToken.id, { status: TokenStatus.EXPIRED });
+
     throw new BadRequestError('Token has expired');
   }
 
@@ -188,11 +194,10 @@ export const verifyResetToken = async (req: Request, res: Response) => {
 };
 
 export const updatePassword = async (req: Request, res: Response) => {
-
   const { userId, password } = req.body;
 
   const userRepository = handleGetRepository(UserEntity);
-  const passwordResetTokenRepository = handleGetRepository(PasswordResetToken);
+  const passwordResetTokenRepository = handleGetRepository(PasswordResetTokenEntity);
 
   const user = await userRepository.findOne({ where: { id: userId } });
   if (!user) {
@@ -200,7 +205,7 @@ export const updatePassword = async (req: Request, res: Response) => {
   }
 
   const resetToken = await passwordResetTokenRepository.findOne({
-    where: { user: { id: userId }, status: 'active' }
+    where: { user: { id: userId }, status: TokenStatus.ACTIVE }
   });
 
   if (!resetToken) {
@@ -210,10 +215,13 @@ export const updatePassword = async (req: Request, res: Response) => {
   user.password = await BcryptHelper.hash(password);
   await userRepository.save(user);
 
-  // Update the reset token status
-  resetToken.status = 'used';
-  resetToken.usedAt = new Date();
-  await passwordResetTokenRepository.save(resetToken);
+  await passwordResetTokenRepository.update(
+    { id: resetToken.id },
+    {
+      status: TokenStatus.USED,
+      usedAt: new Date()
+    }
+  );
 
   logger.debug(`Password updated successfully for user: ${userId}`);
 
