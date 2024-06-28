@@ -136,34 +136,31 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
 
   const response = {
     success: true,
-    message: 'A 6-digit code has been sent to your email address'
+    message: 'A 6-digit code has been sent to your email address',
+    data: {
+      userId: user.id,
+      email: user.emailAddress
+    }
   };
 
   res.status(HTTP_STATUS.OK).send(response);
 };
 
 export const verifyResetToken = async (req: Request, res: Response) => {
-  const { token } = req.body;
-
-  //if (token === undefined || token === null) {
-  //  throw new BadRequestError('Token is missing in the request body');
-  // }
+  const { token, userId } = req.body;
 
   const numericToken = Number(token);
   if (Number.isNaN(numericToken) || String(numericToken).length !== 6) {
-    throw new BadRequestError('Token must be a valid number');
+    throw new BadRequestError('Token must be a valid 6-digit number');
   }
 
   const passwordResetTokenRepository = handleGetRepository(PasswordResetTokenEntity);
-  const userRepository = handleGetRepository(UserEntity);
-
   const resetToken = await passwordResetTokenRepository.findOne({
-    where: { token: token, status: TokenStatus.ACTIVE },
-    relations: ['user']
+    where: { token: token, status: TokenStatus.ACTIVE, user: { id: userId } }
   });
 
   if (!resetToken) {
-    throw new NotFoundError('Invalid or expired token');
+    throw new BadRequestError('Invalid or expired token');
   }
 
   if (new Date() > resetToken.expiresAt) {
@@ -172,51 +169,28 @@ export const verifyResetToken = async (req: Request, res: Response) => {
     throw new BadRequestError('Token has expired');
   }
 
-  const user = await userRepository.findOne({
-    where: { id: resetToken.user.id }
-  });
-
-  if (!user) {
-    logger.error(`User not found for valid reset token: ${token}`);
-    throw new NotFoundError(userNotFound);
-  }
-
-  const response = {
-    success: true,
-    data: {
-      userId: user.id,
-      name: user.fullName,
-      email: user.emailAddress
-    }
-  };
-
-  res.status(HTTP_STATUS.OK).send(response);
+  res.status(HTTP_STATUS.OK).send({ success: true });
 };
 
 export const updatePassword = async (req: Request, res: Response) => {
-  const { userId, password } = req.body;
+  const { userId, password, token } = req.body;
 
   const userRepository = handleGetRepository(UserEntity);
   const passwordResetTokenRepository = handleGetRepository(PasswordResetTokenEntity);
 
-  const user = await userRepository.findOne({ where: { id: userId } });
-  if (!user) {
-    throw new NotFoundError(userNotFound);
-  }
-
-  const resetToken = await passwordResetTokenRepository.findOne({
-    where: { user: { id: userId }, status: TokenStatus.ACTIVE }
+  const userToken = await passwordResetTokenRepository.findOne({
+    where: { user: { id: userId }, token }
   });
 
-  if (!resetToken) {
-    throw new BadRequestError('No active password reset request found');
+  if (!userToken) {
+    throw new NotFoundError('User with the provided token not found');
   }
 
-  user.password = await BcryptHelper.hash(password);
-  await userRepository.save(user);
+  const hashedPassword = await BcryptHelper.hash(password);
+  await userRepository.update(userId, { password: hashedPassword });
 
   await passwordResetTokenRepository.update(
-    { id: resetToken.id },
+    { id: userToken.id },
     {
       status: TokenStatus.USED,
       usedAt: new Date()

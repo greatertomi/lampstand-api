@@ -8,6 +8,6 @@ export const passwordValidationRules = () => [
     .withMessage('Password must have at least one uppercase letter')
     .matches(/\d/)
     .withMessage('Password must have at least one number')
-    .matches(/[!$%&*?@]/)
+    .matches(/[!#$%&*?@]/)
     .withMessage('Password must have at least one special character')
 ];

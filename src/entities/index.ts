@@ -1,2 +1,2 @@
 export * from './UserEntity';
-export * from './passwordResetTokenEntity';
+export * from './PasswordResetTokenEntity';

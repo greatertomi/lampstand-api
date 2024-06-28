@@ -7,8 +7,7 @@ export class PasswordResetTokenEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => UserEntity, { nullable: false })
-
+  @ManyToOne(() => UserEntity)
   @JoinColumn({ name: 'userId' })
   user: UserEntity;
 
@@ -27,8 +26,7 @@ export class PasswordResetTokenEntity {
   @Column({
     type: 'enum',
     enum: TokenStatus,
-    default: TokenStatus.ACTIVE,
-    nullable: false
+    default: TokenStatus.ACTIVE
   })
   status: TokenStatus;
 }

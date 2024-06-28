@@ -13,6 +13,7 @@ type EnvConfig = {
   MAILGUN_API_URL: string;
   MAILGUN_DOMAIN: string;
   SYNC_DATABASE: boolean;
+  LOG_LEVEL: string;
 };
 
 type ENV = Partial<EnvConfig> & {
@@ -31,7 +32,8 @@ const getConfig = (): ENV => ({
   MAILGUN_API_KEY: process.env.MAILGUN_API_KEY,
   MAILGUN_API_URL: process.env.MAILGUN_API_URL,
   MAILGUN_DOMAIN: process.env.MAILGUN_DOMAIN,
-  SYNC_DATABASE: process.env.SYNC_DATABASE === 'true'
+  SYNC_DATABASE: process.env.SYNC_DATABASE === 'true',
+  LOG_LEVEL: process.env.LOG_LEVEL
 });
 
 const getSanitizedConfig = (config: ENV): EnvConfig => {

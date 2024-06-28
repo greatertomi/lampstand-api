@@ -1,4 +1,5 @@
 import winston from 'winston';
+import envConfig from '../config/envConfig';
 
 const colorsConfig = {
   error: 'red',
@@ -10,7 +11,7 @@ const colorsConfig = {
 const colorizer = winston.format.colorize({ all: true, colors: colorsConfig });
 
 export const logger = winston.createLogger({
-  level: 'info',
+  level: envConfig.LOG_LEVEL || 'info',
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.printf(({ level, message, timestamp, ...args }) => {

@@ -10,8 +10,8 @@ import {
 import {
   asyncMiddleware,
   forgotPasswordValidationRules,
-  resetPasswordValidationRules,
-  updatePasswordValidationRules
+  updatePasswordValidationRules,
+  verifyResetTokenValidationRules
 } from '../middleware';
 import { loginValidationRules, userValidationRules, validate } from '../middleware';
 
@@ -29,10 +29,15 @@ router.post(
 );
 router.post(
   '/verify-reset-token',
-  resetPasswordValidationRules,
+  verifyResetTokenValidationRules(),
   validate,
   asyncMiddleware(verifyResetToken)
 );
-router.put('/update-password', updatePasswordValidationRules(), validate, updatePassword);
+router.put(
+  '/update-password',
+  updatePasswordValidationRules(),
+  validate,
+  asyncMiddleware(updatePassword)
+);
 
 export default router;
