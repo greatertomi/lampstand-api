@@ -9,7 +9,7 @@ import routes from '../routes';
 
 export class TestFactory {
   private _app: express.Application;
-  private _connection: DataSource;
+  _connection: DataSource;
   private _server: Server;
 
   public get app(): supertest.SuperTest<supertest.Test> {
