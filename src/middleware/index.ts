@@ -1,3 +1,2 @@
 export * from './error-handler';
-export * from './validate';
-export * from './user-validator';
+export * from './validators';

@@ -45,4 +45,5 @@ jobs:
           MAILGUN_API_KEY: ${{ secrets.MAILGUN_API_KEY }}
           MAILGUN_API_URL: ${{ secrets.MAILGUN_API_URL }}
           MAILGUN_DOMAIN: ${{ secrets.MAILGUN_DOMAIN }}
+          LOG_LEVEL: debug
         run: yarn test

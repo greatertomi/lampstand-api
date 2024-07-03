@@ -2,11 +2,13 @@ import { mailgunClient } from '../config';
 import { JwtHelper } from '../lib';
 import { logger } from './logger';
 
+const SENDER_EMAIL = 'caleboshalusi@gmail.com';
+
 export const sendVerificationEmail = async (email: string, userId: string) => {
   const verificationToken = JwtHelper.generateToken(userId);
 
   const mailData = {
-    from: 'caleboshalusi@gmail.com',
+    from: SENDER_EMAIL,
     to: email,
     subject: 'Verify your email address',
     html: `
@@ -42,5 +44,50 @@ export const sendVerificationEmail = async (email: string, userId: string) => {
     logger.info('Verification email sent');
   } catch (error) {
     logger.error('Error sending verification email:', error);
+  }
+};
+
+export const sendPasswordResetEmail = async (email: string, token: number) => {
+  const mailData = {
+    from: SENDER_EMAIL,
+    to: email,
+    subject: 'Reset Your Password',
+    html: `
+    <html lang="">
+      <head>
+        <title>Reset Your Password - Lampstand</title>
+      </head>
+      <body>
+        <h1 style="color: #333333; font-family: Arial, sans-serif;">Password Reset Request</h1>
+        <p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 1.5;">
+          We received a request to reset your password. If you didn't make this request, you can safely ignore this email.
+        </p>
+        <p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 1.5;">
+          To reset your password, use the following 6-digit code:
+        </p>
+        <h2 style="font-family: Arial, sans-serif; font-size: 24px; color: #007bff; text-align: center; padding: 10px; background-color: #f0f0f0; border-radius: 4px;">
+          ${token}
+        </h2>
+        <p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 1.5;">
+          This code will expire in 12 hours for security reasons. If you need to reset your password after that, please request a new code.
+        </p>
+        <p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 1.5;">
+          If you didn't request a password reset, please contact our support team immediately.
+        </p>
+        <p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 1.5;">
+          Best regards,<br>
+          The Lampstand Team
+        </p>
+      </body>
+    </html>
+  `
+  };
+
+  try {
+    await mailgunClient.messages.create(process.env.MAILGUN_DOMAIN!, mailData);
+    logger.debug('Password reset email sent');
+  } catch (error) {
+    logger.error('Error sending password reset email:', error);
+    throw error; // Rethrow the error so it can be handled in the calling function
   }
 };
