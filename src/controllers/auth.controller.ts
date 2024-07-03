@@ -5,22 +5,10 @@ import { BcryptHelper, JwtHelper } from '../lib';
 import { BadRequestError, HTTP_STATUS, NotFoundError } from '../lib/responses';
 import { logger } from '../services';
 import { sendPasswordResetEmail, sendVerificationEmail } from '../services/sendemail';
+import { generateUniqueToken } from '../utils';
 import handleGetRepository from '../utils/handleGetRepository';
 
 const userNotFound = 'User not found';
-
-async function generateUniqueToken(passwordResetTokenRepository: any): Promise<number> {
-  const token = Math.floor(100_000 + Math.random() * 900_000);
-  const existingToken = await passwordResetTokenRepository.findOne({
-    where: { token, status: TokenStatus.ACTIVE }
-  });
-
-  if (existingToken) {
-    return generateUniqueToken(passwordResetTokenRepository);
-  }
-
-  return token;
-}
 
 export const signup = async (req: Request, res: Response) => {
   const { fullName, email, password, agreedToTerms } = req.body;

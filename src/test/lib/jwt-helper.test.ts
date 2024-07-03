@@ -1,5 +1,11 @@
 import { JwtHelper } from '../../lib';
 
+jest.mock('../../services', () => ({
+  logger: {
+    error: jest.fn()
+  }
+}));
+
 describe('Testing the JWT helper', () => {
   const userId = '123';
 

@@ -7,6 +7,14 @@ import { TestFactory } from '../factory';
 import { createTestUser } from '../test-utils/helper-test';
 import { testUser } from '../test-utils/test-data';
 
+jest.mock('../../services', () => ({
+  logger: {
+    error: jest.fn(),
+    info: jest.fn(),
+    debug: jest.fn()
+  }
+}));
+
 const passwordError = 'Password must have at least one special character';
 const resetPassword = "'newPassword123@'";
 describe('Testing the users route', () => {
@@ -155,7 +163,6 @@ describe('Testing the users route', () => {
     });
 
     it('should return an error when the login credentials are invalid', async () => {
-      // Email not found / the two cant be together directly, different login data thats why i did it this way
       const responseEmailNotFound = await factory.app.post(loginRoute).send({
         email: 'abc@gmail.com',
         password: 'pass12345@P'
@@ -166,7 +173,6 @@ describe('Testing the users route', () => {
         'Invalid login credentials'
       );
 
-      // Incorrect password
       const { user } = await createTestUser(factory);
       const responseIncorrectPassword = await factory.app.post(loginRoute).send({
         email: user.email,
@@ -191,93 +197,89 @@ describe('Testing the users route', () => {
       });
     });
   });
+
   describe('POST /reset-password', () => {
     it('should send a password reset email successfully', async () => {
       const { user } = await createTestUser(factory);
 
-      const res = await factory.app
-        .post(resetRoute)
-        .send({ email: user.email })
-        .expect(HTTP_STATUS.OK);
+      const res = await factory.app.post(resetRoute).send({ email: user.email });
 
-      expect(res.body).toHaveProperty('success', true);
-      expect(res.body).toHaveProperty(
-        'message',
-        'A 6-digit code has been sent to your email address'
-      );
-      expect(res.body.data).toHaveProperty('userId', user.id);
-      expect(res.body.data).toHaveProperty('email', user.email);
+      expect(res.status).toBe(HTTP_STATUS.OK);
+      expect(res.body).toMatchObject({
+        success: true,
+        message: 'A 6-digit code has been sent to your email address',
+        data: { userId: user.id, email: user.email }
+      });
+      expect(sendPasswordResetEmail).toHaveBeenCalledWith(user.email, expect.any(Number));
+      expect(sendPasswordResetEmail).toHaveBeenCalledTimes(1);
     });
 
-    it('error if the email is not found', async () => {
-      const res = await factory.app
-        .post(resetRoute)
-        .send({ email: 'nonexistent@example.com' })
-        .expect(HTTP_STATUS.NOT_FOUND);
+    it('should throw an error if the email is not found', async () => {
+      const res = await factory.app.post(resetRoute).send({ email: 'nonexistent@example.com' });
 
-      expect(res.body).toHaveProperty('errors');
+      expect(res.status).toBe(HTTP_STATUS.NOT_FOUND);
       expect(res.body.errors[0]).toHaveProperty('message', 'Email not found');
+      expect(sendPasswordResetEmail).not.toHaveBeenCalled();
     });
 
-    it('error if the email is invalid', async () => {
-      const res = await factory.app
-        .post(resetRoute)
-        .send({ email: 'invalid-email' })
-        .expect(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+    it('should throw an error if the email is invalid', async () => {
+      const res = await factory.app.post(resetRoute).send({ email: 'invalid-email' });
 
-      expect(res.body).toHaveProperty('errors');
+      expect(res.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
       expect(res.body.errors).toHaveProperty('email', 'This must be a valid email address');
+      expect(sendPasswordResetEmail).not.toHaveBeenCalled();
     });
   });
 
   describe('POST /verify-reset-token', () => {
-    it('verify a valid reset token successfully', async () => {
+    it('should verify a valid reset token successfully', async () => {
       const { user } = await createTestUser(factory);
 
+      // todo: mock this token storage
       const tokenRepository = factory._connection.getRepository(PasswordResetTokenEntity);
       const token = tokenRepository.create({
         token: 123_456,
         expiresAt: new Date(Date.now() + 3_600_000),
         status: TokenStatus.ACTIVE,
-        user: user
+        user
       });
       await tokenRepository.save(token);
 
       const res = await factory.app
         .post(verifyTokenRoute)
-        .send({ token: '123456', userId: user.id })
-        .expect(HTTP_STATUS.OK);
+        .send({ token: '123456', userId: user.id });
 
+      expect(res.status).toBe(HTTP_STATUS.OK);
       expect(res.body).toEqual({ success: true });
     });
 
-    it('return an error for an invalid token format', async () => {
+    it('should return an error for an invalid token format', async () => {
       const { user } = await createTestUser(factory);
 
       const res = await factory.app
         .post(verifyTokenRoute)
-        .send({ token: '12345', userId: user.id })
-        .expect(HTTP_STATUS.BAD_REQUEST);
+        .send({ token: '12345', userId: user.id });
 
+      expect(res.status).toBe(HTTP_STATUS.BAD_REQUEST);
       expect(res.body).toEqual({
         errors: [{ message: 'Token must be a valid 6-digit number' }]
       });
     });
 
-    it(' return an error for a non-existent token', async () => {
+    it('should return an error for a non-existent token', async () => {
       const { user } = await createTestUser(factory);
 
       const res = await factory.app
         .post(verifyTokenRoute)
-        .send({ token: '123456', userId: user.id })
-        .expect(HTTP_STATUS.BAD_REQUEST);
+        .send({ token: '123456', userId: user.id });
 
+      expect(res.status).toBe(HTTP_STATUS.BAD_REQUEST);
       expect(res.body).toEqual({
         errors: [{ message: 'Invalid or expired token' }]
       });
     });
 
-    it(' return an error for an expired token', async () => {
+    it('should return an error for an expired token', async () => {
       const { user } = await createTestUser(factory);
 
       const tokenRepository = factory._connection.getRepository(PasswordResetTokenEntity);
@@ -291,9 +293,9 @@ describe('Testing the users route', () => {
 
       const res = await factory.app
         .post(verifyTokenRoute)
-        .send({ token: '123456', userId: user.id })
-        .expect(HTTP_STATUS.BAD_REQUEST);
+        .send({ token: '123456', userId: user.id });
 
+      expect(res.status).toBe(HTTP_STATUS.BAD_REQUEST);
       expect(res.body).toEqual({
         errors: [{ message: 'Token has expired' }]
       });
@@ -322,11 +324,13 @@ describe('Testing the users route', () => {
 
       const res = await factory.app
         .put(updatePasswordRoute)
-        .send({ userId: user.id, password: newPassword, token, confirmPassword })
-        .expect(HTTP_STATUS.OK);
+        .send({ userId: user.id, password: newPassword, token, confirmPassword });
 
-      expect(res.body).toHaveProperty('success', true);
-      expect(res.body).toHaveProperty('message', 'Password reset successfully');
+      expect(res.status).toBe(HTTP_STATUS.OK);
+      expect(res.body).toMatchObject({
+        success: true,
+        message: 'Password reset successfully'
+      });
 
       const updatedToken = await passwordResetTokenRepository.findOne({
         where: { user: { id: user.id }, token }
@@ -338,15 +342,14 @@ describe('Testing the users route', () => {
     it('should return an error for non-existent token', async () => {
       const { user } = await createTestUser(factory);
 
-      const res = await factory.app
-        .put(updatePasswordRoute)
-        .send({
-          userId: user.id,
-          password: 'newPassword123@',
-          token: 123_456,
-          confirmPassword: 'newPassword123@'
-        })
-        .expect(HTTP_STATUS.NOT_FOUND);
+      const res = await factory.app.put(updatePasswordRoute).send({
+        userId: user.id,
+        password: 'newPassword123@',
+        token: 123_456,
+        confirmPassword: 'newPassword123@'
+      });
+
+      expect(res.status).toBe(HTTP_STATUS.NOT_FOUND);
       expect(res.body.errors[0]).toHaveProperty(
         'message',
         'User with the provided token not found'
@@ -356,19 +359,9 @@ describe('Testing the users route', () => {
     it('should return an error for invalid password format', async () => {
       const { user } = await createTestUser(factory);
 
-      const passwordResetTokenRepository =
-        factory._connection.getRepository(PasswordResetTokenEntity);
-      const token = 123_456;
-      await passwordResetTokenRepository.save({
-        user,
-        token,
-        expiresAt: new Date(Date.now() + 3_600_000),
-        status: TokenStatus.ACTIVE
-      });
-
       const res = await factory.app
         .put(updatePasswordRoute)
-        .send({ userId: user.id, password: 'weak', token })
+        .send({ userId: user.id, password: 'weak', token: '12356' })
         .expect(HTTP_STATUS.UNPROCESSABLE_ENTITY);
 
       expect(res.body).toHaveProperty('errors');
