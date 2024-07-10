@@ -17,6 +17,7 @@ import { loginValidationRules, userValidationRules, validate } from '../middlewa
 
 const router = Router();
 
+// Define routes
 router.get('/verify-email', asyncMiddleware(verifyEmail));
 
 router.post('/signup', userValidationRules(), validate, asyncMiddleware(signup));
@@ -39,5 +40,4 @@ router.put(
   validate,
   asyncMiddleware(updatePassword)
 );
-
 export default router;

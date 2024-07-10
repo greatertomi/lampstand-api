@@ -1,6 +1,7 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
 import 'reflect-metadata';
 import envConfig from '../config/envConfig';
+import { BookEntity, UserEntity } from '../entities';
 
 const syncDatabase = envConfig.SYNC_DATABASE;
 
@@ -13,7 +14,8 @@ const databaseConfig: DataSourceOptions = {
   database: envConfig.POSTGRES_DB,
   synchronize: syncDatabase,
   logging: false,
-  entities: syncDatabase ? ['src/entities/**/*.ts'] : ['dist/entities/**/*.js'],
+  //entities: syncDatabase ? ['src/entities/**/*.ts'] : ['dist/entities/**/*.js'],
+  entities: [UserEntity, BookEntity],
   migrations: syncDatabase ? ['src/migrations/**/*.ts'] : ['dist/migrations/**/*.js'],
   subscribers: []
 };
