@@ -1,37 +1,11 @@
-import { Request, Response } from 'express';
-import { UploadApiResponse, v2 as cloudinary } from 'cloudinary';
-import { UserEntity } from '../entities';
-import { BookEntity, BookFormat } from '../entities';
+import { Response } from 'express';
+import { BookEntity, BookFormat, UserEntity } from '../entities';
 import { HTTP_STATUS } from '../lib/responses';
+import { IExtendedRequest } from '../types/uploadfileextends';
 import handleGetRepository from '../utils/handleGetRepository';
 
-export const uploadBook = async (req: Request, res: Response) => {
-  cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
-  });
-
-  if (!cloudinary.config().api_key) {
-    return res
-      .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
-      .json({ message: 'Server configuration error' });
-  }
-
-  const file = req.file;
+export const saveBook = async (req: IExtendedRequest, res: Response) => {
   const { title, author, ownerId, format, metadata, manifest, size } = req.body;
-
-  if (!file) {
-    return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: 'No file uploaded' });
-  }
-
-  const uploadResult = await new Promise<UploadApiResponse>((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream({ resource_type: 'raw' }, (error, result) => {
-      if (error) reject(error);
-      else resolve(result as UploadApiResponse);
-    });
-    stream.end(file.buffer);
-  });
 
   const userRepository = handleGetRepository(UserEntity);
   const owner = await userRepository.findOne({ where: { id: ownerId } });
@@ -40,8 +14,8 @@ export const uploadBook = async (req: Request, res: Response) => {
   }
 
   const bookRepository = handleGetRepository(BookEntity);
+
   const newBook = bookRepository.create({
-    id: undefined,
     title,
     author,
     owner,
@@ -50,7 +24,7 @@ export const uploadBook = async (req: Request, res: Response) => {
     metadata: JSON.parse(metadata),
     manifest: JSON.parse(manifest),
     size: Number.parseInt(size, 10),
-    url: uploadResult.secure_url
+    url: req.uploadedFile.secure_url
   });
 
   await bookRepository.save(newBook);
