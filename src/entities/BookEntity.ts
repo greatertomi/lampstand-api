@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
 import { UserEntity } from './UserEntity';
 
 export enum BookFormat {
@@ -18,8 +18,7 @@ export class BookEntity {
   @Column()
   author: string;
 
-  @ManyToOne(() => UserEntity, user => user.books)
-  @JoinColumn({ name: 'ownerId' })
+  @ManyToOne(() => UserEntity, user => user.books, { nullable:false })
   owner: UserEntity;
 
   @Column('text')

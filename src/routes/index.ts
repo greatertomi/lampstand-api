@@ -1,6 +1,6 @@
 import { Request, Response, Router } from 'express';
 import auth from './auth.route';
-import save from './save.route';
+import save from './books.route';
 
 const router = Router();
 
@@ -9,6 +9,6 @@ router.get('/', (_: Request, res: Response) => {
 });
 
 router.use('/auth', auth);
-router.use('/save', save);
+router.use('/books', save);
 
 export default router;

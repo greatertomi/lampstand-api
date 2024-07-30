@@ -1,37 +1,20 @@
 import { NextFunction, Response } from 'express';
-import { v2 as cloudinary } from 'cloudinary';
 import { UploadApiResponse } from 'cloudinary';
 import stream from 'node:stream';
+import cloudinary from '../config/cloudinary';
+import envConfig from '../config/envConfig';
 import { BookFormat } from '../entities';
 import { HTTP_STATUS } from '../lib/responses';
 import { logger } from '../services';
-import { IExtendedRequest } from '../types/uploadfileextends';
+import { IExtendedRequest } from '../types';
 
-const CLOUDINARY_FILE_FOLDER = `books/${process.env.NODE_ENV}/books/files`;
+const CLOUDINARY_FILE_FOLDER = `lampstand/${envConfig.NODE_ENV}/books`;
 
 export const bookUploadMiddleware = async (
   req: IExtendedRequest,
   res: Response,
   next: NextFunction
 ) => {
-  logger.info(`Configuring Cloudinary with cloud name: ${process.env.CLOUDINARY_CLOUD_NAME}`);
-
-  cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
-  });
-
-  if (
-    !cloudinary.config().cloud_name ||
-    !cloudinary.config().api_key ||
-    !cloudinary.config().api_secret
-  ) {
-    return res
-      .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
-      .json({ message: 'Server configuration error' });
-  }
-
   const file = req.file;
   const { format } = req.body;
 
@@ -64,8 +47,9 @@ export const bookUploadMiddleware = async (
       (error, result) => {
         if (result) {
           logger.info(`File uploaded successfully: ${result.public_id}`);
-          resolve(result as UploadApiResponse);
+          resolve(result);
         } else {
+          logger.error(`Cloudinary upload error: ${error.message}`);
           reject(error);
         }
       }

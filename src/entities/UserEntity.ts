@@ -30,6 +30,6 @@ export class UserEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany(() => BookEntity, book => book.owner)
+  @OneToMany(() => BookEntity, book => book.owner, { onDelete: 'CASCADE' })
   books: BookEntity[];
 }
