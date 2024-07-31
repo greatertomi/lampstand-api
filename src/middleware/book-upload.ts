@@ -3,8 +3,6 @@ import { UploadApiResponse } from 'cloudinary';
 import stream from 'node:stream';
 import cloudinary from '../config/cloudinary';
 import envConfig from '../config/envConfig';
-import { BookFormat } from '../entities';
-import { HTTP_STATUS } from '../lib/responses';
 import { logger } from '../services';
 import { IExtendedRequest } from '../types';
 
@@ -19,18 +17,7 @@ export const bookUploadMiddleware = async (
   const { format } = req.body;
 
   if (!file) {
-    return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: 'No file uploaded' });
-  }
-
-  if (!Object.values(BookFormat).includes(format)) {
-    return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: 'Invalid book format' });
-  }
-
-  const fileExtension = file.originalname.split('.').pop()?.toLowerCase();
-  if (fileExtension !== format) {
-    return res
-      .status(HTTP_STATUS.BAD_REQUEST)
-      .json({ message: 'File extension does not match the specified format' });
+    return next();
   }
 
   const bookPublicId = `${file.originalname.split('.')[0]}-${Date.now()}`;
@@ -58,5 +45,6 @@ export const bookUploadMiddleware = async (
     const readableStream = stream.Readable.from(file.buffer);
     readableStream.pipe(uploadStream);
   });
+
   next();
 };
