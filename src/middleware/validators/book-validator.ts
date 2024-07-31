@@ -44,7 +44,6 @@ export const saveBookValidationRules = [
   body('cover')
     .optional()
     .custom((value) => {
-      // Regular expression to check if the string is a Base64 encoded image
       const base64Pattern = /^data:image\/(jpeg|jpg|png|gif);base64,[\d+/A-Za-z]+={0,2}$/;
       if (!base64Pattern.test(value)) {
         throw new Error('must be a valid Base64 encoded image');
