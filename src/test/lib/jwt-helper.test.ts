@@ -7,17 +7,17 @@ jest.mock('../../services', () => ({
 }));
 
 describe('Testing the JWT helper', () => {
-  const userId = '123';
+  const user = { userId: '123', name: 'John Doe', email: 'test@test.com' };
 
   it('should generate a JWT token with the provided userId', () => {
-    const token = JwtHelper.generateToken(userId);
+    const token = JwtHelper.generateToken(user);
     expect(typeof token).toBe('string');
   });
 
   it('should verify a valid JWT token', () => {
-    const token = JwtHelper.generateToken(userId);
+    const token = JwtHelper.generateToken(user);
     const decoded = JwtHelper.verifyToken(token);
-    expect(decoded).toHaveProperty('userId', userId);
+    expect(decoded).toMatchObject(user);
   });
 
   it('should throw an error when verifying an invalid JWT token', () => {

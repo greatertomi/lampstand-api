@@ -3,12 +3,12 @@ import envConfig from '../config/envConfig';
 import { logger } from '../services';
 
 export const JwtHelper = {
-  generateToken(userId: string) {
-    return jwt.sign({ userId }, envConfig.JWT_SECRET, { expiresIn: '1d' });
+  generateToken(data: JwtPayload) {
+    return jwt.sign(data, envConfig.JWT_SECRET, { expiresIn: '1d' });
   },
-  verifyToken(token: string) {
+  verifyToken(token: string): JwtPayload {
     try {
-      return jwt.verify(token, envConfig.JWT_SECRET) as JwtPayload & { userId: string };
+      return jwt.verify(token, envConfig.JWT_SECRET) as JwtPayload;
     } catch (error) {
       logger.error('Error verifying token:', error);
       throw error;

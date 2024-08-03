@@ -1,6 +1,7 @@
 import { body } from 'express-validator';
 import { BookFormat } from '../../entities';
 
+// TODO: Add validation for manifest and metadata fields
 export const saveBookValidationRules = [
   body('title').notEmpty().withMessage('Title is required'),
   body('author').notEmpty().withMessage('Author is required'),
@@ -13,34 +14,6 @@ export const saveBookValidationRules = [
       }
       return true;
     }),
-  body('metadata').custom((value) => {
-    let metadata = value;
-    if (typeof value === 'string') {
-      try {
-        metadata = JSON.parse(value);
-      } catch {
-        throw new Error('Metadata must be a valid JSON string or object');
-      }
-    }
-    if (!metadata || typeof metadata !== 'object' || Array.isArray(metadata)) {
-      throw new Error('Metadata must be a valid object');
-    }
-    return true;
-  }),
-  body('manifest').custom((value) => {
-    let manifest = value;
-    if (typeof value === 'string') {
-      try {
-        manifest = JSON.parse(value);
-      } catch {
-        throw new Error('Manifest must be a valid JSON string or object');
-      }
-    }
-    if (!manifest || !Array.isArray(manifest)) {
-      throw new Error('Manifest must be a valid array');
-    }
-    return true;
-  }),
   body('cover')
     .optional()
     .custom((value) => {

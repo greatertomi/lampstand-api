@@ -17,7 +17,8 @@ export const saveBook = async (req: IExtendedRequest, res: Response) => {
     metadata: structuredClone(metadata),
     manifest: structuredClone(manifest),
     size: req.uploadedFile.bytes,
-    url: req.uploadedFile.secure_url
+    url: req.uploadedFile.secure_url,
+    owner: { id: req.user.id }
   });
 
   await bookRepository.save(newBook);

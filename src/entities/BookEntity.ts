@@ -18,7 +18,7 @@ export class BookEntity {
   @Column()
   author: string;
 
-  @ManyToOne(() => UserEntity, user => user.books, { nullable:false })
+  @ManyToOne(() => UserEntity, user => user.books)
   owner: UserEntity;
 
   @Column('text')

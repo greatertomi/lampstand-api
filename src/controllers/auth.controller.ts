@@ -5,6 +5,7 @@ import { BcryptHelper, JwtHelper } from '../lib';
 import { BadRequestError, HTTP_STATUS, NotFoundError } from '../lib/responses';
 import { logger } from '../services';
 import { sendPasswordResetEmail, sendVerificationEmail } from '../services/sendemail';
+import { JwtPayload } from '../types';
 import { generateUniqueToken } from '../utils';
 import handleGetRepository from '../utils/handleGetRepository';
 
@@ -33,17 +34,18 @@ export const signup = async (req: Request, res: Response) => {
 
   await userRepository.save(newUser);
 
-  const token = JwtHelper.generateToken(newUser.id);
-  await sendVerificationEmail(newUser.emailAddress, newUser.id);
+  const responseData: JwtPayload = {
+    id: newUser.id,
+    fullName: newUser.fullName,
+    email: newUser.emailAddress
+  };
+  const token = JwtHelper.generateToken(responseData);
+  await sendVerificationEmail(responseData);
 
   const response = {
     message: 'User created',
-    data: {
-      id: newUser.id,
-      fullName: newUser.fullName,
-      email: newUser.emailAddress,
-      token
-    }
+    token,
+    data: responseData
   };
 
   res.status(HTTP_STATUS.CREATED).send(response);
@@ -52,11 +54,11 @@ export const signup = async (req: Request, res: Response) => {
 export const verifyEmail = async (req: Request, res: Response) => {
   const token = typeof req.query.token === 'string' ? req.query.token : '';
 
-  const { userId } = JwtHelper.verifyToken(token);
+  const tokenUser = JwtHelper.verifyToken(token);
 
   const userRepository = handleGetRepository(UserEntity);
 
-  const user = await userRepository.findOneBy({ id: userId });
+  const user = await userRepository.findOneBy({ id: tokenUser.id });
   if (!user) {
     throw new NotFoundError(userNotFound);
   }
@@ -64,7 +66,7 @@ export const verifyEmail = async (req: Request, res: Response) => {
   await userRepository.update(user.id, { isEmailVerified: true });
   return res
     .status(HTTP_STATUS.OK)
-    .send({ message: 'Email verified successfully', data: { userId } });
+    .send({ message: 'Email verified successfully', data: { userId: user.id } });
 };
 
 export const login = async (req: Request, res: Response) => {
@@ -80,16 +82,18 @@ export const login = async (req: Request, res: Response) => {
   if (!user || !checkPassword) {
     throw new NotFoundError('Invalid login credentials');
   }
-  const token = JwtHelper.generateToken(user.id);
+
+  const responseData: JwtPayload = {
+    id: user.id,
+    fullName: user.fullName,
+    email: user.emailAddress
+  };
+  const token = JwtHelper.generateToken(responseData);
 
   res.status(HTTP_STATUS.OK).json({
     message: 'Login successful',
     token,
-    data: {
-      id: user.id,
-      fullName: user.fullName,
-      email: user.emailAddress
-    }
+    data: responseData
   });
 };
 
