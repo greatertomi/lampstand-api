@@ -10,7 +10,7 @@ const CLOUDINARY_FILE_FOLDER = `lampstand/${envConfig.NODE_ENV}/books`;
 
 export const bookUploadMiddleware = async (
   req: IExtendedRequest,
-  res: Response,
+  _: Response,
   next: NextFunction
 ) => {
   const file = req.file;
@@ -20,7 +20,7 @@ export const bookUploadMiddleware = async (
     return next();
   }
 
-  const bookPublicId = `${file.originalname.split('.')[0]}-${Date.now()}`;
+  const bookPublicId = `${file.originalname.split('.')[0].replace(/\s+/g, '')}-${Date.now()}`;
 
   req.uploadedFile = await new Promise<UploadApiResponse>((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
