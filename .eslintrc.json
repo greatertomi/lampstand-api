@@ -29,7 +29,6 @@
     "no-console": "error",
     "no-restricted-syntax": "off",
     "import/no-extraneous-dependencies": "off",
-    "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/lines-between-class-members": "off",
     "@typescript-eslint/no-namespace": "off",
     "no-underscore-dangle": "off",
@@ -40,6 +39,7 @@
     "react/jsx-filename-extension": "off",
     "indent": "off",
     "@typescript-eslint/indent": "off",
-    "unicorn/no-anonymous-default-export": "off"
+    "unicorn/no-anonymous-default-export": "off",
+    "unicorn/prefer-string-replace-all": "off"
   }
 }

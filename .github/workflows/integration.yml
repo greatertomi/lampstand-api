@@ -45,5 +45,8 @@ jobs:
           MAILGUN_API_KEY: ${{ secrets.MAILGUN_API_KEY }}
           MAILGUN_API_URL: ${{ secrets.MAILGUN_API_URL }}
           MAILGUN_DOMAIN: ${{ secrets.MAILGUN_DOMAIN }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
           LOG_LEVEL: debug
         run: yarn test

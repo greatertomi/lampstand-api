@@ -43,12 +43,15 @@ describe('Testing the users route', () => {
   describe('POST /Signup', () => {
     it('should register a new user successfully', async () => {
       const res = await factory.app.post(createRoute).send(testUser).expect(HTTP_STATUS.CREATED);
+      const responseData = {
+        id: expect.any(String),
+        fullName: testUser.fullName,
+        email: testUser.email
+      };
 
       expect(res.body).toHaveProperty('message', 'User created');
-      expect(res.body.data).toHaveProperty('id');
-      expect(res.body.data).toHaveProperty('fullName', testUser.fullName);
-      expect(res.body.data).toHaveProperty('email', testUser.email);
-      expect(sendVerificationEmail).toHaveBeenCalledWith(testUser.email, expect.any(String));
+      expect(res.body.data).toMatchObject(responseData);
+      expect(sendVerificationEmail).toHaveBeenCalledWith(responseData);
     });
 
     it('should return an error if the user already exists', async () => {
@@ -126,16 +129,18 @@ describe('Testing the users route', () => {
 
   describe('GET /verify-email', () => {
     it('should verify a user email successfully', async () => {
-      const res1 = await factory.app.post(createRoute).send(testUser);
-      expect(res1.status).toEqual(HTTP_STATUS.CREATED);
-      const userId = res1.body.data.id;
+      const { user } = await createTestUser(factory);
 
-      const token = JwtHelper.generateToken(userId);
+      const token = JwtHelper.generateToken({
+        id: user.id,
+        fullName: user.fullName,
+        email: user.email
+      });
       const res2 = await factory.app.get(`/auth/verify-email?token=${token}`);
 
       expect(res2.status).toEqual(HTTP_STATUS.OK);
       expect(res2.body).toHaveProperty('message', 'Email verified successfully');
-      expect(res2.body.data).toEqual({ userId });
+      expect(res2.body.data).toMatchObject({ userId: user.id });
     });
 
     it('should return an error if the user does not exist', async () => {

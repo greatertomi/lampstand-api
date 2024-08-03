@@ -39,5 +39,4 @@ router.put(
   validate,
   asyncMiddleware(updatePassword)
 );
-
 export default router;

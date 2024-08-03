@@ -1,15 +1,16 @@
 import { mailgunClient } from '../config';
 import { JwtHelper } from '../lib';
+import { JwtPayload } from '../types';
 import { logger } from './logger';
 
 const SENDER_EMAIL = 'caleboshalusi@gmail.com';
 
-export const sendVerificationEmail = async (email: string, userId: string) => {
-  const verificationToken = JwtHelper.generateToken(userId);
+export const sendVerificationEmail = async (user: JwtPayload) => {
+  const verificationToken = JwtHelper.generateToken(user);
 
   const mailData = {
     from: SENDER_EMAIL,
-    to: email,
+    to: user.email,
     subject: 'Verify your email address',
     html: `
     <html lang="">

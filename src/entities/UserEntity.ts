@@ -1,4 +1,5 @@
-import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { BookEntity } from './BookEntity';
 
 @Entity({ name: 'users' })
 export class UserEntity {
@@ -28,4 +29,7 @@ export class UserEntity {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @OneToMany(() => BookEntity, book => book.owner, { onDelete: 'CASCADE' })
+  books: BookEntity[];
 }

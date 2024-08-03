@@ -1,6 +1,9 @@
 import 'dotenv/config';
 
 type EnvConfig = {
+  CLOUDINARY_API_SECRET: string;
+  CLOUDINARY_CLOUD_NAME: string;
+  CLOUDINARY_API_KEY: string;
   PORT: number;
   NODE_ENV: string;
   POSTGRES_USER: string;
@@ -33,7 +36,10 @@ const getConfig = (): ENV => ({
   MAILGUN_API_URL: process.env.MAILGUN_API_URL,
   MAILGUN_DOMAIN: process.env.MAILGUN_DOMAIN,
   SYNC_DATABASE: process.env.SYNC_DATABASE === 'true',
-  LOG_LEVEL: process.env.LOG_LEVEL
+  LOG_LEVEL: process.env.LOG_LEVEL,
+  CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
+  CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+  CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY
 });
 
 const getSanitizedConfig = (config: ENV): EnvConfig => {
