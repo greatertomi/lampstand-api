@@ -7,5 +7,6 @@ export default {
   transform: {
     '^.+\\.test.ts?$': 'ts-jest'
   },
-  testPathIgnorePatterns: ['/e2e/', '/node_modules/', '/dist/']
+  testPathIgnorePatterns: ['/e2e/', '/node_modules/', '/dist/'],
+  setupFilesAfterEnv: ['./src/test/jest-setup/mocks.ts']
 };

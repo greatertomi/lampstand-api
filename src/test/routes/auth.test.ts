@@ -7,17 +7,8 @@ import { TestFactory } from '../factory';
 import { createTestUser } from '../test-utils/helper-test';
 import { testUser } from '../test-utils/test-data';
 
-jest.mock('../../services', () => ({
-  logger: {
-    error: jest.fn(),
-    info: jest.fn(),
-    debug: jest.fn()
-  }
-}));
-
 const passwordError = 'Password must have at least one special character';
-const resetPassword = "'newPassword123@'";
-describe('Testing the users route', () => {
+describe('Testing the auth route', () => {
   const factory: TestFactory = new TestFactory();
   const createRoute = '/auth/signup';
   const loginRoute = '/auth/login';
@@ -308,6 +299,7 @@ describe('Testing the users route', () => {
   });
 
   describe('POST /update-password', () => {
+    const testPassword = 'newPassword123@';
     it('should update password successfully', async () => {
       const { user } = await createTestUser(factory);
 
@@ -324,12 +316,9 @@ describe('Testing the users route', () => {
         status: TokenStatus.ACTIVE
       });
 
-      const newPassword = resetPassword;
-      const confirmPassword = newPassword;
-
       const res = await factory.app
         .put(updatePasswordRoute)
-        .send({ userId: user.id, password: newPassword, token, confirmPassword });
+        .send({ userId: user.id, password: testPassword, token, confirmPassword: testPassword });
 
       expect(res.status).toBe(HTTP_STATUS.OK);
       expect(res.body).toMatchObject({
@@ -349,9 +338,9 @@ describe('Testing the users route', () => {
 
       const res = await factory.app.put(updatePasswordRoute).send({
         userId: user.id,
-        password: 'newPassword123@',
+        password: testPassword,
         token: 123_456,
-        confirmPassword: 'newPassword123@'
+        confirmPassword: testPassword
       });
 
       expect(res.status).toBe(HTTP_STATUS.NOT_FOUND);

@@ -1,7 +1,6 @@
 import { body } from 'express-validator';
 import { BookFormat } from '../../entities';
 
-// TODO: Add validation for manifest and metadata fields
 export const saveBookValidationRules = [
   body('title').notEmpty().withMessage('Title is required'),
   body('author').notEmpty().withMessage('Author is required'),
@@ -23,14 +22,10 @@ export const saveBookValidationRules = [
       }
       return true;
     }),
-  body().custom((value, { req }) => {
+  body('file').custom((_, { req }) => {
     const file = req.file;
     if (!file) {
       throw new Error('No file uploaded');
-    }
-    const fileExtension = file.originalname.split('.').pop()?.toLowerCase();
-    if (fileExtension !== req.body.format) {
-      throw new Error('File extension does not match the specified format');
     }
     return true;
   })
