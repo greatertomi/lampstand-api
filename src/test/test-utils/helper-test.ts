@@ -4,7 +4,9 @@ import { TestFactory } from '../factory';
 import { testUser } from './test-data';
 
 export const createTestUser = async (factory: TestFactory) => {
-  const response = await factory.app.post('/auth/signup').send(testUser);
+  const response = await factory.app.post('/auth/signup').send(
+    testUser,
+  );
 
   expect(response.status).toEqual(HTTP_STATUS.CREATED);
   return { user: response.body.data, password: testUser.password };
