@@ -2,7 +2,7 @@ import { PasswordResetTokenEntity } from '../../entities';
 import { TokenStatus } from '../../entities/types';
 import { JwtHelper } from '../../lib';
 import { HTTP_STATUS } from '../../lib/responses';
-import * as sendEmailService from '../../services/sendemail';
+import * as sendEmailService from '../../services';
 import { TestFactory } from '../factory';
 import { createTestUser } from '../test-utils/helper-test';
 import { testUser } from '../test-utils/test-data';
