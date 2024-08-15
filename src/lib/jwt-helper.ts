@@ -1,6 +1,7 @@
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import envConfig from '../config/envConfig';
 import { logger } from '../services';
+import { JwtPayload } from '../types';
 
 export const JwtHelper = {
   generateToken(data: JwtPayload) {

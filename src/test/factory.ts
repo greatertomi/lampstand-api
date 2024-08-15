@@ -6,6 +6,7 @@ import { createDatabase } from 'typeorm-extension';
 import { TestDataSource, testDatabaseConfig } from '../database';
 import { errorHandler } from '../middleware';
 import routes from '../routes';
+import { logger } from '../services';
 
 export class TestFactory {
   private _app: express.Application;
@@ -42,8 +43,7 @@ export class TestFactory {
       this._app.use(errorHandler);
       this._server = createServer(this._app).listen(3010);
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('testing error', error);
+      logger.error('testing error', error);
     }
   }
 }

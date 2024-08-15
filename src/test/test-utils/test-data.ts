@@ -4,4 +4,10 @@ export const testUser = {
   password: 'Str0ngP@ssw0rd!',
   agreedToTerms: true
 };
-//testuser@email.com
+
+export const testBook = {
+  title: 'Test Book',
+  author: 'Test Author',
+  format: 'pdf',
+  cover: 'data:image/jpeg;base64,9j4j93'
+};

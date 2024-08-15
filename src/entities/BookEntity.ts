@@ -30,12 +30,6 @@ export class BookEntity {
   })
   format: BookFormat;
 
-  @Column('jsonb', { nullable: true })
-  metadata: object;
-
-  @Column('jsonb', { nullable: true })
-  manifest: object;
-
   @Column('int')
   size: number;
 

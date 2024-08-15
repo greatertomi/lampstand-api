@@ -5,7 +5,7 @@ import { IExtendedRequest } from '../types';
 import handleGetRepository from '../utils/handleGetRepository';
 
 export const saveBook = async (req: IExtendedRequest, res: Response) => {
-  const { title, author, format, metadata, manifest, cover } = req.body;
+  const { title, author, format, cover } = req.body;
 
   const bookRepository = handleGetRepository(BookEntity);
 
@@ -14,8 +14,6 @@ export const saveBook = async (req: IExtendedRequest, res: Response) => {
     author,
     cover,
     format,
-    metadata: structuredClone(metadata),
-    manifest: structuredClone(manifest),
     size: req.uploadedFile.bytes,
     url: req.uploadedFile.secure_url,
     owner: { id: req.user.id }
@@ -24,7 +22,7 @@ export const saveBook = async (req: IExtendedRequest, res: Response) => {
   await bookRepository.save(newBook);
 
   res.status(HTTP_STATUS.OK).json({
-    message: 'Book uploaded successfully',
+    message: 'Book saved successfully',
     data: {
       id: newBook.id,
       title: newBook.title,

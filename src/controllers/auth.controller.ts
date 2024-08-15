@@ -4,7 +4,7 @@ import { TokenStatus } from '../entities/types';
 import { BcryptHelper, JwtHelper } from '../lib';
 import { BadRequestError, HTTP_STATUS, NotFoundError } from '../lib/responses';
 import { logger } from '../services';
-import { sendPasswordResetEmail, sendVerificationEmail } from '../services/sendemail';
+import { sendPasswordResetEmail, sendVerificationEmail } from '../services';
 import { JwtPayload } from '../types';
 import { generateUniqueToken } from '../utils';
 import handleGetRepository from '../utils/handleGetRepository';

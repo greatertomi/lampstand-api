@@ -7,7 +7,7 @@ jest.mock('../../services', () => ({
 }));
 
 describe('Testing the JWT helper', () => {
-  const user = { userId: '123', name: 'John Doe', email: 'test@test.com' };
+  const user = { id: '123', fullName: 'John Doe', email: 'test@test.com' };
 
   it('should generate a JWT token with the provided userId', () => {
     const token = JwtHelper.generateToken(user);
