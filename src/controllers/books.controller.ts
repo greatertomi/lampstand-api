@@ -50,3 +50,37 @@ export const getUserBooks = async (req: IExtendedRequest, res: Response) => {
     res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
   }
 };
+
+export const deleteBook = async (req: IExtendedRequest, res: Response) => {
+  try {
+    const bookId = req.params.id;
+    const userId = req.user?.id;
+
+    if (!bookId) {
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({
+        message: 'Book ID is required'
+      });
+    }
+
+    const bookRepository = handleGetRepository(BookEntity);
+
+    const book = await bookRepository.findOne({
+      where: { id: bookId, owner: { id: userId } }
+    });
+
+    if (!book) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({
+        message: 'Book not found or you do not have permission to delete it'
+      });
+    }
+
+    await bookRepository.remove(book);
+
+    return res.status(HTTP_STATUS.OK).json({
+      message: 'Book deleted successfully'
+    });
+  } catch (error) {
+    logger.error('Error deleting book:', error);
+    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+  }
+};

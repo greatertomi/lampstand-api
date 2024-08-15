@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { getUserBooks, saveBook } from '../controllers/books.controller';
+import { getUserBooks, saveBook, deleteBook } from '../controllers/books.controller';
 import {
   asyncMiddleware,
   bookUploadMiddleware,
@@ -24,5 +24,7 @@ router.post(
   bookUploadMiddleware,
   asyncMiddleware(saveBook)
 );
+
+router.delete('/delete/:id', checkJwt, asyncMiddleware(deleteBook));
 
 export default router;
