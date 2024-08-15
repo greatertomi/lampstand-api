@@ -28,7 +28,12 @@ describe('Books route', () => {
 
     it('should delete the book when authenticated and book exists', async () => {
       const { user } = await createTestUser(factory);
-      const token = JwtHelper.generateToken({ userId: user.id });
+
+      const token = JwtHelper.generateToken({
+        id: user.id,
+        fullName: user.fullName,
+        email: user.email
+      });
 
       const bookRepository = factory._connection.getRepository(BookEntity);
       const book = await bookRepository.save({
@@ -56,7 +61,12 @@ describe('Books route', () => {
 
     it('should return 404 when book does not exist', async () => {
       const { user } = await createTestUser(factory);
-      const token = JwtHelper.generateToken({ userId: user.id });
+
+      const token = JwtHelper.generateToken({
+        id: user.id,
+        fullName: user.fullName,
+        email: user.email
+      });
 
       const response = await factory.app
         .delete(`${deleteBookRoute}/00000000-0000-0000-0000-000000000000`)
@@ -70,7 +80,11 @@ describe('Books route', () => {
 
     it('should return 500 when there is a server error', async () => {
       const { user } = await createTestUser(factory);
-      const token = JwtHelper.generateToken({ userId: user.id });
+      const token = JwtHelper.generateToken({
+        id: user.id,
+        fullName: user.fullName,
+        email: user.email
+      });
 
       jest
         .spyOn(factory._connection.getRepository(BookEntity), 'findOne')
