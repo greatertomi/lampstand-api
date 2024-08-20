@@ -54,12 +54,10 @@ export const getUserBooks = async (req: IExtendedRequest, res: Response) => {
 export const deleteBook = async (req: IExtendedRequest, res: Response) => {
   try {
     const bookId = req.params.id;
-    const userId = req.user?.id;
+    const userId = req.user.id;
 
     if (!bookId) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({
-        message: 'Book ID is required'
-      });
+      return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: 'Book ID is required' });
     }
 
     const bookRepository = handleGetRepository(BookEntity);
@@ -74,7 +72,7 @@ export const deleteBook = async (req: IExtendedRequest, res: Response) => {
       });
     }
 
-    await bookRepository.remove(book);
+    await bookRepository.delete(book.id);
 
     return res.status(HTTP_STATUS.OK).json({
       message: 'Book deleted successfully'

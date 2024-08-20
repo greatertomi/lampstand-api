@@ -1,14 +1,17 @@
-import { BookEntity } from '../../entities';
 import { JwtHelper } from '../../lib';
 import { HTTP_STATUS } from '../../lib/responses';
 import { TestFactory } from '../factory';
 import { testBook, testUser } from './test-data';
 
 export const createTestUser = async (factory: TestFactory) => {
-  const response = await factory.app.post('/auth/signup').send(testUser);
-
+  const uniqueEmail = `test-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@example.com`;
+  const testUserData = {
+    ...testUser,
+    email: uniqueEmail
+  };
+  const response = await factory.app.post('/auth/signup').send(testUserData);
   expect(response.status).toEqual(HTTP_STATUS.CREATED);
-  return { user: response.body.data, password: testUser.password };
+  return { user: response.body.data, password: testUserData.password };
 };
 
 export const getTestAuthToken = async (factory: TestFactory) => {
@@ -25,7 +28,7 @@ export const getTestAuthToken = async (factory: TestFactory) => {
 
 export const createTestBook = async (factory: TestFactory, userId: string): Promise<BookEntity> => {
   const bookRepository = factory._connection.getRepository(BookEntity);
-  const newBook = bookRepository.create({
+  return bookRepository.save({
     title: testBook.title,
     author: testBook.author,
     format: testBook.format,
@@ -34,6 +37,4 @@ export const createTestBook = async (factory: TestFactory, userId: string): Prom
     url: 'http://test-book.com',
     owner: { id: userId }
   });
-  await bookRepository.save(newBook);
-  return newBook;
 };
