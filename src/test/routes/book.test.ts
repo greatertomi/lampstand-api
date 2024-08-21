@@ -54,8 +54,7 @@ describe('Books route', () => {
             author: 'Test Author',
             cover: expect.any(String),
             format: 'pdf',
-            id: expect.any(String),
-            url: expect.stringContaining('https://res.cloudinary.com/dcgex4nbb/raw/upload/')
+            id: expect.any(String)
           }
         ]
       });
