@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { BookEntity } from '../entities';
+import { BookEntity, BookFormat } from '../entities';
 import { HTTP_STATUS } from '../lib/responses';
 import { IExtendedRequest } from '../types';
 import handleGetRepository from '../utils/handleGetRepository';
@@ -30,6 +30,50 @@ export const saveBook = async (req: IExtendedRequest, res: Response) => {
       size: newBook.size
     }
   });
+};
+
+export const updateBook = async (req: IExtendedRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { title, author, format, cover } = req.body;
+    const bookRepository = handleGetRepository(BookEntity);
+
+    const book = await bookRepository.findOne({ where: { id } });
+
+    if (!book) {
+      return res.status(HTTP_STATUS.NOT_FOUND).json({ message: 'Book not found' });
+    }
+
+    book.title = title;
+    book.author = author;
+    book.cover = cover;
+    book.format = format as BookFormat;
+
+    if (req.uploadedFile) {
+      book.size = req.uploadedFile.bytes;
+      book.url = req.uploadedFile.secure_url;
+    }
+
+    await bookRepository.save(book);
+
+    res.status(HTTP_STATUS.OK).json({
+      message: 'Book updated successfully',
+      data: {
+        id: book.id,
+        title: book.title,
+        author: book.author,
+        cover: book.cover,
+        format: book.format,
+        size: book.size,
+        url: book.url
+      }
+    });
+  } catch (error) {
+    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+      message: 'Error updating book',
+      errors: [{ message: error.message || 'An unexpected error occurred' }]
+    });
+  }
 };
 
 export const getUserBooks = async (req: IExtendedRequest, res: Response) => {

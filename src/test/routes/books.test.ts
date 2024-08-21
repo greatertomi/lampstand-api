@@ -1,3 +1,4 @@
+import { BookFormat } from '../../entities';
 import { BookEntity } from '../../entities';
 import { HTTP_STATUS } from '../../lib/responses';
 import { TestFactory } from '../factory';
@@ -37,6 +38,7 @@ describe('Testing the books route', () => {
       const response = await factory.app
         .post(saveBookRoute)
         .set('Authorization', `Bearer ${token}`)
+        // eslint-disable-next-line sonarjs/no-duplicate-string
         .attach('file', Buffer.from('dummy pdf content'), 'test-book.pdf')
         .field(testBook);
 
@@ -235,6 +237,65 @@ describe('Testing the books route', () => {
           message: 'Something went wrong'
         }
       ]);
+    });
+  });
+
+  describe('Books update', () => {
+    it('should update a book successfully', async () => {
+      const token = await getTestAuthToken(factory);
+      const postResponse = await factory.app
+        .post('/books/save')
+        .set('Authorization', `Bearer ${token}`)
+        .attach('file', Buffer.from('dummy pdf content'), 'test-book.pdf')
+        .field('title', testBook.title)
+        .field('author', testBook.author)
+        .field('cover', testBook.cover)
+        .field('format', BookFormat.PDF)
+        .field('size', 1000)
+        .field('url', 'http://example.com/book1.pdf');
+      expect(postResponse.status).toBe(HTTP_STATUS.OK);
+
+      const bookId = postResponse.body.data.id;
+
+      const updatedTitle = 'Updated Book Title';
+      const updatedAuthor = 'Updated Book Author';
+      const updatedCover = 'data:image/jpeg;base64,updatedCoverData';
+      const updateResponse = await factory.app
+        .put(`/books/update/${bookId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .attach('file', Buffer.from('updated pdf content'), 'updated-test-book.pdf')
+        .field('title', updatedTitle)
+        .field('author', updatedAuthor)
+        .field('cover', updatedCover)
+        .field('format', BookFormat.PDF);
+      expect(updateResponse.status).toBe(HTTP_STATUS.OK);
+
+      const updatedBook = updateResponse.body.data;
+      expect(updatedBook.id).toBe(bookId);
+      expect(updatedBook.title).toBe(updatedTitle);
+      expect(updatedBook.author).toBe(updatedAuthor);
+      expect(updatedBook.cover).toBe(updatedCover);
+      expect(updatedBook.format).toBe(BookFormat.PDF);
+      expect(typeof updatedBook.size).toBe('number');
+      expect(updatedBook.url).toContain('https://res.cloudinary.com/');
+    });
+
+    it('should return a 404 error if the book is not found', async () => {
+      const token = await getTestAuthToken(factory);
+      const nonExistentBookId = '4f4ef67c-75fa-4490-bf02-b2429ccb4084';
+
+      const updateResponse = await factory.app
+        .put(`/books/update/${nonExistentBookId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          title: 'Updated Book Title',
+          author: 'Updated Book Author',
+          cover: 'data:image/jpeg;base64,updatedCoverData',
+          format: BookFormat.PDF
+        });
+
+      expect(updateResponse.status).toBe(HTTP_STATUS.NOT_FOUND);
+      expect(updateResponse.body.message).toBe('Book not found');
     });
   });
 });
