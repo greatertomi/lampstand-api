@@ -1,12 +1,14 @@
 import { BookEntity, BookFormat } from '../../entities';
-import { JwtHelper } from '../../lib';
 import { HTTP_STATUS } from '../../lib/responses';
 import { TestFactory } from '../factory';
-import { createTestUser } from '../test-utils/helper-test';
+import { getTestAuthToken } from '../test-utils/helper-test';
+import { testBook } from '../test-utils/test-data';
 
 describe('Books route', () => {
-  const factory: TestFactory = new TestFactory();
-  const booksRoute = '/books/get';
+  const factory = new TestFactory();
+
+  const getBooksRoute = '/books/get';
+  const saveBookRoute = '/books/save';
 
   describe('[GET] /get', () => {
     beforeEach(async () => {
@@ -18,7 +20,7 @@ describe('Books route', () => {
     });
 
     it('should return a 401 when no token is provided', async () => {
-      const response = await factory.app.get(booksRoute);
+      const response = await factory.app.get(getBooksRoute);
 
       expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
       expect(response.body).toMatchObject({
@@ -27,64 +29,44 @@ describe('Books route', () => {
     });
 
     it('should return user books when authenticated', async () => {
-      const { user } = await createTestUser(factory);
-      const token = JwtHelper.generateToken({ userId: user.id });
+      const token = await getTestAuthToken(factory);
 
-      const bookRepository = factory._connection.getRepository(BookEntity);
-      await bookRepository.save([
-        {
-          title: 'Test Book 1',
-          author: 'Test Author 1',
-          cover: 'Test Cover 1',
-          format: BookFormat.PDF,
-          size: 1000,
-          url: 'http://example.com/book1.pdf',
-          owner: { id: user.id }
-        },
-        {
-          title: 'Test Book 2',
-          author: 'Test Author 2',
-          cover: 'Test Cover 2',
-          format: BookFormat.EPUB,
-          size: 2000,
-          url: 'http://example.com/book2.epub',
-          owner: { id: user.id }
-        }
-      ]);
+      const postResponse = await factory.app
+        .post(saveBookRoute)
+        .set('Authorization', `Bearer ${token}`)
+        .attach('file', Buffer.from('test file content'), 'test-file.pdf')
+        .field('title', testBook.title)
+        .field('author', testBook.author)
+        .field('cover', testBook.cover)
+        .field('format', BookFormat.PDF)
+        .field('url', 'http://example.com/book1.pdf');
 
-      const response = await factory.app.get(booksRoute).set('Authorization', `Bearer ${token}`);
+      expect(postResponse.status).toBe(HTTP_STATUS.OK);
+
+      const response = await factory.app.get(getBooksRoute).set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(HTTP_STATUS.OK);
       expect(response.body).toMatchObject({
         message: 'Books retrieved successfully',
-        data: expect.arrayContaining([
-          expect.objectContaining({
-            title: 'Test Book 1',
-            author: 'Test Author 1',
-            cover: 'Test Cover 1',
-            format: BookFormat.PDF,
-            size: 1000,
-            url: 'http://example.com/book1.pdf',
-            owner: expect.objectContaining({ id: user.id })
-          }),
-          expect.objectContaining({
-            title: 'Test Book 2',
-            author: 'Test Author 2',
-            cover: 'Test Cover 2',
-            format: BookFormat.EPUB,
-            size: 2000,
-            url: 'http://example.com/book2.epub',
-            owner: expect.objectContaining({ id: user.id })
-          })
-        ])
+        data: [
+          {
+            title: 'Test Book',
+            author: 'Test Author',
+            cover: expect.any(String),
+            format: 'pdf',
+            id: expect.any(String),
+            url: expect.stringContaining('https://res.cloudinary.com/dcgex4nbb/raw/upload/')
+          }
+        ]
       });
+
+      expect(response.body.data.length).toBe(1);
     });
 
     it('should return an empty array when user has no books', async () => {
-      const { user } = await createTestUser(factory);
-      const token = JwtHelper.generateToken({ userId: user.id });
+      const token = await getTestAuthToken(factory);
 
-      const response = await factory.app.get(booksRoute).set('Authorization', `Bearer ${token}`);
+      const response = await factory.app.get(getBooksRoute).set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(HTTP_STATUS.OK);
       expect(response.body).toMatchObject({
@@ -94,14 +76,13 @@ describe('Books route', () => {
     });
 
     it('should return 500 when there is a server error', async () => {
-      const { user } = await createTestUser(factory);
-      const token = JwtHelper.generateToken({ userId: user.id });
+      const token = await getTestAuthToken(factory);
 
       jest
         .spyOn(factory._connection.getRepository(BookEntity), 'find')
         .mockRejectedValueOnce(new Error('Database error'));
 
-      const response = await factory.app.get(booksRoute).set('Authorization', `Bearer ${token}`);
+      const response = await factory.app.get('/books/get').set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
       expect(response.body).toMatchObject({

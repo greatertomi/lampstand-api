@@ -40,8 +40,7 @@ export const getUserBooks = async (req: IExtendedRequest, res: Response) => {
     const bookRepository = handleGetRepository(BookEntity);
 
     const books = await bookRepository.find({
-      where: { owner: { id: userId } },
-      relations: ['owner']
+      where: { owner: { id: userId } }
     });
 
     res.status(HTTP_STATUS.OK).json({

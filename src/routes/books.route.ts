@@ -1,8 +1,13 @@
 import { Router } from 'express';
 import multer from 'multer';
 import { getUserBooks, saveBook } from '../controllers/books.controller';
-import { asyncMiddleware, checkJwt, saveBookValidationRules, validate } from '../middleware';
-import { bookUploadMiddleware } from '../middleware';
+import {
+  asyncMiddleware,
+  bookUploadMiddleware,
+  checkJwt,
+  saveBookValidationRules,
+  validate
+} from '../middleware';
 
 const router = Router();
 
@@ -10,10 +15,11 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 router.post(
   '/save',
+  checkJwt,
   upload.single('file'),
-  bookUploadMiddleware,
   saveBookValidationRules,
   validate,
+  bookUploadMiddleware,
   asyncMiddleware(saveBook)
 );
 
