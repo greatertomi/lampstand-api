@@ -13,6 +13,8 @@ const router = Router();
 
 const upload = multer({ storage: multer.memoryStorage() });
 
+router.get('/', checkJwt, asyncMiddleware(getUserBooks));
+
 router.post(
   '/save',
   checkJwt,
@@ -22,7 +24,5 @@ router.post(
   bookUploadMiddleware,
   asyncMiddleware(saveBook)
 );
-
-router.get('/get', checkJwt, asyncMiddleware(getUserBooks));
 
 export default router;
