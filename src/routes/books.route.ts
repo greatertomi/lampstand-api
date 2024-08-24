@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { saveBook } from '../controllers/books.controller';
+import { getUserBooks, saveBook } from '../controllers/books.controller';
 import {
   asyncMiddleware,
   bookUploadMiddleware,
@@ -12,6 +12,8 @@ import {
 const router = Router();
 
 const upload = multer({ storage: multer.memoryStorage() });
+
+router.get('/', checkJwt, asyncMiddleware(getUserBooks));
 
 router.post(
   '/save',

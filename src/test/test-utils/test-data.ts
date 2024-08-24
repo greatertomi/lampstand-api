@@ -1,3 +1,5 @@
+import { BookFormat } from '../../entities';
+
 export const testUser = {
   fullName: 'David Brown',
   email: 'caleboshalusi@gmail.com',
@@ -8,6 +10,6 @@ export const testUser = {
 export const testBook = {
   title: 'Test Book',
   author: 'Test Author',
-  format: 'pdf',
+  format: BookFormat.PDF,
   cover: 'data:image/jpeg;base64,9j4j93'
 };
