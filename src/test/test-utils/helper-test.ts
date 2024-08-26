@@ -1,8 +1,12 @@
+import { BookEntity } from '../../entities';
 import { JwtHelper } from '../../lib';
 import { HTTP_STATUS } from '../../lib/responses';
+import { JwtPayload } from '../../types';
+import handleGetRepository from '../../utils/handleGetRepository';
 import { TestFactory } from '../factory';
 import { testBook, testUser } from './test-data';
 
+// TODO: Rework this to inject random user data into DB directly
 export const createTestUser = async (factory: TestFactory) => {
   const uniqueEmail = `test-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@example.com`;
   const testUserData = {
@@ -14,20 +18,17 @@ export const createTestUser = async (factory: TestFactory) => {
   return { user: response.body.data, password: testUserData.password };
 };
 
-export const getTestAuthToken = async (factory: TestFactory) => {
-  const { user } = await createTestUser(factory);
-  return {
-    userId: user.id,
-    token: JwtHelper.generateToken({
-      id: user.id,
-      email: user.email,
-      fullName: user.fullName
-    })
-  };
+export const getTestAuthToken = async (user: JwtPayload) => {
+  return JwtHelper.generateToken({
+    id: user.id,
+    email: user.email,
+    fullName: user.fullName
+  });
 };
 
-export const createTestBook = async (factory: TestFactory, userId: string): Promise<BookEntity> => {
-  const bookRepository = factory._connection.getRepository(BookEntity);
+// TODO: Rework this to inject random book data into DB directly
+export const createTestBook = async (userId: string): Promise<BookEntity> => {
+  const bookRepository = handleGetRepository(BookEntity);
   return bookRepository.save({
     title: testBook.title,
     author: testBook.author,

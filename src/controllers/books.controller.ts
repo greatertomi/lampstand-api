@@ -1,7 +1,6 @@
 import { Response } from 'express';
 import { BookEntity } from '../entities';
 import { HTTP_STATUS } from '../lib/responses';
-import { logger } from '../services';
 import { IExtendedRequest } from '../types';
 import handleGetRepository from '../utils/handleGetRepository';
 
@@ -34,51 +33,36 @@ export const saveBook = async (req: IExtendedRequest, res: Response) => {
 };
 
 export const getUserBooks = async (req: IExtendedRequest, res: Response) => {
-  try {
-    const bookRepository = handleGetRepository(BookEntity);
+  const bookRepository = handleGetRepository(BookEntity);
 
-    const books = await bookRepository.find({
-      where: { owner: { id: req.user.id } }
-    });
+  const books = await bookRepository.find({
+    where: { owner: { id: req.user.id } }
+  });
 
-    res.status(HTTP_STATUS.OK).json({
-      message: 'Books retrieved successfully',
-      data: books
-    });
-  } catch (error) {
-    logger.error('Error fetching books:', error);
-    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
-  }
+  res.status(HTTP_STATUS.OK).json({
+    message: 'Books retrieved successfully',
+    data: books
+  });
 };
 
 export const deleteBook = async (req: IExtendedRequest, res: Response) => {
-  try {
-    const bookId = req.params.id;
-    const userId = req.user.id;
+  const bookId = req.params.id;
 
-    if (!bookId) {
-      return res.status(HTTP_STATUS.BAD_REQUEST).json({ message: 'Book ID is required' });
-    }
+  const bookRepository = handleGetRepository(BookEntity);
 
-    const bookRepository = handleGetRepository(BookEntity);
+  const book = await bookRepository.findOne({
+    where: { id: bookId, owner: { id: req.user.id } }
+  });
 
-    const book = await bookRepository.findOne({
-      where: { id: bookId, owner: { id: userId } }
+  if (!book) {
+    return res.status(HTTP_STATUS.NOT_FOUND).json({
+      message: 'Book not found or you do not have permission to delete it'
     });
-
-    if (!book) {
-      return res.status(HTTP_STATUS.NOT_FOUND).json({
-        message: 'Book not found or you do not have permission to delete it'
-      });
-    }
-
-    await bookRepository.delete(book.id);
-
-    return res.status(HTTP_STATUS.OK).json({
-      message: 'Book deleted successfully'
-    });
-  } catch (error) {
-    logger.error('Error deleting book:', error);
-    return res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
   }
+
+  await bookRepository.delete(book.id);
+
+  return res.status(HTTP_STATUS.OK).json({
+    message: 'Book deleted successfully'
+  });
 };
