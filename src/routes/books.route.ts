@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { getUserBooks, saveBook, deleteBook, updateBook } from '../controllers/books.controller';
+import { deleteBook, getUserBooks, saveBook, updateBook } from '../controllers/books.controller';
 import {
   asyncMiddleware,
   bookUploadMiddleware,

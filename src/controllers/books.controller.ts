@@ -33,47 +33,36 @@ export const saveBook = async (req: IExtendedRequest, res: Response) => {
 };
 
 export const updateBook = async (req: IExtendedRequest, res: Response) => {
-  try {
-    const { id } = req.params;
-    const { title, author, format, cover } = req.body;
-    const bookRepository = handleGetRepository(BookEntity);
+  const { id } = req.params;
+  const { title, author, format, cover } = req.body;
+  const bookRepository = handleGetRepository(BookEntity);
 
-    const book = await bookRepository.findOne({ where: { id } });
+  const book = await bookRepository.findOne({ where: { id } });
 
-    if (!book) {
-      return res.status(HTTP_STATUS.NOT_FOUND).json({ message: 'Book not found' });
-    }
-
-    book.title = title;
-    book.author = author;
-    book.cover = cover;
-    book.format = format as BookFormat;
-
-    if (req.uploadedFile) {
-      book.size = req.uploadedFile.bytes;
-      book.url = req.uploadedFile.secure_url;
-    }
-
-    await bookRepository.save(book);
-
-    res.status(HTTP_STATUS.OK).json({
-      message: 'Book updated successfully',
-      data: {
-        id: book.id,
-        title: book.title,
-        author: book.author,
-        cover: book.cover,
-        format: book.format,
-        size: book.size,
-        url: book.url
-      }
-    });
-  } catch (error) {
-    res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
-      message: 'Error updating book',
-      errors: [{ message: error.message || 'An unexpected error occurred' }]
-    });
+  if (!book) {
+    return res.status(HTTP_STATUS.NOT_FOUND).json({ message: 'Book not found' });
   }
+
+  const updateData: Partial<BookEntity> = {
+    title,
+    author,
+    cover,
+    format: format as BookFormat
+  };
+
+  if (req.uploadedFile) {
+    updateData.size = req.uploadedFile.bytes;
+    updateData.url = req.uploadedFile.secure_url;
+  }
+
+  await bookRepository.update(id, updateData);
+
+  const updatedBook = await bookRepository.findOne({ where: { id } });
+
+  res.status(HTTP_STATUS.OK).json({
+    message: 'Book updated successfully',
+    data: updatedBook
+  });
 };
 
 export const getUserBooks = async (req: IExtendedRequest, res: Response) => {

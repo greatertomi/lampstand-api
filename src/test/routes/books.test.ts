@@ -145,6 +145,7 @@ describe('Testing the books route', () => {
 
       jest
         .spyOn(factory._connection.getRepository(BookEntity), 'find')
+        // eslint-disable-next-line sonarjs/no-duplicate-string
         .mockRejectedValueOnce(new Error('Database error'));
 
       const response = await factory.app.get(getBooksRoute).set('Authorization', `Bearer ${token}`);
@@ -152,6 +153,7 @@ describe('Testing the books route', () => {
       expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
       expect(response.body.errors).toMatchObject([
         {
+          // eslint-disable-next-line sonarjs/no-duplicate-string
           message: 'Something went wrong'
         }
       ]);
@@ -242,60 +244,142 @@ describe('Testing the books route', () => {
 
   describe('Books update', () => {
     it('should update a book successfully', async () => {
-      const token = await getTestAuthToken(factory);
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+      //const testBook = await createTestBook(user.id);
+
       const postResponse = await factory.app
         .post('/books/save')
         .set('Authorization', `Bearer ${token}`)
         .attach('file', Buffer.from('dummy pdf content'), 'test-book.pdf')
-        .field('title', testBook.title)
-        .field('author', testBook.author)
-        .field('cover', testBook.cover)
-        .field('format', BookFormat.PDF)
-        .field('size', 1000)
-        .field('url', 'http://example.com/book1.pdf');
+        .field(testBook);
+
       expect(postResponse.status).toBe(HTTP_STATUS.OK);
 
       const bookId = postResponse.body.data.id;
 
-      const updatedTitle = 'Updated Book Title';
-      const updatedAuthor = 'Updated Book Author';
-      const updatedCover = 'data:image/jpeg;base64,updatedCoverData';
+      const updatedBookData = {
+        title: 'Updated Book Title',
+        author: 'Updated Book Author',
+        cover: 'data:image/jpeg;base64,updatedCoverData',
+        format: BookFormat.PDF
+      };
+
       const updateResponse = await factory.app
         .put(`/books/update/${bookId}`)
         .set('Authorization', `Bearer ${token}`)
         .attach('file', Buffer.from('updated pdf content'), 'updated-test-book.pdf')
-        .field('title', updatedTitle)
-        .field('author', updatedAuthor)
-        .field('cover', updatedCover)
-        .field('format', BookFormat.PDF);
+        .field(updatedBookData);
+
       expect(updateResponse.status).toBe(HTTP_STATUS.OK);
 
       const updatedBook = updateResponse.body.data;
-      expect(updatedBook.id).toBe(bookId);
-      expect(updatedBook.title).toBe(updatedTitle);
-      expect(updatedBook.author).toBe(updatedAuthor);
-      expect(updatedBook.cover).toBe(updatedCover);
-      expect(updatedBook.format).toBe(BookFormat.PDF);
+      expect(updatedBook).toMatchObject({
+        id: bookId,
+        ...updatedBookData
+      });
       expect(typeof updatedBook.size).toBe('number');
       expect(updatedBook.url).toContain('https://res.cloudinary.com/');
     });
 
     it('should return a 404 error if the book is not found', async () => {
-      const token = await getTestAuthToken(factory);
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
       const nonExistentBookId = '4f4ef67c-75fa-4490-bf02-b2429ccb4084';
 
       const updateResponse = await factory.app
         .put(`/books/update/${nonExistentBookId}`)
         .set('Authorization', `Bearer ${token}`)
-        .send({
-          title: 'Updated Book Title',
-          author: 'Updated Book Author',
-          cover: 'data:image/jpeg;base64,updatedCoverData',
-          format: BookFormat.PDF
-        });
+        .send(testBook);
 
       expect(updateResponse.status).toBe(HTTP_STATUS.NOT_FOUND);
       expect(updateResponse.body.message).toBe('Book not found');
+    });
+
+    it('should return a 401 when no token is provided for updating a book', async () => {
+      const updateBookRoute = '/books/update';
+      const { user } = await createTestUser(factory);
+      const testBooks = await createTestBook(user.id);
+      const bookId = testBooks.id;
+
+      const updateData = {
+        title: 'Updated Title',
+        author: 'Updated Author',
+        format: BookFormat.PDF
+      };
+
+      const response = await factory.app.put(`${updateBookRoute}/${bookId}`).field(updateData);
+
+      expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
+      expect(response.body).toMatchObject({
+        errors: [{ message: unAuthenticatedMessage }]
+      });
+    });
+
+    it('should throw a server error if an exception occurs during book update', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+      const testBooks = await createTestBook(user.id);
+      const updateBookRoute = '/books/update';
+
+      const updateData = {
+        title: 'Updated Title',
+        author: 'Updated Author',
+        format: BookFormat.PDF,
+        cover: 'data:image/jpeg;base64,validCoverData'
+      };
+
+      jest
+        .spyOn(factory._connection.getRepository(BookEntity), 'update')
+        .mockRejectedValueOnce(new Error('Database error'));
+
+      const response = await factory.app
+        .put(`${updateBookRoute}/${testBooks.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .field(updateData);
+
+      expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      expect(response.body).toMatchObject({
+        errors: [{ message: 'Something went wrong' }]
+      });
+    });
+
+    it('should throw an error if the book data is invalid', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+      const testBooks = await createTestBook(user.id);
+
+      const bookId = testBooks.id;
+
+      const invalidBookData = {
+        title: 'king authur',
+        author: '',
+        format: 'InvalidFormat',
+        cover: 'not-a-base64-image'
+      };
+
+      const updateResponse = await factory.app
+        .put(`/books/update/${bookId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .field(invalidBookData)
+        .attach('file', Buffer.from('not a pdf'), 'test.txt'); // Invalid: not a PDF file
+
+      expect(updateResponse.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(updateResponse.body).toHaveProperty('errors');
+
+      const expectedErrorMessages = [
+        'Title is required',
+        'Author is required',
+        'Invalid book format',
+        'must be a valid Base64 encoded image',
+        'Uploaded file must be a PDF'
+      ];
+
+      const errors = updateResponse.body.errors as Record<string, string>;
+      const hasExpectedError = expectedErrorMessages.some((message) =>
+        Object.values(errors).some((error) => error.includes(message))
+      );
+      expect(hasExpectedError).toBe(true);
     });
   });
 });
