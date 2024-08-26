@@ -1,7 +1,7 @@
 import { BookEntity } from '../../entities';
 import { HTTP_STATUS } from '../../lib/responses';
 import { TestFactory } from '../factory';
-import { createTestBook, getTestAuthToken } from '../test-utils/helper-test';
+import { createTestBook, createTestUser, getTestAuthToken } from '../test-utils/helper-test';
 import { testBook } from '../test-utils/test-data';
 
 const uploadLink = 'https://res.cloudinary.com/example/raw/upload/v1234567890/test-book.pdf';
@@ -14,6 +14,7 @@ jest.mock('../../middleware/book-upload', () => ({
     next();
   })
 }));
+const unAuthenticatedMessage = 'Authorization header not provided';
 
 describe('Testing the books route', () => {
   const factory: TestFactory = new TestFactory();
@@ -30,7 +31,8 @@ describe('Testing the books route', () => {
   describe('POST /books/save', () => {
     const saveBookRoute = '/books/save';
     it('should save book data successfully', async () => {
-      const { token } = await getTestAuthToken(factory);
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
 
       const response = await factory.app
         .post(saveBookRoute)
@@ -52,7 +54,8 @@ describe('Testing the books route', () => {
       const bookData = {
         title: 'Test Book'
       };
-      const { token } = await getTestAuthToken(factory);
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
 
       const response = await factory.app
         .post(saveBookRoute)
@@ -68,7 +71,8 @@ describe('Testing the books route', () => {
     });
 
     it('should throw an error if the book file is not provided', async () => {
-      const { token } = await getTestAuthToken(factory);
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
 
       const response = await factory.app
         .post(saveBookRoute)
@@ -87,7 +91,7 @@ describe('Testing the books route', () => {
       expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
       expect(response.body.errors).toMatchObject([
         {
-          message: 'Authorization header not provided'
+          message: unAuthenticatedMessage
         }
       ]);
     });
@@ -100,13 +104,14 @@ describe('Testing the books route', () => {
 
       expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
       expect(response.body).toMatchObject({
-        errors: [{ message: 'Authorization header not provided' }]
+        errors: [{ message: unAuthenticatedMessage }]
       });
     });
 
     it('should return user books when authenticated', async () => {
-      const { token, userId } = await getTestAuthToken(factory);
-      await createTestBook(factory, userId);
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+      await createTestBook(user.id);
 
       const response = await factory.app.get(getBooksRoute).set('Authorization', `Bearer ${token}`);
 
@@ -120,7 +125,8 @@ describe('Testing the books route', () => {
     });
 
     it('should return an empty array when user has no books', async () => {
-      const { token } = await getTestAuthToken(factory);
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
 
       const response = await factory.app.get(getBooksRoute).set('Authorization', `Bearer ${token}`);
 
@@ -132,7 +138,8 @@ describe('Testing the books route', () => {
     });
 
     it('should return 500 when there is a server error', async () => {
-      const { token } = await getTestAuthToken(factory);
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
 
       jest
         .spyOn(factory._connection.getRepository(BookEntity), 'find')
@@ -141,9 +148,93 @@ describe('Testing the books route', () => {
       const response = await factory.app.get(getBooksRoute).set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      expect(response.body.errors).toMatchObject([
+        {
+          message: 'Something went wrong'
+        }
+      ]);
+    });
+  });
+
+  describe('[DELETE] /delete/:id', () => {
+    const deleteBookRoute = '/books/delete';
+    it('should return a 401 when no token is provided', async () => {
+      const response = await factory.app.delete(`${deleteBookRoute}/123`);
+
+      expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
       expect(response.body).toMatchObject({
-        message: 'Internal server error'
+        errors: [{ message: unAuthenticatedMessage }]
       });
+    });
+
+    it('should throw an error when a user attempts to delete a book they did not create', async () => {
+      const { user: firstUser } = await createTestUser(factory);
+      await getTestAuthToken(firstUser);
+      const book = await createTestBook(firstUser.id);
+
+      const { user: secondUser } = await createTestUser(factory);
+      const secondUserToken = await getTestAuthToken(secondUser);
+
+      const response = await factory.app
+        .delete(`${deleteBookRoute}/${book.id}`)
+        .set('Authorization', `Bearer ${secondUserToken}`);
+
+      expect(response.status).toBe(HTTP_STATUS.NOT_FOUND);
+      expect(response.body).toMatchObject({
+        message: 'Book not found or you do not have permission to delete it'
+      });
+    });
+
+    it('should delete the book when authenticated and book exists', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+      const book = await createTestBook(user.id);
+
+      const response = await factory.app
+        .delete(`${deleteBookRoute}/${book.id}`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(response.body).toMatchObject({
+        message: 'Book deleted successfully'
+      });
+
+      const bookRepository = factory._connection.getRepository(BookEntity);
+      const deletedBook = await bookRepository.findOne({ where: { id: book.id } });
+      expect(deletedBook).toBeNull();
+    });
+
+    it('should return 404 when book does not exist', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+      const response = await factory.app
+        .delete(`${deleteBookRoute}/00000000-0000-0000-0000-000000000000`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(HTTP_STATUS.NOT_FOUND);
+      expect(response.body).toMatchObject({
+        message: 'Book not found or you do not have permission to delete it'
+      });
+    });
+
+    it('should return 500 when there is a server error', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+
+      jest
+        .spyOn(factory._connection.getRepository(BookEntity), 'findOne')
+        .mockRejectedValueOnce(new Error('Database error'));
+
+      const response = await factory.app
+        .delete(`${deleteBookRoute}/123`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      expect(response.body.errors).toMatchObject([
+        {
+          message: 'Something went wrong'
+        }
+      ]);
     });
   });
 });
