@@ -5,6 +5,8 @@ import { TestFactory } from '../factory';
 import { createTestBook, createTestUser, getTestAuthToken } from '../test-utils/helper-test';
 import { testBook } from '../test-utils/test-data';
 
+/* eslint-disable sonarjs/no-duplicate-string */
+
 const uploadLink = 'https://res.cloudinary.com/example/raw/upload/v1234567890/test-book.pdf';
 jest.mock('../../middleware/book-upload', () => ({
   bookUploadMiddleware: jest.fn((req, _, next) => {
@@ -38,7 +40,7 @@ describe('Testing the books route', () => {
       const response = await factory.app
         .post(saveBookRoute)
         .set('Authorization', `Bearer ${token}`)
-        // eslint-disable-next-line sonarjs/no-duplicate-string
+
         .attach('file', Buffer.from('dummy pdf content'), 'test-book.pdf')
         .field(testBook);
 
@@ -145,7 +147,6 @@ describe('Testing the books route', () => {
 
       jest
         .spyOn(factory._connection.getRepository(BookEntity), 'find')
-        // eslint-disable-next-line sonarjs/no-duplicate-string
         .mockRejectedValueOnce(new Error('Database error'));
 
       const response = await factory.app.get(getBooksRoute).set('Authorization', `Bearer ${token}`);
@@ -153,7 +154,6 @@ describe('Testing the books route', () => {
       expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
       expect(response.body.errors).toMatchObject([
         {
-          // eslint-disable-next-line sonarjs/no-duplicate-string
           message: 'Something went wrong'
         }
       ]);
@@ -242,22 +242,11 @@ describe('Testing the books route', () => {
     });
   });
 
-  describe('Books update', () => {
+  describe('[PUT] /books/update/:id', () => {
     it('should update a book successfully', async () => {
       const { user } = await createTestUser(factory);
       const token = await getTestAuthToken(user);
-      //const testBook = await createTestBook(user.id);
-
-      const postResponse = await factory.app
-        .post('/books/save')
-        .set('Authorization', `Bearer ${token}`)
-        .attach('file', Buffer.from('dummy pdf content'), 'test-book.pdf')
-        .field(testBook);
-
-      expect(postResponse.status).toBe(HTTP_STATUS.OK);
-
-      const bookId = postResponse.body.data.id;
-
+      const newBook = await createTestBook(user.id);
       const updatedBookData = {
         title: 'Updated Book Title',
         author: 'Updated Book Author',
@@ -266,7 +255,7 @@ describe('Testing the books route', () => {
       };
 
       const updateResponse = await factory.app
-        .put(`/books/update/${bookId}`)
+        .put(`/books/update/${newBook.id}`)
         .set('Authorization', `Bearer ${token}`)
         .attach('file', Buffer.from('updated pdf content'), 'updated-test-book.pdf')
         .field(updatedBookData);
@@ -275,7 +264,7 @@ describe('Testing the books route', () => {
 
       const updatedBook = updateResponse.body.data;
       expect(updatedBook).toMatchObject({
-        id: bookId,
+        id: newBook.id,
         ...updatedBookData
       });
       expect(typeof updatedBook.size).toBe('number');
@@ -293,7 +282,7 @@ describe('Testing the books route', () => {
         .send(testBook);
 
       expect(updateResponse.status).toBe(HTTP_STATUS.NOT_FOUND);
-      expect(updateResponse.body.message).toBe('Book not found');
+      expect(updateResponse.body.errors).toEqual([{ message: 'Book not found' }]);
     });
 
     it('should return a 401 when no token is provided for updating a book', async () => {
@@ -349,8 +338,6 @@ describe('Testing the books route', () => {
       const token = await getTestAuthToken(user);
       const testBooks = await createTestBook(user.id);
 
-      const bookId = testBooks.id;
-
       const invalidBookData = {
         title: 'king authur',
         author: '',
@@ -359,7 +346,7 @@ describe('Testing the books route', () => {
       };
 
       const updateResponse = await factory.app
-        .put(`/books/update/${bookId}`)
+        .put(`/books/update/${testBooks.id}`)
         .set('Authorization', `Bearer ${token}`)
         .field(invalidBookData)
         .attach('file', Buffer.from('not a pdf'), 'test.txt'); // Invalid: not a PDF file

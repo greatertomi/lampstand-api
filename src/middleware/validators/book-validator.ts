@@ -33,9 +33,10 @@ export const saveBookValidationRules = [
 
 export const updateBookValidationRules = [
   param('id').notEmpty().withMessage('ID is required'),
-  body('title').notEmpty().withMessage('Title is required'),
-  body('author').notEmpty().withMessage('Author is required'),
+  body('title').optional().notEmpty().withMessage('Title is required'),
+  body('author').optional().notEmpty().withMessage('Author is required'),
   body('format')
+    .optional()
     .notEmpty()
     .withMessage('Format is required')
     .custom((value) => {

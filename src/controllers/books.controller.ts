@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { BookEntity, BookFormat } from '../entities';
-import { HTTP_STATUS } from '../lib/responses';
+import { HTTP_STATUS, NotFoundError } from '../lib/responses';
 import { IExtendedRequest } from '../types';
 import handleGetRepository from '../utils/handleGetRepository';
 
@@ -40,7 +40,7 @@ export const updateBook = async (req: IExtendedRequest, res: Response) => {
   const book = await bookRepository.findOne({ where: { id } });
 
   if (!book) {
-    return res.status(HTTP_STATUS.NOT_FOUND).json({ message: 'Book not found' });
+    throw new NotFoundError('Book not found');
   }
 
   const updateData: Partial<BookEntity> = {
