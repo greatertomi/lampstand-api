@@ -1,6 +1,6 @@
 import { Response } from 'express';
-import { BookEntity } from '../entities';
-import { HTTP_STATUS } from '../lib/responses';
+import { BookEntity, BookFormat } from '../entities';
+import { HTTP_STATUS, NotFoundError } from '../lib/responses';
 import { IExtendedRequest } from '../types';
 import handleGetRepository from '../utils/handleGetRepository';
 
@@ -29,6 +29,39 @@ export const saveBook = async (req: IExtendedRequest, res: Response) => {
       link: newBook.url,
       size: newBook.size
     }
+  });
+};
+
+export const updateBook = async (req: IExtendedRequest, res: Response) => {
+  const { id } = req.params;
+  const { title, author, format, cover } = req.body;
+  const bookRepository = handleGetRepository(BookEntity);
+
+  const book = await bookRepository.findOne({ where: { id } });
+
+  if (!book) {
+    throw new NotFoundError('Book not found');
+  }
+
+  const updateData: Partial<BookEntity> = {
+    title,
+    author,
+    cover,
+    format: format as BookFormat
+  };
+
+  if (req.uploadedFile) {
+    updateData.size = req.uploadedFile.bytes;
+    updateData.url = req.uploadedFile.secure_url;
+  }
+
+  await bookRepository.update(id, updateData);
+
+  const updatedBook = await bookRepository.findOne({ where: { id } });
+
+  res.status(HTTP_STATUS.OK).json({
+    message: 'Book updated successfully',
+    data: updatedBook
   });
 };
 
