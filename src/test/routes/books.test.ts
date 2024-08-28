@@ -121,7 +121,14 @@ describe('Testing the books route', () => {
       expect(response.status).toBe(HTTP_STATUS.OK);
       expect(response.body).toMatchObject({
         message: 'Books retrieved successfully',
-        data: [testBook]
+        data: [
+          {
+            author: expect.any(String),
+            cover: expect.stringContaining('https://'),
+            format: expect.any(String),
+            title: expect.any(String)
+          }
+        ]
       });
 
       expect(response.body.data.length).toBe(1);

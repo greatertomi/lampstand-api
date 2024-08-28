@@ -1,18 +1,18 @@
-import { BookEntity } from '../../entities';
+import { faker } from '@faker-js/faker';
+import { BookEntity, BookFormat } from '../../entities';
 import { JwtHelper } from '../../lib';
 import { HTTP_STATUS } from '../../lib/responses';
 import { JwtPayload } from '../../types';
 import handleGetRepository from '../../utils/handleGetRepository';
 import { TestFactory } from '../factory';
-import { testBook, testUser } from './test-data';
+import { testUser } from './test-data';
 
-// TODO: Rework this to inject random user data into DB directly
 export const createTestUser = async (factory: TestFactory) => {
-  const uniqueEmail = `test-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@example.com`;
   const testUserData = {
     ...testUser,
-    email: uniqueEmail
+    email: faker.internet.email()
   };
+
   const response = await factory.app.post('/auth/signup').send(testUserData);
   expect(response.status).toEqual(HTTP_STATUS.CREATED);
   return { user: response.body.data, password: testUserData.password };
@@ -26,16 +26,17 @@ export const getTestAuthToken = async (user: JwtPayload) => {
   });
 };
 
-// TODO: Rework this to inject random book data into DB directly
 export const createTestBook = async (userId: string): Promise<BookEntity> => {
   const bookRepository = handleGetRepository(BookEntity);
-  return bookRepository.save({
-    title: testBook.title,
-    author: testBook.author,
-    format: testBook.format,
-    cover: testBook.cover,
-    size: 1000,
-    url: 'http://test-book.com',
+
+  const randomBook = {
+    title: faker.lorem.words(3),
+    author: faker.person.fullName(),
+    cover: faker.image.url(),
+    format: faker.helpers.arrayElement(Object.values(BookFormat)),
+    size: faker.number.int({ min: 100, max: 5000 }),
+    url: faker.internet.url(),
     owner: { id: userId }
-  });
+  };
+  return bookRepository.save(randomBook);
 };
