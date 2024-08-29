@@ -1,8 +1,7 @@
-import { faker } from '@faker-js/faker';
 import { BookFormat } from '../../entities';
 
 export const testUser = {
-  fullName: faker.person.fullName(),
+  fullName: 'David Brown',
   email: 'davidbrown@gmail.com',
   password: 'Str0ngP@ssw0rd!',
   agreedToTerms: true

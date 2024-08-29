@@ -5,12 +5,13 @@ import { HTTP_STATUS } from '../../lib/responses';
 import { JwtPayload } from '../../types';
 import handleGetRepository from '../../utils/handleGetRepository';
 import { TestFactory } from '../factory';
-import { testUser } from './test-data';
 
 export const createTestUser = async (factory: TestFactory) => {
   const testUserData = {
-    ...testUser,
-    email: faker.internet.email()
+    fullName: faker.person.fullName(),
+    email: faker.internet.email(),
+    password: 'Str0ngP@ssw0rd!',
+    agreedToTerms: true
   };
 
   const response = await factory.app.post('/auth/signup').send(testUserData);
