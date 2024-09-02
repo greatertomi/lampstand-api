@@ -3,6 +3,8 @@ name: Deploy Docker Container
 on:
   push:
     branches: [ 'main' ]
+  pull_request:
+    branches: [ 'main' ]
 
 jobs:
   build:
@@ -26,4 +28,8 @@ jobs:
         with:
           context: .
           push: true
+          platforms: linux/amd64,linux/arm64
           tags: ${{ secrets.DOCKER_USERNAME }}/lampstand-api:latest
+
+      - name: Verify Docker image
+        run: docker run --rm ${{ secrets.DOCKER_USERNAME }}/lampstand-api:latest echo "Image built successfully"
