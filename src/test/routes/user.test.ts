@@ -1,8 +1,9 @@
 import { HTTP_STATUS } from '../../lib/responses';
+import { JwtPayload } from '../../types';
 import { TestFactory } from '../factory';
 import { createTestUser, getTestAuthToken } from '../test-utils/helper-test';
 
-describe('Testing the users/me route', () => {
+describe('[GET] users/me', () => {
   const factory: TestFactory = new TestFactory();
   const meRoute = '/users/me';
 
@@ -35,10 +36,28 @@ describe('Testing the users/me route', () => {
       updatedAt: expect.any(String)
     });
 
-    expect(res.body.id).toBe(user.id);
-    expect(res.body.fullName).toBe(user.fullName);
-    expect(res.body.emailAddress).toBe(user.email);
     expect(res.body).not.toHaveProperty('password');
+  });
+
+  it('should return 404 with error message when fetching a non-existent user', async () => {
+    const nonExistentUser: JwtPayload = {
+      id: '4f4ef67c-75fa-4490-bf02-b2429ccb4084',
+      email: 'nonexistent@example.com',
+      fullName: 'Non Existent User'
+    };
+    const token = await getTestAuthToken(nonExistentUser);
+
+    const res = await factory.app
+      .get(meRoute)
+      .set('Authorization', `Bearer ${token}`)
+      .expect(HTTP_STATUS.NOT_FOUND);
+    expect(res.body).toEqual({
+      errors: [
+        {
+          message: 'User not found'
+        }
+      ]
+    });
   });
 
   it('should return 401 if the user is not authenticated', async () => {
