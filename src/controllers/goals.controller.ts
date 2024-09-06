@@ -10,16 +10,12 @@ export const createReadingGoal = async (req: IExtendedRequest, res: Response): P
 
   const readingGoalRepository = handleGetRepository(ReadingGoal);
   const newReadingGoal = readingGoalRepository.create({
-    user: req.user,
+    user: { id: userId },
     goalInMinutes,
     reminderTime
   });
 
   await readingGoalRepository.save(newReadingGoal);
-  const responseGoal = {
-    ...newReadingGoal,
-    userId: userId
-  };
 
-  res.status(HTTP_STATUS.CREATED).json(responseGoal);
+  res.status(HTTP_STATUS.CREATED).json(newReadingGoal);
 };

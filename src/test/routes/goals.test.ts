@@ -2,11 +2,6 @@ import { HTTP_STATUS } from '../../lib/responses';
 import { TestFactory } from '../factory';
 import { createTestUser, getTestAuthToken } from '../test-utils/helper-test';
 
-interface ReadingGoalInput {
-  goalInMinutes?: number;
-  reminderTime?: string;
-}
-
 describe('[POST] /reading-goals', () => {
   const factory: TestFactory = new TestFactory();
   const readingGoalRoute = '/goals/create';
@@ -36,7 +31,7 @@ describe('[POST] /reading-goals', () => {
 
     expect(res.body).toMatchObject({
       id: expect.any(String),
-      userId: user.id,
+      user: expect.objectContaining({ id: user.id }),
       goalInMinutes: newGoal.goalInMinutes,
       reminderTime: newGoal.reminderTime,
       createdAt: expect.any(String),
@@ -68,29 +63,28 @@ describe('[POST] /reading-goals', () => {
     const { user } = await createTestUser(factory);
     const token = await getTestAuthToken(user);
 
-    let invalidGoal: Partial<ReadingGoalInput> = { reminderTime: '19:00' };
+    const invalidGoal = { reminderTime: '19:00' };
 
-    let res = await factory.app
+    const res1 = await factory.app
       .post(readingGoalRoute)
       .set('Authorization', `Bearer ${token}`)
       .send(invalidGoal)
       .expect(HTTP_STATUS.UNPROCESSABLE_ENTITY);
 
-    expect(res.body).toEqual({
+    expect(res1.body).toEqual({
       errors: {
-        goalInMinutes: 'goalInMinutes must be a valid number'
+        goalInMinutes: 'goalInMinutes must be a positive integer'
       }
     });
 
-    invalidGoal = { goalInMinutes: 30 };
-
-    res = await factory.app
+    const invalidGoal2 = { goalInMinutes: 30 };
+    const res2 = await factory.app
       .post(readingGoalRoute)
       .set('Authorization', `Bearer ${token}`)
-      .send(invalidGoal)
+      .send(invalidGoal2)
       .expect(HTTP_STATUS.UNPROCESSABLE_ENTITY);
 
-    expect(res.body).toEqual({
+    expect(res2.body).toEqual({
       errors: {
         reminderTime: 'reminderTime must be in HH:MM format'
       }

@@ -1,15 +1,7 @@
 import { body } from 'express-validator';
 
 export const createReadingGoalValidationRules = [
-  body('goalInMinutes')
-    .isInt({ min: 1 })
-    .withMessage('goalInMinutes must be a positive integer')
-    .custom((value) => {
-      if (Number.isNaN(Number(value))) {
-        throw new TypeError('goalInMinutes must be a valid number');
-      }
-      return true;
-    }),
+  body('goalInMinutes').isInt({ min: 1 }).withMessage('goalInMinutes must be a positive integer'),
 
   body('reminderTime')
     .notEmpty()

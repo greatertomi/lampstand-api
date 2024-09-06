@@ -21,6 +21,3 @@ export class ReadingGoal {
   @UpdateDateColumn()
   updatedAt: Date;
 }
-
-
-
