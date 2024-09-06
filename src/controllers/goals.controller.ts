@@ -1,36 +1,25 @@
 import { Response } from 'express';
-import { validate } from 'class-validator';
 import { ReadingGoal } from '../entities/ReadingGoalEntity';
-import { CreateReadingGoal } from '../middleware/create-reading-goal';
+import { HTTP_STATUS } from '../lib/responses';
 import { IExtendedRequest } from '../types';
-import HandleGetRepository from '../utils/handleGetRepository';
+import handleGetRepository from '../utils/handleGetRepository';
 
-export const createReadingGoals = async (req: IExtendedRequest, res: Response): Promise<void> => {
+export const createReadingGoal = async (req: IExtendedRequest, res: Response): Promise<void> => {
   const userId = req.user.id;
-  const readingGoal = new CreateReadingGoal();
+  const { goalInMinutes, reminderTime } = req.body;
 
-  const goalInMinutes = Number.parseInt(req.body.goalInMinutes, 10);
-  if (Number.isNaN(goalInMinutes)) {
-    res.status(400).json({ message: 'goalInMinutes must be a valid number' });
-    return;
-  }
-  readingGoal.goalInMinutes = goalInMinutes;
-
-  readingGoal.reminderTime = req.body.reminderTime;
-
-  const errors = await validate(readingGoal);
-  if (errors.length > 0) {
-    res.status(400).json({ errors });
-    return;
-  }
-
-  const readingGoalRepository = HandleGetRepository(ReadingGoal);
+  const readingGoalRepository = handleGetRepository(ReadingGoal);
   const newReadingGoal = readingGoalRepository.create({
-    userId,
-    ...readingGoal
+    user: req.user,
+    goalInMinutes,
+    reminderTime
   });
 
   await readingGoalRepository.save(newReadingGoal);
+  const responseGoal = {
+    ...newReadingGoal,
+    userId: userId
+  };
 
-  res.status(201).json(newReadingGoal);
+  res.status(HTTP_STATUS.CREATED).json(responseGoal);
 };

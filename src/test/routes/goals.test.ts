@@ -2,9 +2,14 @@ import { HTTP_STATUS } from '../../lib/responses';
 import { TestFactory } from '../factory';
 import { createTestUser, getTestAuthToken } from '../test-utils/helper-test';
 
+interface ReadingGoalInput {
+  goalInMinutes?: number;
+  reminderTime?: string;
+}
+
 describe('[POST] /reading-goals', () => {
   const factory: TestFactory = new TestFactory();
-  const readingGoalRoute = '/goals/reading-book';
+  const readingGoalRoute = '/goals/create';
 
   beforeEach((done) => {
     factory.init().then(done);
@@ -12,7 +17,6 @@ describe('[POST] /reading-goals', () => {
 
   afterEach((done) => {
     factory.close().then(done);
-    jest.clearAllMocks();
   });
 
   it('should create a reading goal for a logged-in user', async () => {
@@ -40,77 +44,6 @@ describe('[POST] /reading-goals', () => {
     });
   });
 
-  it('should return 400 if goalInMinutes is missing', async () => {
-    const { user } = await createTestUser(factory);
-    const token = await getTestAuthToken(user);
-
-    const invalidGoal = {
-      reminderTime: '19:00'
-    };
-
-    const res = await factory.app
-      .post(readingGoalRoute)
-      .set('Authorization', `Bearer ${token}`)
-      .send(invalidGoal)
-      .expect(HTTP_STATUS.BAD_REQUEST);
-
-    expect(res.body).toEqual({
-      message: 'goalInMinutes must be a valid number'
-    });
-  });
-
-  it('should return 400 if reminderTime is missing', async () => {
-    const { user } = await createTestUser(factory);
-    const token = await getTestAuthToken(user);
-
-    const invalidGoal = {
-      goalInMinutes: 30
-    };
-
-    const res = await factory.app
-      .post(readingGoalRoute)
-      .set('Authorization', `Bearer ${token}`)
-      .send(invalidGoal)
-      .expect(HTTP_STATUS.BAD_REQUEST);
-
-    expect(res.body).toEqual({
-      errors: [
-        {
-          children: [],
-          constraints: {
-            isString: 'reminderTime must be a string',
-            matches: 'reminderTime must be in HH:MM format'
-          },
-          property: 'reminderTime',
-          target: {
-            goalInMinutes: 30
-          }
-        }
-      ]
-    });
-  });
-
-  it('should accept reminderTime in HH:MM format', async () => {
-    const { user } = await createTestUser(factory);
-    const token = await getTestAuthToken(user);
-
-    const validGoal = {
-      goalInMinutes: 30,
-      reminderTime: '19:00'
-    };
-
-    const res = await factory.app
-      .post(readingGoalRoute)
-      .set('Authorization', `Bearer ${token}`)
-      .send(validGoal)
-      .expect(HTTP_STATUS.CREATED);
-
-    expect(res.body).toMatchObject({
-      goalInMinutes: validGoal.goalInMinutes,
-      reminderTime: validGoal.reminderTime
-    });
-  });
-
   it('should return 401 if the user is not authenticated', async () => {
     const newGoal = {
       goalInMinutes: 30,
@@ -128,6 +61,39 @@ describe('[POST] /reading-goals', () => {
           message: 'Authorization header not provided'
         }
       ]
+    });
+  });
+
+  it('should return 400 if goalInMinutes or reminderTime is missing', async () => {
+    const { user } = await createTestUser(factory);
+    const token = await getTestAuthToken(user);
+
+    let invalidGoal: Partial<ReadingGoalInput> = { reminderTime: '19:00' };
+
+    let res = await factory.app
+      .post(readingGoalRoute)
+      .set('Authorization', `Bearer ${token}`)
+      .send(invalidGoal)
+      .expect(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+
+    expect(res.body).toEqual({
+      errors: {
+        goalInMinutes: 'goalInMinutes must be a valid number'
+      }
+    });
+
+    invalidGoal = { goalInMinutes: 30 };
+
+    res = await factory.app
+      .post(readingGoalRoute)
+      .set('Authorization', `Bearer ${token}`)
+      .send(invalidGoal)
+      .expect(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+
+    expect(res.body).toEqual({
+      errors: {
+        reminderTime: 'reminderTime must be in HH:MM format'
+      }
     });
   });
 });

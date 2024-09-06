@@ -1,12 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
+import { UserEntity } from './UserEntity';
 
 @Entity()
 export class ReadingGoal {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column('uuid')
-  userId: string;
+  @ManyToOne(() => UserEntity, user => user.readingGoals)
+  user: UserEntity;
 
   @Column('int')
   goalInMinutes: number;
@@ -20,5 +21,6 @@ export class ReadingGoal {
   @UpdateDateColumn()
   updatedAt: Date;
 }
+
 
 
