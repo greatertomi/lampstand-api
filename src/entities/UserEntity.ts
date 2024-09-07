@@ -1,5 +1,6 @@
 import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { BookEntity } from './BookEntity';
+import { ReadingGoal } from './ReadingGoalEntity';
 
 @Entity({ name: 'users' })
 export class UserEntity {
@@ -32,4 +33,7 @@ export class UserEntity {
 
   @OneToMany(() => BookEntity, book => book.owner, { onDelete: 'CASCADE' })
   books: BookEntity[];
+
+  @OneToMany(() => ReadingGoal, readingGoal => readingGoal.user, { onDelete: 'CASCADE' })
+  readingGoals: ReadingGoal[];
 }
