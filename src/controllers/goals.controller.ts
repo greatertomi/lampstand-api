@@ -19,3 +19,17 @@ export const createReadingGoal = async (req: IExtendedRequest, res: Response): P
 
   res.status(HTTP_STATUS.CREATED).json(newReadingGoal);
 };
+
+export const getReadingGoals = async (req: IExtendedRequest, res: Response): Promise<void> => {
+  const userId = req.user.id;
+  const readingGoalRepository = handleGetRepository(ReadingGoal);
+
+  const goals = await readingGoalRepository.find({
+    where: { user: { id: userId } }
+  });
+
+  res.status(HTTP_STATUS.OK).json({
+    message: 'Reading goals retrieved successfully',
+    data: goals
+  });
+};
