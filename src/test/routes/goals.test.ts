@@ -112,17 +112,19 @@ describe('Testing the goals route', () => {
       const token = await getTestAuthToken(user);
       const testGoal = { goalInMinutes: 30, reminderTime: '08:00' };
 
-      await factory.app
+      const response1 = await factory.app
         .post(readingGoalRoute)
         .set('Authorization', `Bearer ${token}`)
         .send(testGoal);
 
-      const getResponse = await factory.app
+      expect(response1.status).toBe(HTTP_STATUS.CREATED);
+
+      const response2 = await factory.app
         .get(getGoalsRoute)
         .set('Authorization', `Bearer ${token}`);
 
-      expect(getResponse.status).toBe(HTTP_STATUS.OK);
-      expect(getResponse.body).toMatchObject({
+      expect(response2.status).toBe(HTTP_STATUS.OK);
+      expect(response2.body).toMatchObject({
         message: 'Reading goals retrieved successfully',
         data: [
           expect.objectContaining({
@@ -135,7 +137,7 @@ describe('Testing the goals route', () => {
         ]
       });
 
-      expect(getResponse.body.data.length).toBe(1);
+      expect(response2.body.data.length).toBe(1);
     });
 
     it('should return an empty array when user has no goals', async () => {
