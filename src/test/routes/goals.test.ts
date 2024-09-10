@@ -6,7 +6,6 @@ import { createTestUser, getTestAuthToken } from '../test-utils/helper-test';
 describe('Testing the goals route', () => {
   const factory: TestFactory = new TestFactory();
   const readingGoalRoute = '/goals/create';
-  const getGoalsRoute = '/goals/';
 
   beforeEach((done) => {
     factory.init().then(done);
@@ -16,6 +15,7 @@ describe('Testing the goals route', () => {
     factory.close().then(done);
     jest.clearAllMocks();
   });
+
   describe('[POST] /reading-goals', () => {
     it('should create a reading goal for a logged-in user', async () => {
       const { user } = await createTestUser(factory);
@@ -96,36 +96,38 @@ describe('Testing the goals route', () => {
   });
 
   describe('[GET] /goals', () => {
-    const unAuthenticatedMessage = 'Authorization header not provided';
+    const getGoalsRoute = '/goals/';
 
     it('should return a 401 when no token is provided', async () => {
       const response = await factory.app.get(getGoalsRoute);
 
       expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
       expect(response.body).toMatchObject({
-        errors: [{ message: unAuthenticatedMessage }]
+        errors: [{ message: 'Authorization header not provided' }]
       });
     });
 
     it('should return user goals when authenticated', async () => {
       const { user } = await createTestUser(factory);
       const token = await getTestAuthToken(user);
-      const testGoal = { goalInMinutes: 30, reminderTime: '08:00:00' };
+      const testGoal = { goalInMinutes: 30, reminderTime: '08:00' };
 
-      const readingGoalRepository = factory._connection.getRepository(ReadingGoal);
-      await readingGoalRepository.save({
-        user: { id: user.id },
-        ...testGoal
-      });
+      await factory.app
+        .post(readingGoalRoute)
+        .set('Authorization', `Bearer ${token}`)
+        .send(testGoal);
 
-      const response = await factory.app.get(getGoalsRoute).set('Authorization', `Bearer ${token}`);
+      const getResponse = await factory.app
+        .get(getGoalsRoute)
+        .set('Authorization', `Bearer ${token}`);
 
-      expect(response.status).toBe(HTTP_STATUS.OK);
-      expect(response.body).toMatchObject({
+      expect(getResponse.status).toBe(HTTP_STATUS.OK);
+      expect(getResponse.body).toMatchObject({
         message: 'Reading goals retrieved successfully',
         data: [
           expect.objectContaining({
             ...testGoal,
+            reminderTime: expect.stringMatching(/^08:00/),
             id: expect.any(String),
             createdAt: expect.any(String),
             updatedAt: expect.any(String)
@@ -133,7 +135,7 @@ describe('Testing the goals route', () => {
         ]
       });
 
-      expect(response.body.data.length).toBe(1);
+      expect(getResponse.body.data.length).toBe(1);
     });
 
     it('should return an empty array when user has no goals', async () => {
