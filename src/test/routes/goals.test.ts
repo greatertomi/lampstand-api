@@ -3,6 +3,8 @@ import { HTTP_STATUS } from '../../lib/responses';
 import { TestFactory } from '../factory';
 import { createTestUser, getTestAuthToken } from '../test-utils/helper-test';
 
+/* eslint-disable sonarjs/no-duplicate-string */
+
 describe('Testing the goals route', () => {
   const factory: TestFactory = new TestFactory();
   const readingGoalRoute = '/goals/create';
@@ -169,6 +171,125 @@ describe('Testing the goals route', () => {
           message: 'Something went wrong'
         }
       ]);
+    });
+  });
+
+  describe('[PUT] /goals/update/:id', () => {
+    it('should update a reading goal successfully', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+
+      const newGoalResponse = await factory.app
+        .post(readingGoalRoute)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          goalInMinutes: 30,
+          reminderTime: '08:00'
+        });
+
+      const newGoal = newGoalResponse.body;
+
+      const updatedGoalData = {
+        goalInMinutes: 60,
+        reminderTime: '09:00'
+      };
+
+      const updateResponse = await factory.app
+        .put(`/goals/update/${newGoal.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(updatedGoalData);
+
+      expect(updateResponse.status).toBe(HTTP_STATUS.OK);
+
+      const updatedGoal = updateResponse.body.data;
+      expect(updatedGoal).toMatchObject({
+        id: newGoal.id,
+        goalInMinutes: updatedGoalData.goalInMinutes,
+        reminderTime: expect.stringMatching(/^09:00(:00)?$/)
+      });
+    });
+
+    it('should return a 404 error if the reading goal is not found', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+      const nonExistentGoalId = '4f4ef67c-75fa-4490-bf02-b2429ccb4084';
+
+      const updateResponse = await factory.app
+        .put(`/goals/update/${nonExistentGoalId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ goalInMinutes: 45 });
+
+      expect(updateResponse.status).toBe(HTTP_STATUS.NOT_FOUND);
+      expect(updateResponse.body).toEqual({
+        error: 'Reading goal not found or you do not have permission to update it'
+      });
+    });
+
+    it('should return a 401 when no token is provided for updating a reading goal', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+
+      const newGoalResponse = await factory.app
+        .post(readingGoalRoute)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          goalInMinutes: 30,
+          reminderTime: '08:00'
+        });
+
+      const testGoal = newGoalResponse.body;
+
+      const updateData = {
+        goalInMinutes: 30,
+        reminderTime: '10:00'
+      };
+
+      const response = await factory.app.put(`/goals/update/${testGoal.id}`).send(updateData);
+
+      expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
+      expect(response.body).toMatchObject({
+        errors: [
+          {
+            message: 'Authorization header not provided'
+          }
+        ]
+      });
+    });
+
+    it('should return a 422 error if the reading goal data is invalid', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+
+      const newGoalResponse = await factory.app
+        .post(readingGoalRoute)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          goalInMinutes: 30,
+          reminderTime: '08:00'
+        });
+
+      const testGoal = newGoalResponse.body;
+
+      const invalidGoalData = {
+        goalInMinutes: 'not a number',
+        reminderTime: 'invalid time'
+      };
+
+      const updateResponse = await factory.app
+        .put(`/goals/update/${testGoal.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(invalidGoalData);
+
+      expect(updateResponse.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(updateResponse.body).toHaveProperty('errors');
+
+      const errors = updateResponse.body.errors;
+
+      const hasExpectedError =
+        errors.goalInMinutes === 'goalInMinutes must be a positive integer' ||
+        errors.reminderTime === 'reminderTime must be in HH:MM format';
+
+      expect(hasExpectedError).toBe(true);
     });
   });
 });
