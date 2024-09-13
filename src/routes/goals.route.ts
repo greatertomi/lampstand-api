@@ -2,7 +2,8 @@ import { Router } from 'express';
 import {
   createReadingGoal,
   deleteReadingGoal,
-  getReadingGoals,
+  getReadingGoals
+,
   updateReadingGoal
 } from '../controllers/goals.controller';
 import { asyncMiddleware, checkJwt, validate } from '../middleware';
