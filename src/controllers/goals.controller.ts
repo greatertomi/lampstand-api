@@ -34,6 +34,30 @@ export const getReadingGoals = async (req: IExtendedRequest, res: Response): Pro
   });
 };
 
+export const deleteReadingGoal = async (req: IExtendedRequest, res: Response): Promise<void> => {
+  const userId = req.user.id;
+  const goalId = req.params.id;
+
+  const readingGoalRepository = handleGetRepository(ReadingGoal);
+
+  const readingGoal = await readingGoalRepository.findOne({
+    where: { id: goalId, user: { id: userId } }
+  });
+
+  if (!readingGoal) {
+    res.status(HTTP_STATUS.NOT_FOUND).json({
+      message: 'Reading goal not found or you do not have permission to delete it'
+    });
+    return;
+  }
+
+  await readingGoalRepository.delete(readingGoal.id);
+
+  res.status(HTTP_STATUS.OK).json({
+    message: 'Reading goal deleted successfully'
+  });
+};
+
 export const updateReadingGoal = async (req: IExtendedRequest, res: Response): Promise<void> => {
   const userId = req.user.id;
   const { id } = req.params;

@@ -1,9 +1,10 @@
 import { Router } from 'express';
 import {
   createReadingGoal,
-  getReadingGoals,
-  updateReadingGoal
+  deleteReadingGoal,
+  getReadingGoals, updateReadingGoal
 } from '../controllers/goals.controller';
+
 import { asyncMiddleware, checkJwt, validate } from '../middleware';
 import {
   createReadingGoalValidationRules,
@@ -20,6 +21,8 @@ router.post(
   asyncMiddleware(createReadingGoal)
 );
 router.get('/', checkJwt, asyncMiddleware(getReadingGoals));
+router.delete('/reading-goals/:id', checkJwt, asyncMiddleware(deleteReadingGoal));
+
 
 router.put(
   '/:id',
