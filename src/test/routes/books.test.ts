@@ -184,7 +184,11 @@ describe('Testing the books route', () => {
 
       expect(response.status).toBe(HTTP_STATUS.NOT_FOUND);
       expect(response.body).toMatchObject({
-        message: 'Book not found or you do not have permission to delete it'
+        errors: [
+          {
+            message: 'Book not found'
+          }
+        ]
       });
     });
 
@@ -216,7 +220,11 @@ describe('Testing the books route', () => {
 
       expect(response.status).toBe(HTTP_STATUS.NOT_FOUND);
       expect(response.body).toMatchObject({
-        message: 'Book not found or you do not have permission to delete it'
+        errors: [
+          {
+            message: 'Book not found'
+          }
+        ]
       });
     });
 
