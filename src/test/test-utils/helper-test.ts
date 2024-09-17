@@ -1,4 +1,5 @@
 import { BookEntity } from '../../entities';
+import { ReadingGoal } from '../../entities/ReadingGoalEntity';
 import { JwtHelper } from '../../lib';
 import { HTTP_STATUS } from '../../lib/responses';
 import { JwtPayload } from '../../types';
@@ -35,5 +36,14 @@ export const createTestBook = async (userId: string): Promise<BookEntity> => {
     size: 1000,
     url: 'http://test-book.com',
     owner: { id: userId }
+  });
+};
+
+export const createTestGoal = async (userId: string): Promise<ReadingGoal> => {
+  const readingGoalRepository = handleGetRepository(ReadingGoal);
+  return readingGoalRepository.save({
+    goalInMinutes: 30,
+    reminderTime: '08:00',
+    user: { id: userId }
   });
 };

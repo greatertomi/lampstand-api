@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { ReadingGoal } from '../entities/ReadingGoalEntity';
-import { HTTP_STATUS } from '../lib/responses';
+import { HTTP_STATUS, NotFoundError } from '../lib/responses';
 import { IExtendedRequest } from '../types';
 import handleGetRepository from '../utils/handleGetRepository';
 
@@ -31,5 +31,33 @@ export const getReadingGoals = async (req: IExtendedRequest, res: Response): Pro
   res.status(HTTP_STATUS.OK).json({
     message: 'Reading goals retrieved successfully',
     data: goals
+  });
+};
+
+export const updateReadingGoal = async (req: IExtendedRequest, res: Response): Promise<void> => {
+  const userId = req.user.id;
+  const { id } = req.params;
+  const { goalInMinutes, reminderTime } = req.body;
+
+  const readingGoalRepository = handleGetRepository(ReadingGoal);
+
+  const existingGoal = await readingGoalRepository.findOne({
+    where: { id, user: { id: userId } }
+  });
+
+  if (!existingGoal) {
+    throw new NotFoundError('Reading goal not found or you do not have permission to update it');
+  }
+
+  await readingGoalRepository.update(id, {
+    goalInMinutes,
+    reminderTime
+  });
+
+  const updatedGoal = await readingGoalRepository.findOne({ where: { id } });
+
+  res.status(HTTP_STATUS.OK).json({
+    message: 'Reading goal updated successfully',
+    data: updatedGoal
   });
 };
