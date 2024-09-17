@@ -1,9 +1,8 @@
+/* eslint-disable sonarjs/no-duplicate-string */
 import { ReadingGoal } from '../../entities/ReadingGoalEntity';
 import { HTTP_STATUS } from '../../lib/responses';
 import { TestFactory } from '../factory';
-import { createTestUser, getTestAuthToken } from '../test-utils/helper-test';
-
-/* eslint-disable sonarjs/no-duplicate-string */
+import { createTestGoal, createTestUser, getTestAuthToken } from '../test-utils/helper-test';
 
 describe('Testing the goals route', () => {
   const factory: TestFactory = new TestFactory();
@@ -112,36 +111,26 @@ describe('Testing the goals route', () => {
     it('should return user goals when authenticated', async () => {
       const { user } = await createTestUser(factory);
       const token = await getTestAuthToken(user);
-      const testGoal = { goalInMinutes: 30, reminderTime: '08:00' };
+      const newGoal = await createTestGoal(user.id);
 
-      const response1 = await factory.app
-        .post(readingGoalRoute)
-        .set('Authorization', `Bearer ${token}`)
-        .send(testGoal);
+      const response = await factory.app.get(getGoalsRoute).set('Authorization', `Bearer ${token}`);
 
-      expect(response1.status).toBe(HTTP_STATUS.CREATED);
-
-      const response2 = await factory.app
-        .get(getGoalsRoute)
-        .set('Authorization', `Bearer ${token}`);
-
-      expect(response2.status).toBe(HTTP_STATUS.OK);
-      expect(response2.body).toMatchObject({
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(response.body).toMatchObject({
         message: 'Reading goals retrieved successfully',
-        data: [
+        data: expect.arrayContaining([
           expect.objectContaining({
-            ...testGoal,
-            reminderTime: expect.stringMatching(/^08:00/),
             id: expect.any(String),
+            goalInMinutes: newGoal.goalInMinutes,
+            reminderTime: expect.stringMatching(/^08:00/),
             createdAt: expect.any(String),
             updatedAt: expect.any(String)
           })
-        ]
+        ])
       });
 
-      expect(response2.body.data.length).toBe(1);
+      expect(response.body.data.length).toBe(1);
     });
-
     it('should return an empty array when user has no goals', async () => {
       const { user } = await createTestUser(factory);
       const token = await getTestAuthToken(user);
@@ -179,15 +168,7 @@ describe('Testing the goals route', () => {
       const { user } = await createTestUser(factory);
       const token = await getTestAuthToken(user);
 
-      const newGoalResponse = await factory.app
-        .post(readingGoalRoute)
-        .set('Authorization', `Bearer ${token}`)
-        .send({
-          goalInMinutes: 30,
-          reminderTime: '08:00'
-        });
-
-      const newGoal = newGoalResponse.body;
+      const newGoal = await createTestGoal(user.id);
 
       const updatedGoalData = {
         goalInMinutes: 60,
@@ -195,7 +176,7 @@ describe('Testing the goals route', () => {
       };
 
       const updateResponse = await factory.app
-        .put(`/goals/update/${newGoal.id}`)
+        .put(`/goals/${newGoal.id}`)
         .set('Authorization', `Bearer ${token}`)
         .send(updatedGoalData);
 
@@ -215,36 +196,26 @@ describe('Testing the goals route', () => {
       const nonExistentGoalId = '4f4ef67c-75fa-4490-bf02-b2429ccb4084';
 
       const updateResponse = await factory.app
-        .put(`/goals/update/${nonExistentGoalId}`)
+        .put(`/goals/${nonExistentGoalId}`)
         .set('Authorization', `Bearer ${token}`)
         .send({ goalInMinutes: 45 });
 
       expect(updateResponse.status).toBe(HTTP_STATUS.NOT_FOUND);
-      expect(updateResponse.body).toEqual({
-        error: 'Reading goal not found or you do not have permission to update it'
-      });
+      expect(updateResponse.body.errors).toEqual([
+        { message: 'Reading goal not found or you do not have permission to update it' }
+      ]);
     });
 
     it('should return a 401 when no token is provided for updating a reading goal', async () => {
       const { user } = await createTestUser(factory);
-      const token = await getTestAuthToken(user);
-
-      const newGoalResponse = await factory.app
-        .post(readingGoalRoute)
-        .set('Authorization', `Bearer ${token}`)
-        .send({
-          goalInMinutes: 30,
-          reminderTime: '08:00'
-        });
-
-      const testGoal = newGoalResponse.body;
+      const testGoal = await createTestGoal(user.id);
 
       const updateData = {
         goalInMinutes: 30,
         reminderTime: '10:00'
       };
 
-      const response = await factory.app.put(`/goals/update/${testGoal.id}`).send(updateData);
+      const response = await factory.app.put(`/goals/${testGoal.id}`).send(updateData);
 
       expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
       expect(response.body).toMatchObject({
@@ -256,19 +227,29 @@ describe('Testing the goals route', () => {
       });
     });
 
+    it('Should return an error when user tries to update a goal that does not belong to them', async () => {
+      const { user: user1 } = await createTestUser(factory);
+      const { user: user2 } = await createTestUser(factory);
+
+      const token = await getTestAuthToken(user2);
+
+      const goalOfUser1 = await createTestGoal(user1.id);
+      const updateResponse = await factory.app
+        .put(`/goals/${goalOfUser1.id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ goalInMinutes: 45 });
+
+      expect(updateResponse.status).toBe(HTTP_STATUS.NOT_FOUND);
+      expect(updateResponse.body).toEqual({
+        errors: [{ message: 'Reading goal not found or you do not have permission to update it' }]
+      });
+    });
+
     it('should return a 422 error if the reading goal data is invalid', async () => {
       const { user } = await createTestUser(factory);
       const token = await getTestAuthToken(user);
 
-      const newGoalResponse = await factory.app
-        .post(readingGoalRoute)
-        .set('Authorization', `Bearer ${token}`)
-        .send({
-          goalInMinutes: 30,
-          reminderTime: '08:00'
-        });
-
-      const testGoal = newGoalResponse.body;
+      const testGoal = await createTestGoal(user.id);
 
       const invalidGoalData = {
         goalInMinutes: 'not a number',
@@ -276,7 +257,7 @@ describe('Testing the goals route', () => {
       };
 
       const updateResponse = await factory.app
-        .put(`/goals/update/${testGoal.id}`)
+        .put(`/goals/${testGoal.id}`)
         .set('Authorization', `Bearer ${token}`)
         .send(invalidGoalData);
 

@@ -21,5 +21,11 @@ router.post(
 );
 router.get('/', checkJwt, asyncMiddleware(getReadingGoals));
 
-router.put('/update/:id', checkJwt, updateReadingGoalValidationRules, validate, updateReadingGoal);
+router.put(
+  '/:id',
+  checkJwt,
+  updateReadingGoalValidationRules,
+  validate,
+  asyncMiddleware(updateReadingGoal)
+);
 export default router;
