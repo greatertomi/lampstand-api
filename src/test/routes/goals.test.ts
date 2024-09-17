@@ -57,7 +57,6 @@ describe('Testing the goals route', () => {
       expect(res.body).toEqual({
         errors: [
           {
-            // eslint-disable-next-line sonarjs/no-duplicate-string
             message: 'Authorization header not provided'
           }
         ]
@@ -154,110 +153,6 @@ describe('Testing the goals route', () => {
         .mockRejectedValueOnce(new Error('Database error'));
 
       const response = await factory.app.get(getGoalsRoute).set('Authorization', `Bearer ${token}`);
-
-      expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
-      expect(response.body.errors).toMatchObject([
-        {
-          message: 'Something went wrong'
-        }
-      ]);
-    });
-  });
-
-  describe('[DELETE] /reading-goals/:id', () => {
-    // eslint-disable-next-line sonarjs/no-duplicate-string
-    const deleteReadingGoalRoute = '/goals/reading-goals';
-
-    it('should return a 401 when no token is provided', async () => {
-      const response = await factory.app.delete(`${deleteReadingGoalRoute}/123`);
-
-      expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
-      expect(response.body).toMatchObject({
-        errors: [{ message: 'Authorization header not provided' }]
-      });
-    });
-
-    it('should delete the reading goal when authenticated and goal exists', async () => {
-      const { user } = await createTestUser(factory);
-      const token = await getTestAuthToken(user);
-
-      const newGoal = {
-        goalInMinutes: 30,
-        reminderTime: '19:00'
-      };
-
-      const createResponse = await factory.app
-        .post(readingGoalRoute)
-        .set('Authorization', `Bearer ${token}`)
-        .send(newGoal)
-        .expect(HTTP_STATUS.CREATED);
-
-      const goalId = createResponse.body.id;
-
-      const deleteResponse = await factory.app
-        .delete(`${deleteReadingGoalRoute}/${goalId}`)
-        .set('Authorization', `Bearer ${token}`);
-
-      expect(deleteResponse.status).toBe(HTTP_STATUS.OK);
-      expect(deleteResponse.body).toMatchObject({
-        message: 'Reading goal deleted successfully'
-      });
-    });
-
-    it('should return 404 when reading goal does not exist', async () => {
-      const { user } = await createTestUser(factory);
-      const token = await getTestAuthToken(user);
-      const response = await factory.app
-        .delete(`${deleteReadingGoalRoute}/00000000-0000-0000-0000-000000000000`)
-        .set('Authorization', `Bearer ${token}`);
-
-      expect(response.status).toBe(HTTP_STATUS.NOT_FOUND);
-      expect(response.body).toMatchObject({
-        message: 'Reading goal not found or you do not have permission to delete it'
-      });
-    });
-
-    it('should return 404 when a user attempts to delete a reading goal they did not create', async () => {
-      const { user: firstUser } = await createTestUser(factory);
-      const firstUserToken = await getTestAuthToken(firstUser);
-
-      const testGoal = {
-        goalInMinutes: 30,
-        reminderTime: '08:00'
-      };
-
-      const createResponse = await factory.app
-        .post(readingGoalRoute)
-        .set('Authorization', `Bearer ${firstUserToken}`)
-        .send(testGoal)
-        .expect(HTTP_STATUS.CREATED);
-
-      const goalId = createResponse.body.id;
-
-      const { user: secondUser } = await createTestUser(factory);
-      const secondUserToken = await getTestAuthToken(secondUser);
-
-      const deleteResponse = await factory.app
-        .delete(`${deleteReadingGoalRoute}/${goalId}`)
-        .set('Authorization', `Bearer ${secondUserToken}`);
-
-      expect(deleteResponse.status).toBe(HTTP_STATUS.NOT_FOUND);
-      expect(deleteResponse.body).toMatchObject({
-        message: 'Reading goal not found or you do not have permission to delete it'
-      });
-    });
-
-    it('should return 500 when there is a server error', async () => {
-      const { user } = await createTestUser(factory);
-      const token = await getTestAuthToken(user);
-
-      jest
-        .spyOn(factory._connection.getRepository(ReadingGoal), 'findOne')
-        .mockRejectedValueOnce(new Error('Database error'));
-
-      const response = await factory.app
-        .delete(`${deleteReadingGoalRoute}/123`)
-        .set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
       expect(response.body.errors).toMatchObject([

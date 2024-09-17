@@ -79,20 +79,14 @@ export const getUserBooks = async (req: IExtendedRequest, res: Response) => {
 };
 
 export const deleteBook = async (req: IExtendedRequest, res: Response) => {
-  const bookId = req.params.id;
-
   const bookRepository = handleGetRepository(BookEntity);
 
   const book = await bookRepository.findOne({
-    where: { id: bookId, owner: { id: req.user.id } }
+    where: { id: req.params.id, owner: { id: req.user.id } }
   });
-
   if (!book) {
-    return res.status(HTTP_STATUS.NOT_FOUND).json({
-      message: 'Book not found or you do not have permission to delete it'
-    });
+    throw new NotFoundError('Book not found');
   }
-
   await bookRepository.delete(book.id);
 
   return res.status(HTTP_STATUS.OK).json({
