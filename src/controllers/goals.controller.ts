@@ -35,20 +35,14 @@ export const getReadingGoals = async (req: IExtendedRequest, res: Response): Pro
 };
 
 export const deleteReadingGoal = async (req: IExtendedRequest, res: Response): Promise<void> => {
-  const userId = req.user.id;
-  const goalId = req.params.id;
-
   const readingGoalRepository = handleGetRepository(ReadingGoal);
 
   const readingGoal = await readingGoalRepository.findOne({
-    where: { id: goalId, user: { id: userId } }
+    where: { id: req.params.id, user: { id: req.user.id } }
   });
 
   if (!readingGoal) {
-    res.status(HTTP_STATUS.NOT_FOUND).json({
-      message: 'Reading goal not found or you do not have permission to delete it'
-    });
-    return;
+    throw new NotFoundError('Reading goal not found or you do not have permission to delete it');
   }
 
   await readingGoalRepository.delete(readingGoal.id);
