@@ -85,7 +85,7 @@ export const deleteBook = async (req: IExtendedRequest, res: Response) => {
     where: { id: req.params.id, owner: { id: req.user.id } }
   });
   if (!book) {
-    throw new NotFoundError('Book not found');
+    throw new NotFoundError('Book not found or you do not have permission to delete it');
   }
   await bookRepository.delete(book.id);
 

@@ -186,7 +186,7 @@ describe('Testing the books route', () => {
       expect(response.body).toMatchObject({
         errors: [
           {
-            message: 'Book not found'
+            message: 'Book not found or you do not have permission to delete it'
           }
         ]
       });
@@ -222,7 +222,7 @@ describe('Testing the books route', () => {
       expect(response.body).toMatchObject({
         errors: [
           {
-            message: 'Book not found'
+            message: 'Book not found or you do not have permission to delete it'
           }
         ]
       });
