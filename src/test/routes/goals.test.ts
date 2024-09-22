@@ -163,6 +163,85 @@ describe('Testing the goals route', () => {
     });
   });
 
+  describe('[DELETE] /reading-goals/:id', () => {
+    const deleteReadingGoalRoute = '/goals';
+
+    it('should return a 401 when no token is provided', async () => {
+      const response = await factory.app.delete(`${deleteReadingGoalRoute}/123`);
+
+      expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
+      expect(response.body).toMatchObject({
+        errors: [{ message: 'Authorization header not provided' }]
+      });
+    });
+
+    it('should delete the reading goal when authenticated and goal exists', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+      const newGoal = await createTestGoal(user.id);
+
+      const deleteResponse = await factory.app
+        .delete(`${deleteReadingGoalRoute}/${newGoal.id}`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(deleteResponse.status).toBe(HTTP_STATUS.OK);
+      expect(deleteResponse.body).toMatchObject({
+        message: 'Reading goal deleted successfully'
+      });
+    });
+
+    it('should return 404 when reading goal does not exist', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+      const response = await factory.app
+        .delete(`${deleteReadingGoalRoute}/00000000-0000-0000-0000-000000000000`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(HTTP_STATUS.NOT_FOUND);
+      expect(response.body.errors).toEqual([
+        { message: 'Reading goal not found or you do not have permission to delete it' }
+      ]);
+    });
+
+    it('should return 404 when a user attempts to delete a reading goal they did not create', async () => {
+      const { user: firstUser } = await createTestUser(factory);
+      await getTestAuthToken(firstUser);
+      const newGoal = await createTestGoal(firstUser.id);
+
+      const { user: secondUser } = await createTestUser(factory);
+      const secondUserToken = await getTestAuthToken(secondUser);
+
+      const deleteResponse = await factory.app
+        .delete(`${deleteReadingGoalRoute}/${newGoal.id}`)
+        .set('Authorization', `Bearer ${secondUserToken}`);
+
+      expect(deleteResponse.status).toBe(HTTP_STATUS.NOT_FOUND);
+      expect(deleteResponse.body.errors).toEqual([
+        { message: 'Reading goal not found or you do not have permission to delete it' }
+      ]);
+    });
+
+    it('should return 500 when there is a server error', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+
+      jest
+        .spyOn(factory._connection.getRepository(ReadingGoal), 'findOne')
+        .mockRejectedValueOnce(new Error('Database error'));
+
+      const response = await factory.app
+        .delete(`${deleteReadingGoalRoute}/123`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      expect(response.body.errors).toMatchObject([
+        {
+          message: 'Something went wrong'
+        }
+      ]);
+    });
+  });
+
   describe('[PUT] /goals/update/:id', () => {
     it('should update a reading goal successfully', async () => {
       const { user } = await createTestUser(factory);
