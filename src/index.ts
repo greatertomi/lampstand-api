@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import passport from 'passport';
+import '../src/config/passportConfig';
 import envConfig from './config/envConfig';
 import { AppDataSource } from './database';
 import { errorHandler } from './middleware';
@@ -17,6 +19,9 @@ export const main = async () => {
     app.use(express.urlencoded({ extended: true }));
     app.use(cors());
     app.use(helmet());
+
+    app.use(passport.initialize());
+    app.use(passport.session());
 
     app.use('/', routes);
 

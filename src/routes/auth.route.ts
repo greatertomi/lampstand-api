@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import {
+  googleAuth,
+  googleAuthCallback,
   login,
   requestPasswordReset,
   signup,
@@ -17,6 +19,9 @@ import { loginValidationRules, userValidationRules, validate } from '../middlewa
 
 const router = Router();
 
+router.get('/google', asyncMiddleware(googleAuth));
+router.get('/google/callback', asyncMiddleware(googleAuthCallback));
+
 router.get('/verify-email', asyncMiddleware(verifyEmail));
 
 router.post('/signup', userValidationRules(), validate, asyncMiddleware(signup));
@@ -33,6 +38,7 @@ router.post(
   validate,
   asyncMiddleware(verifyResetToken)
 );
+
 router.put(
   '/update-password',
   updatePasswordValidationRules(),

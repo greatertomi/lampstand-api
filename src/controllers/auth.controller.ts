@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import passport from 'passport';
 import { PasswordResetTokenEntity, UserEntity } from '../entities';
 import { TokenStatus } from '../entities/types';
 import { BcryptHelper, JwtHelper } from '../lib';
@@ -197,4 +198,36 @@ export const updatePassword = async (req: Request, res: Response) => {
   };
 
   res.status(HTTP_STATUS.OK).send(response);
+};
+
+export const googleAuth = (req, res, next) => {
+  passport.authenticate('google', { scope: ['profile', 'email'] })(req, res, next);
+};
+
+export const googleAuthCallback = (req: Request, res: Response) => {
+  passport.authenticate('google', { failureRedirect: '/login' }, async (err, user) => {
+    if (err) {
+      logger.error('Error in Google authentication:', err);
+      return res
+        .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
+        .json({ message: 'Authentication failed' });
+    }
+
+    if (!user) {
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: 'Authentication failed' });
+    }
+
+    const responseData: JwtPayload = {
+      id: user.id,
+      fullName: user.fullName,
+      email: user.emailAddress
+    };
+    const token = JwtHelper.generateToken(responseData);
+
+    res.status(HTTP_STATUS.OK).json({
+      message: 'Google authentication successful',
+      token,
+      data: responseData
+    });
+  })(req, res);
 };

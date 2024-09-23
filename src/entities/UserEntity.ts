@@ -31,6 +31,9 @@ export class UserEntity {
   @CreateDateColumn()
   createdAt: Date;
 
+  @Column({ nullable: true })
+  googleId: string;
+
   @UpdateDateColumn()
   updatedAt: Date;
 
