@@ -1,6 +1,6 @@
-import { PasswordResetTokenEntity } from '../../entities';
+import { PasswordResetTokenEntity, UserEntity } from '../../entities';
 import { TokenStatus } from '../../entities/types';
-import { JwtHelper } from '../../lib';
+import { BcryptHelper, JwtHelper } from '../../lib';
 import { HTTP_STATUS } from '../../lib/responses';
 import * as sendEmailService from '../../services';
 import { TestFactory } from '../factory';
@@ -8,6 +8,7 @@ import { createTestUser } from '../test-utils/helper-test';
 import { testUser } from '../test-utils/test-data';
 
 const passwordError = 'Password must have at least one special character';
+
 describe('Testing the auth route', () => {
   const factory: TestFactory = new TestFactory();
   const createRoute = '/auth/signup';
@@ -298,68 +299,127 @@ describe('Testing the auth route', () => {
     });
   });
 
-  describe('POST /update-password', () => {
-    const testPassword = 'newPassword123@';
+  describe('PUT /update-password', () => {
+    const testNewPassword = 'newPassword123@';
+    const testCurrentPassword = 'Str0ngP@ssw0rd!';
+    const wrongPassword = 'Wr0ngP@ssw0rd!';
+
     it('should update password successfully', async () => {
       const { user } = await createTestUser(factory);
 
-      const passwordResetTokenRepository =
-        factory._connection.getRepository(PasswordResetTokenEntity);
-      const token = 123_456;
+      const userRepository = factory._connection.getRepository(UserEntity);
+      const existingUser = await userRepository.findOne({ where: { id: user.id } });
+      expect(existingUser).toBeDefined();
+      expect(BcryptHelper.compare(existingUser.password, testCurrentPassword)).toBeTruthy();
 
-      const expiresAt = new Date(Date.now() + 3_600_000);
-
-      await passwordResetTokenRepository.save({
-        user,
-        token,
-        expiresAt,
-        status: TokenStatus.ACTIVE
+      const res = await factory.app.put(updatePasswordRoute).send({
+        userId: user.id,
+        currentPassword: testCurrentPassword,
+        newPassword: testNewPassword,
+        confirmPassword: testNewPassword
       });
-
-      const res = await factory.app
-        .put(updatePasswordRoute)
-        .send({ userId: user.id, password: testPassword, token, confirmPassword: testPassword });
 
       expect(res.status).toBe(HTTP_STATUS.OK);
       expect(res.body).toMatchObject({
         success: true,
-        message: 'Password reset successfully'
+        message: 'Password updated successfully'
       });
-
-      const updatedToken = await passwordResetTokenRepository.findOne({
-        where: { user: { id: user.id }, token }
-      });
-      expect(updatedToken?.status).toBe(TokenStatus.USED);
-      expect(updatedToken?.usedAt).toBeDefined();
     });
 
-    it('should return an error for non-existent token', async () => {
+    it('should throw a 400 error, for a wrong user password', async () => {
       const { user } = await createTestUser(factory);
+
+      const userRepository = factory._connection.getRepository(UserEntity);
+      const hashedPassword = await BcryptHelper.hash(testCurrentPassword);
+      await userRepository.update(user.id, { password: hashedPassword });
 
       const res = await factory.app.put(updatePasswordRoute).send({
         userId: user.id,
-        password: testPassword,
-        token: 123_456,
-        confirmPassword: testPassword
+        currentPassword: wrongPassword,
+        newPassword: testNewPassword,
+        confirmPassword: testNewPassword
       });
-
-      expect(res.status).toBe(HTTP_STATUS.NOT_FOUND);
-      expect(res.body.errors[0]).toHaveProperty(
-        'message',
-        'User with the provided token not found'
-      );
+      expect(res.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(res.body.errors).toMatchObject([
+        {
+          message: 'Current Password is incorrect'
+        }
+      ]);
     });
 
-    it('should return an error for invalid password format', async () => {
+    it('should return a 422 error for non-existent user', async () => {
       const { user } = await createTestUser(factory);
 
-      const res = await factory.app
-        .put(updatePasswordRoute)
-        .send({ userId: user.id, password: 'weak', token: '12356' })
-        .expect(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      const userRepository = factory._connection.getRepository(UserEntity);
+      const hashedPassword = await BcryptHelper.hash(testCurrentPassword);
+      await userRepository.update(user.id, { password: hashedPassword });
 
-      expect(res.body).toHaveProperty('errors');
-      expect(res.body.errors).toHaveProperty('password');
+      const res = await factory.app.put(updatePasswordRoute).send({
+        userId: 999_999,
+        currentPassword: testCurrentPassword,
+        newPassword: testNewPassword,
+        confirmPassword: testNewPassword
+      });
+
+      expect(res.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      expect(res.body.errors).toMatchObject([
+        {
+          message: 'Something went wrong'
+        }
+      ]);
+    });
+
+    it('should return a 422 error for user id is not provided', async () => {
+      const { user } = await createTestUser(factory);
+
+      const userRepository = factory._connection.getRepository(UserEntity);
+      const hashedPassword = await BcryptHelper.hash(testCurrentPassword);
+      await userRepository.update(user.id, { password: hashedPassword });
+
+      const res = await factory.app.put(updatePasswordRoute).send({
+        currentPassword: testCurrentPassword,
+        newPassword: testNewPassword,
+        confirmPassword: testNewPassword
+      });
+
+      expect(res.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(res.body.errors).toMatchObject({
+        userId: 'User ID is required'
+      });
+    });
+
+    it('should return an 422 error when confirmPassword and newPassword are not same', async () => {
+      const { user } = await createTestUser(factory);
+
+      const userRepository = factory._connection.getRepository(UserEntity);
+      const hashedPassword = await BcryptHelper.hash(testCurrentPassword);
+      await userRepository.update(user.id, { password: hashedPassword });
+
+      const res = await factory.app.put(updatePasswordRoute).send({
+        userId: user.id,
+        currentPassword: testCurrentPassword,
+        newPassword: '!Johndoe123',
+        confirmPassword: 'Johndoe123'
+      });
+      expect(res.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(res.body.errors).toMatchObject({
+        confirmPassword: 'New password and confirm password must be the same'
+      });
+    });
+
+    it('should return a 422 when all fields are empty', async () => {
+      const res = await factory.app.put(updatePasswordRoute).send({
+        userId: '',
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: ''
+      });
+      expect(res.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(res.body.errors).toMatchObject({
+        userId: 'User ID is required',
+        currentPassword: passwordError,
+        newPassword: passwordError
+      });
     });
   });
 });

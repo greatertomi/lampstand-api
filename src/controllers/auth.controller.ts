@@ -165,35 +165,28 @@ export const verifyResetToken = async (req: Request, res: Response) => {
 };
 
 export const updatePassword = async (req: Request, res: Response) => {
-  const { userId, password, token } = req.body;
+  const { userId, currentPassword, newPassword } = req.body;
 
   const userRepository = handleGetRepository(UserEntity);
-  const passwordResetTokenRepository = handleGetRepository(PasswordResetTokenEntity);
 
-  const userToken = await passwordResetTokenRepository.findOne({
-    where: { user: { id: userId }, token }
-  });
-
-  if (!userToken) {
-    throw new NotFoundError('User with the provided token not found');
+  const user = await userRepository.findOne({ where: { id: userId } });
+  if (!user) {
+    throw new NotFoundError('User not found');
   }
 
-  const hashedPassword = await BcryptHelper.hash(password);
+  const isPasswordSame = await BcryptHelper.compare(currentPassword, user.password);
+  if (!isPasswordSame) {
+    throw new BadRequestError('Current Password is incorrect');
+  }
+
+  const hashedPassword = await BcryptHelper.hash(newPassword);
   await userRepository.update(userId, { password: hashedPassword });
 
-  await passwordResetTokenRepository.update(
-    { id: userToken.id },
-    {
-      status: TokenStatus.USED,
-      usedAt: new Date()
-    }
-  );
-
-  logger.debug(`Password updated successfully for user: ${userId}`);
+  logger.debug(` ${user.fullName} your password updated is successful`);
 
   const response = {
     success: true,
-    message: 'Password reset successfully'
+    message: 'Password updated successfully'
   };
 
   res.status(HTTP_STATUS.OK).send(response);
