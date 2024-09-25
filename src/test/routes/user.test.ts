@@ -1,7 +1,21 @@
+/* eslint-disable sonarjs/no-duplicate-string */
+import { UserEntity } from '../../entities';
 import { HTTP_STATUS } from '../../lib/responses';
 import { JwtPayload } from '../../types';
 import { TestFactory } from '../factory';
 import { createTestUser, getTestAuthToken } from '../test-utils/helper-test';
+
+const uploadLink = 'https://res.cloudinary.com/example/image/upload/v1234567890/test-profile.jpg';
+jest.mock('../../middleware/picture-upload', () => ({
+  profilePictureUploadMiddleware: jest.fn((req, res, next) => {
+    req.uploadedProfilePicture = {
+      secure_url: uploadLink
+    };
+    next();
+  })
+}));
+
+const unAuthenticatedMessage = 'Authorization header not provided';
 
 describe('[GET] users/me', () => {
   const factory: TestFactory = new TestFactory();
@@ -69,6 +83,69 @@ describe('[GET] users/me', () => {
           message: 'Authorization header not provided'
         }
       ]
+    });
+  });
+
+  describe('POST /users/profile-picture.', () => {
+    const updateProfilePictureRoute = '/users/profile-picture';
+
+    it('should upload and update profile picture successfully', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+
+      const response = await factory.app
+        .post(updateProfilePictureRoute)
+        .set('Authorization', `Bearer ${token}`)
+        .attach('profilePicture', Buffer.from('dummy image content'), 'test-profile.jpg');
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(response.body).toHaveProperty('message', 'Profile picture uploaded successfully');
+      expect(response.body.data).toHaveProperty('profilePictureUrl');
+
+      const updatedUser = await factory._connection
+        .getRepository(UserEntity)
+        .findOne({ where: { id: user.id } });
+      expect(updatedUser?.profilePicture).toBe(response.body.data.profilePictureUrl);
+    }, 30_000);
+
+    it('should return 404 if user is not found', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+      await factory._connection.getRepository(UserEntity).delete(user.id);
+
+      const response = await factory.app
+        .post(updateProfilePictureRoute)
+        .set('Authorization', `Bearer ${token}`)
+        .attach('profilePicture', Buffer.from('dummy image content'), 'test-profile.jpg');
+
+      expect(response.status).toBe(HTTP_STATUS.NOT_FOUND);
+      expect(response.body).toEqual({
+        errors: [{ message: 'User not found' }]
+      });
+    });
+
+    it('should return 422 if the profile picture file is not provided', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+      const response = await factory.app
+        .post(updateProfilePictureRoute)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(response.body.errors).toHaveProperty('', 'Invalid file upload');
+    });
+
+    it('should throw an error if auth token is not provided', async () => {
+      const response = await factory.app
+        .post(updateProfilePictureRoute)
+        .attach('profilePicture', Buffer.from('dummy image content'), 'test-profile.jpg');
+
+      expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
+      expect(response.body.errors).toMatchObject([
+        {
+          message: unAuthenticatedMessage
+        }
+      ]);
     });
   });
 });

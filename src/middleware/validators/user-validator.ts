@@ -18,3 +18,19 @@ export const loginValidationRules = () => [
   body('email', 'This must be a valid email address').isEmail(),
   ...passwordValidationRules()
 ];
+
+export const uploadPictureValidationRules = () => [
+  body()
+    .custom((_, { req }) => {
+      if (!req.file) {
+        throw new Error('No file uploaded');
+      }
+
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+      if (!allowedTypes.includes(req.file.mimetype)) {
+        throw new Error('Only JPEG, JPG, and PNG files are allowed');
+      }
+      return true;
+    })
+    .withMessage('Invalid file upload')
+];

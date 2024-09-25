@@ -22,6 +22,9 @@ export class UserEntity {
   @Column({ default: false })
   agreedToTerms: boolean;
 
+  @Column({ nullable: true })
+  profilePicture?: string;
+
   @Column({ default: false })
   isEmailVerified: boolean;
 
