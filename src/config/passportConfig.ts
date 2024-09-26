@@ -3,12 +3,13 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { UserEntity } from '../entities';
 import { logger } from '../services';
 import handleGetRepository from '../utils/handleGetRepository';
+import envConfig from './envConfig';
 
 passport.use(
   new GoogleStrategy(
     {
-      clientID: process.env.CLIENT_ID!,
-      clientSecret: process.env.CLIENT_SECRET!,
+      clientID: envConfig.CLIENT_ID!,
+      clientSecret: envConfig.CLIENT_SECRET!,
       callbackURL: 'http://localhost:8000/auth/google/callback'
     },
     async (accessToken, refreshToken, profile, done) => {
