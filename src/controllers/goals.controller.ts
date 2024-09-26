@@ -5,32 +5,50 @@ import { IExtendedRequest } from '../types';
 import handleGetRepository from '../utils/handleGetRepository';
 
 export const createReadingGoal = async (req: IExtendedRequest, res: Response): Promise<void> => {
-  const userId = req.user.id;
-  const { goalInMinutes, reminderTime } = req.body;
+  const userId = req.user?.id;
 
+  const { goalInMinutes, reminderTime } = req.body;
   const readingGoalRepository = handleGetRepository(ReadingGoal);
-  const newReadingGoal = readingGoalRepository.create({
-    user: { id: userId },
-    goalInMinutes,
-    reminderTime
+
+  const existingGoal = await readingGoalRepository.findOne({
+    where: { user: { id: userId } }
   });
 
-  await readingGoalRepository.save(newReadingGoal);
+  await readingGoalRepository.upsert(
+    {
+      user: { id: userId },
+      goalInMinutes,
+      reminderTime
+    },
+    {
+      conflictPaths: ['user'],
+      skipUpdateIfNoValuesChanged: true
+    }
+  );
 
-  res.status(HTTP_STATUS.CREATED).json(newReadingGoal);
+  const newGoal = await readingGoalRepository.findOne({
+    where: { user: { id: userId } }
+  });
+
+  res.status(HTTP_STATUS.CREATED).json({
+    message: `${
+      existingGoal ? 'Reading goal updated successfully' : 'Reading goal created successfully'
+    }`,
+    data: newGoal
+  });
 };
 
-export const getReadingGoals = async (req: IExtendedRequest, res: Response): Promise<void> => {
+export const getReadingGoal = async (req: IExtendedRequest, res: Response): Promise<void> => {
   const userId = req.user.id;
   const readingGoalRepository = handleGetRepository(ReadingGoal);
 
-  const goals = await readingGoalRepository.find({
+  const goal = await readingGoalRepository.findOne({
     where: { user: { id: userId } }
   });
 
   res.status(HTTP_STATUS.OK).json({
-    message: 'Reading goals retrieved successfully',
-    data: goals
+    message: 'Reading goal retrieved successfully',
+    data: goal
   });
 };
 
@@ -49,33 +67,5 @@ export const deleteReadingGoal = async (req: IExtendedRequest, res: Response): P
 
   res.status(HTTP_STATUS.OK).json({
     message: 'Reading goal deleted successfully'
-  });
-};
-
-export const updateReadingGoal = async (req: IExtendedRequest, res: Response): Promise<void> => {
-  const userId = req.user.id;
-  const { id } = req.params;
-  const { goalInMinutes, reminderTime } = req.body;
-
-  const readingGoalRepository = handleGetRepository(ReadingGoal);
-
-  const existingGoal = await readingGoalRepository.findOne({
-    where: { id, user: { id: userId } }
-  });
-
-  if (!existingGoal) {
-    throw new NotFoundError('Reading goal not found or you do not have permission to update it');
-  }
-
-  await readingGoalRepository.update(id, {
-    goalInMinutes,
-    reminderTime
-  });
-
-  const updatedGoal = await readingGoalRepository.findOne({ where: { id } });
-
-  res.status(HTTP_STATUS.OK).json({
-    message: 'Reading goal updated successfully',
-    data: updatedGoal
   });
 };
