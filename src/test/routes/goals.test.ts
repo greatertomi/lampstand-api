@@ -24,7 +24,7 @@ describe('Testing the goals route', () => {
 
       const newGoal = {
         goalInMinutes: 30,
-        reminderTime: '19:00'
+        reminderTime: '19:00:00'
       };
 
       const res = await factory.app
@@ -51,7 +51,7 @@ describe('Testing the goals route', () => {
 
       const newGoal = {
         goalInMinutes: 30,
-        reminderTime: '19:00'
+        reminderTime: '19:00:00'
       };
 
       await factory.app
@@ -62,7 +62,7 @@ describe('Testing the goals route', () => {
 
       const updateGoal = {
         goalInMinutes: 50,
-        reminderTime: '02:00'
+        reminderTime: '02:00:00'
       };
 
       const res = await factory.app
@@ -107,7 +107,7 @@ describe('Testing the goals route', () => {
       const { user } = await createTestUser(factory);
       const token = await getTestAuthToken(user);
 
-      const invalidGoal = { reminderTime: '19:00' };
+      const invalidGoal = { reminderTime: '19:00:00' };
 
       const res1 = await factory.app
         .post(readingGoalRoute)
@@ -130,7 +130,7 @@ describe('Testing the goals route', () => {
 
       expect(res2.body).toEqual({
         errors: {
-          reminderTime: 'reminderTime must be in HH:MM format'
+          reminderTime: 'reminderTime must be in HH:MM:SS format'
         }
       });
     });
@@ -196,7 +196,7 @@ describe('Testing the goals route', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({
           goalInMinutes: 30,
-          reminderTime: '19:00'
+          reminderTime: '19:00:00'
         });
 
       expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
