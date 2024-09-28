@@ -20,7 +20,7 @@ export const loginValidationRules = () => [
 ];
 
 export const uploadPictureValidationRules = () => [
-  body()
+  body('profilePicture')
     .custom((_, { req }) => {
       if (!req.file) {
         throw new Error('No file uploaded');

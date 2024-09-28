@@ -23,7 +23,7 @@ export const updateProfilePicture = async (req: IExtendedRequest, res: Response)
   const userRepository = handleGetRepository(UserEntity);
   const { id: userId } = req.user;
 
-  const profilePictureUrl = req.uploadedProfilePicture.secure_url;
+  const profilePictureUrl = req.uploadedFile.secure_url;
   const user = await userRepository.findOneBy({ id: userId });
 
   if (!user) {

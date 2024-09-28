@@ -9,6 +9,5 @@ export type JwtPayload = {
 
 export interface IExtendedRequest extends Request {
   uploadedFile?: UploadApiResponse;
-  uploadedProfilePicture?: UploadApiResponse;
   user?: JwtPayload;
 }

@@ -1,38 +1,39 @@
 import { NextFunction, Response } from 'express';
 import { UploadApiResponse } from 'cloudinary';
 import stream from 'node:stream';
-import cloudinary from '../config/cloudinary';
-import envConfig from '../config/envConfig';
-import { logger } from '../services';
-import { IExtendedRequest } from '../types';
+import cloudinary from '../../config/cloudinary';
+import envConfig from '../../config/envConfig';
+import { logger } from '../../services';
+import { IExtendedRequest } from '../../types';
 
-const CLOUDINARY_FILE_FOLDER = `lampstand/${envConfig.NODE_ENV}/profile-pictures`;
+const CLOUDINARY_FILE_FOLDER = `lampstand/${envConfig.NODE_ENV}/books`;
 
-export const profilePictureUploadMiddleware = async (
+export const bookUploadMiddleware = async (
   req: IExtendedRequest,
-  res: Response,
+  _: Response,
   next: NextFunction
 ) => {
   const file = req.file;
+  const { format } = req.body;
 
   if (!file) {
     return next();
   }
 
-  const profilePicPublicId = `profile-${req.user.id}-${Date.now()}`;
+  const bookPublicId = `${file.originalname.split('.')[0].replace(/\s+/g, '')}-${Date.now()}`;
 
-  req.uploadedProfilePicture = await new Promise<UploadApiResponse>((resolve, reject) => {
+  req.uploadedFile = await new Promise<UploadApiResponse>((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
       {
-        public_id: profilePicPublicId,
+        public_id: bookPublicId,
         folder: CLOUDINARY_FILE_FOLDER,
-        resource_type: 'image',
-        allowed_formats: ['jpg', 'png', 'jpeg'],
+        resource_type: 'raw',
+        format: format,
         access_mode: 'public'
       },
       (error, result) => {
         if (result) {
-          logger.info(`Profile picture uploaded successfully: ${result.public_id}`);
+          logger.info(`File uploaded successfully: ${result.public_id}`);
           resolve(result);
         } else {
           logger.error(`Cloudinary upload error: ${error.message}`);

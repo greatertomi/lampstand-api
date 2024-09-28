@@ -6,9 +6,9 @@ import { TestFactory } from '../factory';
 import { createTestUser, getTestAuthToken } from '../test-utils/helper-test';
 
 const uploadLink = 'https://res.cloudinary.com/example/image/upload/v1234567890/test-profile.jpg';
-jest.mock('../../middleware/picture-upload', () => ({
+jest.mock('../../middleware/upload-handlers/picture-upload', () => ({
   profilePictureUploadMiddleware: jest.fn((req, res, next) => {
-    req.uploadedProfilePicture = {
+    req.uploadedFile = {
       secure_url: uploadLink
     };
     next();
@@ -86,7 +86,7 @@ describe('[GET] users/me', () => {
     });
   });
 
-  describe('POST /users/profile-picture.', () => {
+  describe('PUT /users/profile-picture.', () => {
     const updateProfilePictureRoute = '/users/profile-picture';
 
     it('should upload and update profile picture successfully', async () => {
@@ -94,7 +94,7 @@ describe('[GET] users/me', () => {
       const token = await getTestAuthToken(user);
 
       const response = await factory.app
-        .post(updateProfilePictureRoute)
+        .put(updateProfilePictureRoute)
         .set('Authorization', `Bearer ${token}`)
         .attach('profilePicture', Buffer.from('dummy image content'), 'test-profile.jpg');
 
@@ -106,15 +106,16 @@ describe('[GET] users/me', () => {
         .getRepository(UserEntity)
         .findOne({ where: { id: user.id } });
       expect(updatedUser?.profilePicture).toBe(response.body.data.profilePictureUrl);
-    }, 30_000);
+    });
 
     it('should return 404 if user is not found', async () => {
-      const { user } = await createTestUser(factory);
-      const token = await getTestAuthToken(user);
-      await factory._connection.getRepository(UserEntity).delete(user.id);
-
+      const token = await getTestAuthToken({
+        id: '4f4ef67c-75fa-4490-bf02-b2429ccb4084',
+        fullName: 'Non Existent User',
+        email: 'nonexistent@example.com'
+      });
       const response = await factory.app
-        .post(updateProfilePictureRoute)
+        .put(updateProfilePictureRoute)
         .set('Authorization', `Bearer ${token}`)
         .attach('profilePicture', Buffer.from('dummy image content'), 'test-profile.jpg');
 
@@ -128,16 +129,16 @@ describe('[GET] users/me', () => {
       const { user } = await createTestUser(factory);
       const token = await getTestAuthToken(user);
       const response = await factory.app
-        .post(updateProfilePictureRoute)
+        .put(updateProfilePictureRoute)
         .set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
-      expect(response.body.errors).toHaveProperty('', 'Invalid file upload');
+      expect(response.body.errors).toHaveProperty('profilePicture', 'Invalid file upload');
     });
 
     it('should throw an error if auth token is not provided', async () => {
       const response = await factory.app
-        .post(updateProfilePictureRoute)
+        .put(updateProfilePictureRoute)
         .attach('profilePicture', Buffer.from('dummy image content'), 'test-profile.jpg');
 
       expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);

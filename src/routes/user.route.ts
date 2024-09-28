@@ -1,14 +1,19 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { getUserProfile, updateProfilePicture } from '../controllers/user.controller';
-import { asyncMiddleware, checkJwt, uploadPictureValidationRules, validate } from '../middleware';
-import { profilePictureUploadMiddleware } from '../middleware/picture-upload';
+import { getUserProfile, updateProfilePicture } from '../controllers';
+import {
+  asyncMiddleware,
+  checkJwt,
+  profilePictureUploadMiddleware,
+  uploadPictureValidationRules,
+  validate
+} from '../middleware';
 
 const router = Router();
 
 const upload = multer({ storage: multer.memoryStorage() });
 
-router.post(
+router.put(
   '/profile-picture',
   checkJwt,
   upload.single('profilePicture'),
