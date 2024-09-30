@@ -1,9 +1,5 @@
 import { Router } from 'express';
-import {
-  createReadingGoal,
-  deleteReadingGoal,
-  getReadingGoal
-} from '../controllers/goals.controller';
+import { createReadingGoal, deleteReadingGoal, getReadingGoal } from '../controllers';
 import { asyncMiddleware, checkJwt, validate } from '../middleware';
 import { createReadingGoalValidationRules } from '../middleware/validators/goal-validator';
 

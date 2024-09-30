@@ -7,7 +7,7 @@ import { createTestBook, createTestUser, getTestAuthToken } from '../test-utils/
 import { testBook } from '../test-utils/test-data';
 
 const uploadLink = 'https://res.cloudinary.com/example/raw/upload/v1234567890/test-book.pdf';
-jest.mock('../../middleware/book-upload', () => ({
+jest.mock('../../middleware/upload-handlers/book-upload', () => ({
   bookUploadMiddleware: jest.fn((req, _, next) => {
     req.uploadedFile = {
       bytes: 1024,

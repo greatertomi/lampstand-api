@@ -1,13 +1,13 @@
 import { Response } from 'express';
 import { UserEntity } from '../entities';
-import { NotFoundError } from '../lib/responses';
+import { HTTP_STATUS, NotFoundError } from '../lib/responses';
 import { IExtendedRequest } from '../types';
-import HandleGetRepository from '../utils/handleGetRepository';
+import handleGetRepository from '../utils/handleGetRepository';
 
 export const getUserProfile = async (req: IExtendedRequest, res: Response) => {
   const userId = req.user?.id;
 
-  const userRepository = HandleGetRepository(UserEntity);
+  const userRepository = handleGetRepository(UserEntity);
   const user = await userRepository.findOne({ where: { id: userId } });
 
   if (!user) {
@@ -17,4 +17,24 @@ export const getUserProfile = async (req: IExtendedRequest, res: Response) => {
   const { password, ...userResponse } = user;
 
   return res.json(userResponse);
+};
+
+export const updateProfilePicture = async (req: IExtendedRequest, res: Response) => {
+  const userRepository = handleGetRepository(UserEntity);
+  const { id: userId } = req.user;
+
+  const profilePictureUrl = req.uploadedFile.secure_url;
+  const user = await userRepository.findOneBy({ id: userId });
+
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
+  await userRepository.update({ id: userId }, { profilePicture: profilePictureUrl });
+
+  res.status(HTTP_STATUS.OK).json({
+    message: 'Profile picture uploaded successfully',
+    data: {
+      profilePictureUrl
+    }
+  });
 };

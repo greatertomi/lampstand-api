@@ -17,10 +17,13 @@ export class UserEntity {
   password: string;
 
   @Column({ nullable: true })
-  phoneNumber?: string;
+  phoneNumber: string;
 
   @Column({ default: false })
   agreedToTerms: boolean;
+
+  @Column({ nullable: true })
+  profilePicture: string;
 
   @Column({ default: false })
   isEmailVerified: boolean;
