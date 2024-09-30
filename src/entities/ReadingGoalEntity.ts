@@ -1,7 +1,16 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  UpdateDateColumn,
+  ManyToOne,
+  Unique,
+} from 'typeorm';
 import { UserEntity } from './UserEntity';
 
 @Entity()
+@Unique(['user'])
 export class ReadingGoal {
   @PrimaryGeneratedColumn('uuid')
   id: string;

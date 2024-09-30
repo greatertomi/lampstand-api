@@ -24,7 +24,7 @@ describe('Testing the goals route', () => {
 
       const newGoal = {
         goalInMinutes: 30,
-        reminderTime: '19:00'
+        reminderTime: '19:00:00'
       };
 
       const res = await factory.app
@@ -33,13 +33,53 @@ describe('Testing the goals route', () => {
         .send(newGoal)
         .expect(HTTP_STATUS.CREATED);
 
-      expect(res.body).toMatchObject({
-        id: expect.any(String),
-        user: expect.objectContaining({ id: user.id }),
-        goalInMinutes: newGoal.goalInMinutes,
-        reminderTime: newGoal.reminderTime,
-        createdAt: expect.any(String),
-        updatedAt: expect.any(String)
+      expect(res.body).toEqual({
+        message: 'Reading goal created successfully',
+        data: expect.objectContaining({
+          id: expect.any(String),
+          goalInMinutes: newGoal.goalInMinutes,
+          reminderTime: '19:00:00',
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String)
+        })
+      });
+    });
+
+    it('should update a reading goal for a logged-in user', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+
+      const newGoal = {
+        goalInMinutes: 30,
+        reminderTime: '19:00:00'
+      };
+
+      await factory.app
+        .post(readingGoalRoute)
+        .set('Authorization', `Bearer ${token}`)
+        .send(newGoal)
+        .expect(HTTP_STATUS.CREATED);
+
+      const updateGoal = {
+        goalInMinutes: 50,
+        reminderTime: '02:00:00'
+      };
+
+      const res = await factory.app
+        .post(readingGoalRoute)
+        .set('Authorization', `Bearer ${token}`)
+        .send(updateGoal)
+        .expect(HTTP_STATUS.CREATED);
+
+      expect(res.body).toEqual({
+        message: 'Reading goal updated successfully',
+        data: expect.objectContaining({
+          id: expect.any(String),
+          goalInMinutes: updateGoal.goalInMinutes,
+          reminderTime: '02:00:00',
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String)
+        })
       });
     });
 
@@ -67,7 +107,7 @@ describe('Testing the goals route', () => {
       const { user } = await createTestUser(factory);
       const token = await getTestAuthToken(user);
 
-      const invalidGoal = { reminderTime: '19:00' };
+      const invalidGoal = { reminderTime: '19:00:00' };
 
       const res1 = await factory.app
         .post(readingGoalRoute)
@@ -90,7 +130,7 @@ describe('Testing the goals route', () => {
 
       expect(res2.body).toEqual({
         errors: {
-          reminderTime: 'reminderTime must be in HH:MM format'
+          reminderTime: 'reminderTime must be in HH:MM:SS format'
         }
       });
     });
@@ -98,6 +138,7 @@ describe('Testing the goals route', () => {
 
   describe('[GET] /goals', () => {
     const getGoalsRoute = '/goals/';
+    const createGoalRoute = '/goals/create';
 
     it('should return a 401 when no token is provided', async () => {
       const response = await factory.app.get(getGoalsRoute);
@@ -108,7 +149,7 @@ describe('Testing the goals route', () => {
       });
     });
 
-    it('should return user goals when authenticated', async () => {
+    it('should return user goal when authenticated', async () => {
       const { user } = await createTestUser(factory);
       const token = await getTestAuthToken(user);
       const newGoal = await createTestGoal(user.id);
@@ -116,21 +157,19 @@ describe('Testing the goals route', () => {
       const response = await factory.app.get(getGoalsRoute).set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(HTTP_STATUS.OK);
-      expect(response.body).toMatchObject({
-        message: 'Reading goals retrieved successfully',
-        data: expect.arrayContaining([
-          expect.objectContaining({
-            id: expect.any(String),
-            goalInMinutes: newGoal.goalInMinutes,
-            reminderTime: expect.stringMatching(/^08:00/),
-            createdAt: expect.any(String),
-            updatedAt: expect.any(String)
-          })
-        ])
-      });
 
-      expect(response.body.data.length).toBe(1);
+      expect(response.body).toMatchObject({
+        message: 'Reading goal retrieved successfully',
+        data: expect.objectContaining({
+          id: expect.any(String),
+          goalInMinutes: newGoal.goalInMinutes,
+          reminderTime: '08:00:00',
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String)
+        })
+      });
     });
+
     it('should return an empty array when user has no goals', async () => {
       const { user } = await createTestUser(factory);
       const token = await getTestAuthToken(user);
@@ -139,8 +178,8 @@ describe('Testing the goals route', () => {
 
       expect(response.status).toBe(HTTP_STATUS.OK);
       expect(response.body).toMatchObject({
-        message: 'Reading goals retrieved successfully',
-        data: []
+        message: 'Reading goal retrieved successfully',
+        data: null
       });
     });
 
@@ -149,10 +188,16 @@ describe('Testing the goals route', () => {
       const token = await getTestAuthToken(user);
 
       jest
-        .spyOn(factory._connection.getRepository(ReadingGoal), 'find')
+        .spyOn(factory._connection.getRepository(ReadingGoal), 'upsert')
         .mockRejectedValueOnce(new Error('Database error'));
 
-      const response = await factory.app.get(getGoalsRoute).set('Authorization', `Bearer ${token}`);
+      const response = await factory.app
+        .post(createGoalRoute)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          goalInMinutes: 30,
+          reminderTime: '19:00:00'
+        });
 
       expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
       expect(response.body.errors).toMatchObject([
@@ -239,117 +284,6 @@ describe('Testing the goals route', () => {
           message: 'Something went wrong'
         }
       ]);
-    });
-  });
-
-  describe('[PUT] /goals/update/:id', () => {
-    it('should update a reading goal successfully', async () => {
-      const { user } = await createTestUser(factory);
-      const token = await getTestAuthToken(user);
-
-      const newGoal = await createTestGoal(user.id);
-
-      const updatedGoalData = {
-        goalInMinutes: 60,
-        reminderTime: '09:00'
-      };
-
-      const updateResponse = await factory.app
-        .put(`/goals/${newGoal.id}`)
-        .set('Authorization', `Bearer ${token}`)
-        .send(updatedGoalData);
-
-      expect(updateResponse.status).toBe(HTTP_STATUS.OK);
-
-      const updatedGoal = updateResponse.body.data;
-      expect(updatedGoal).toMatchObject({
-        id: newGoal.id,
-        goalInMinutes: updatedGoalData.goalInMinutes,
-        reminderTime: expect.stringMatching(/^09:00(:00)?$/)
-      });
-    });
-
-    it('should return a 404 error if the reading goal is not found', async () => {
-      const { user } = await createTestUser(factory);
-      const token = await getTestAuthToken(user);
-      const nonExistentGoalId = '4f4ef67c-75fa-4490-bf02-b2429ccb4084';
-
-      const updateResponse = await factory.app
-        .put(`/goals/${nonExistentGoalId}`)
-        .set('Authorization', `Bearer ${token}`)
-        .send({ goalInMinutes: 45 });
-
-      expect(updateResponse.status).toBe(HTTP_STATUS.NOT_FOUND);
-      expect(updateResponse.body.errors).toEqual([
-        { message: 'Reading goal not found or you do not have permission to update it' }
-      ]);
-    });
-
-    it('should return a 401 when no token is provided for updating a reading goal', async () => {
-      const { user } = await createTestUser(factory);
-      const testGoal = await createTestGoal(user.id);
-
-      const updateData = {
-        goalInMinutes: 30,
-        reminderTime: '10:00'
-      };
-
-      const response = await factory.app.put(`/goals/${testGoal.id}`).send(updateData);
-
-      expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
-      expect(response.body).toMatchObject({
-        errors: [
-          {
-            message: 'Authorization header not provided'
-          }
-        ]
-      });
-    });
-
-    it('Should return an error when user tries to update a goal that does not belong to them', async () => {
-      const { user: user1 } = await createTestUser(factory);
-      const { user: user2 } = await createTestUser(factory);
-
-      const token = await getTestAuthToken(user2);
-
-      const goalOfUser1 = await createTestGoal(user1.id);
-      const updateResponse = await factory.app
-        .put(`/goals/${goalOfUser1.id}`)
-        .set('Authorization', `Bearer ${token}`)
-        .send({ goalInMinutes: 45 });
-
-      expect(updateResponse.status).toBe(HTTP_STATUS.NOT_FOUND);
-      expect(updateResponse.body).toEqual({
-        errors: [{ message: 'Reading goal not found or you do not have permission to update it' }]
-      });
-    });
-
-    it('should return a 422 error if the reading goal data is invalid', async () => {
-      const { user } = await createTestUser(factory);
-      const token = await getTestAuthToken(user);
-
-      const testGoal = await createTestGoal(user.id);
-
-      const invalidGoalData = {
-        goalInMinutes: 'not a number',
-        reminderTime: 'invalid time'
-      };
-
-      const updateResponse = await factory.app
-        .put(`/goals/${testGoal.id}`)
-        .set('Authorization', `Bearer ${token}`)
-        .send(invalidGoalData);
-
-      expect(updateResponse.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
-      expect(updateResponse.body).toHaveProperty('errors');
-
-      const errors = updateResponse.body.errors;
-
-      const hasExpectedError =
-        errors.goalInMinutes === 'goalInMinutes must be a positive integer' ||
-        errors.reminderTime === 'reminderTime must be in HH:MM format';
-
-      expect(hasExpectedError).toBe(true);
     });
   });
 });
