@@ -17,8 +17,8 @@ type EnvConfig = {
   MAILGUN_DOMAIN: string;
   SYNC_DATABASE: boolean;
   LOG_LEVEL: string;
-  CLIENT_ID: string;
-  CLIENT_SECRET: string;
+  GOOGLE_CLIENT_ID: string;
+  GOOGLE_CLIENT_SECRET: string;
 };
 
 type ENV = Partial<EnvConfig> & {
@@ -42,8 +42,8 @@ const getConfig = (): ENV => ({
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
   CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
   CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
-  CLIENT_ID: process.env.CLIENT_ID,
-  CLIENT_SECRET: process.env.CLIENT_SECRET
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET
 });
 
 const getSanitizedConfig = (config: ENV): EnvConfig => {

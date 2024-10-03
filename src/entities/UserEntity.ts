@@ -13,7 +13,7 @@ export class UserEntity {
   @Column({ unique: true })
   emailAddress: string;
 
-  @Column()
+  @Column({ nullable: true })
   password: string;
 
   @Column({ nullable: true })
@@ -31,8 +31,8 @@ export class UserEntity {
   @CreateDateColumn()
   createdAt: Date;
 
-  @Column({ nullable: true })
-  googleId: string;
+  @Column({ default: false })
+  isOAuthUser: boolean;
 
   @UpdateDateColumn()
   updatedAt: Date;
