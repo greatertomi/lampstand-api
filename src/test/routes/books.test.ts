@@ -1,6 +1,5 @@
 /* eslint-disable sonarjs/no-duplicate-string */
-import { BookFormat } from '../../entities';
-import { BookEntity } from '../../entities';
+import { BookEntity, BookFormat } from '../../entities';
 import { HTTP_STATUS } from '../../lib/responses';
 import { TestFactory } from '../factory';
 import { createTestBook, createTestUser, getTestAuthToken } from '../test-utils/helper-test';
