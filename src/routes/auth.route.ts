@@ -10,10 +10,12 @@ import {
 import {
   asyncMiddleware,
   forgotPasswordValidationRules,
+  loginValidationRules,
   updatePasswordValidationRules,
+  userValidationRules,
+  validate,
   verifyResetTokenValidationRules
 } from '../middleware';
-import { loginValidationRules, userValidationRules, validate } from '../middleware';
 
 const router = Router();
 
