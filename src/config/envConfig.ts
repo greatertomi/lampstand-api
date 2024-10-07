@@ -19,6 +19,7 @@ type EnvConfig = {
   LOG_LEVEL: string;
   GOOGLE_CLIENT_ID: string;
   GOOGLE_CLIENT_SECRET: string;
+  GOOGLE_CALLBACK_URL: string;
 };
 
 type ENV = Partial<EnvConfig> & {
@@ -43,7 +44,8 @@ const getConfig = (): ENV => ({
   CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
   CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
-  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET
+  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+  GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL
 });
 
 const getSanitizedConfig = (config: ENV): EnvConfig => {

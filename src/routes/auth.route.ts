@@ -1,7 +1,5 @@
 import { Router } from 'express';
 import {
-  googleAuth,
-  googleAuthCallback,
   login,
   requestPasswordReset,
   signup,
@@ -18,9 +16,6 @@ import {
 import { loginValidationRules, userValidationRules, validate } from '../middleware';
 
 const router = Router();
-
-router.get('/google', asyncMiddleware(googleAuth));
-router.get('/google/callback', asyncMiddleware(googleAuthCallback));
 
 router.get('/verify-email', asyncMiddleware(verifyEmail));
 
