@@ -3,4 +3,4 @@ export * from './validate';
 export * from './user-validator';
 export * from './password-validator';
 export * from './book-validator';
-export * from './read.validator';
+export * from './read-validator';

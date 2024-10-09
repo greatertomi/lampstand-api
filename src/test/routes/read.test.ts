@@ -18,7 +18,7 @@ describe('Testing the reading log route', () => {
   });
 
   describe('POST /books/log-reading', () => {
-    const logReadingRoute = '/log-reading';
+    const logReadingRoute = '/read/log-reading';
 
     it('should log reading event successfully', async () => {
       const { user } = await createTestUser(factory);
@@ -27,7 +27,7 @@ describe('Testing the reading log route', () => {
 
       const readingLogData = {
         bookId: book.id,
-        startTime: new Date(Date.now() - 3_600_000).toISOString(), // 1 hour ago
+        startTime: new Date(Date.now() - 3_600_000).toISOString(),
         currentTime: new Date().toISOString()
       };
 
@@ -66,7 +66,7 @@ describe('Testing the reading log route', () => {
       expect(response.body.errors).toMatchObject({
         bookId: 'Invalid book ID',
         startTime: 'Invalid start time',
-        currentTime: 'Invalid current time'
+        currentTime: 'Current time must be after start time'
       });
     });
 
@@ -78,7 +78,7 @@ describe('Testing the reading log route', () => {
       const invalidReadingLogData = {
         bookId: book.id,
         startTime: new Date().toISOString(),
-        currentTime: new Date(Date.now() - 3_600_000).toISOString() // 1 hour ago
+        currentTime: new Date(Date.now() - 3_600_000).toISOString()
       };
 
       const response = await factory.app
@@ -98,7 +98,7 @@ describe('Testing the reading log route', () => {
 
       const readingLogData = {
         bookId: '00000000-0000-0000-0000-000000000000',
-        startTime: new Date(Date.now() - 3_600_000).toISOString(), // 1 hour ago
+        startTime: new Date(Date.now() - 3_600_000).toISOString(),
         currentTime: new Date().toISOString()
       };
 
@@ -133,7 +133,7 @@ describe('Testing the reading log route', () => {
 
       const readingLogData = {
         bookId: book.id,
-        startTime: new Date(Date.now() - 3_600_000).toISOString(), // 1 hour ago
+        startTime: new Date(Date.now() - 3_600_000).toISOString(),
         currentTime: new Date().toISOString()
       };
 
