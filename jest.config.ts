@@ -8,5 +8,7 @@ export default {
     '^.+\\.test.ts?$': 'ts-jest'
   },
   testPathIgnorePatterns: ['/e2e/', '/node_modules/', '/dist/'],
-  setupFilesAfterEnv: ['./src/test/jest-setup/mocks.ts']
+  setupFilesAfterEnv: ['./src/test/jest-setup/mocks.ts'],
+  // Run tests serially on local machine to avoid race conditions on docker resources
+  ...(!process.env.CI && { maxWorkers: 1 })
 };

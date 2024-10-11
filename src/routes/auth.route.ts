@@ -35,6 +35,7 @@ router.post(
   validate,
   asyncMiddleware(verifyResetToken)
 );
+
 router.put(
   '/update-password',
   updatePasswordValidationRules(),
