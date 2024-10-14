@@ -40,6 +40,7 @@
     "indent": "off",
     "@typescript-eslint/indent": "off",
     "unicorn/no-anonymous-default-export": "off",
-    "unicorn/prefer-string-replace-all": "off"
+    "unicorn/prefer-string-replace-all": "off",
+    "no-duplicate-imports": "error"
   }
 }

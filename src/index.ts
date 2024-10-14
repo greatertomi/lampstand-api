@@ -1,11 +1,13 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import passport from 'passport';
 import envConfig from './config/envConfig';
 import { AppDataSource } from './database';
 import { errorHandler } from './middleware';
 import routes from './routes';
 import { logger } from './services';
+import './services/google-passport';
 
 const { PORT } = envConfig;
 
@@ -17,6 +19,8 @@ export const main = async () => {
     app.use(express.urlencoded({ extended: true }));
     app.use(cors());
     app.use(helmet());
+
+    app.use(passport.initialize());
 
     app.use('/', routes);
 
