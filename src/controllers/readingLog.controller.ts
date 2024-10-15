@@ -1,6 +1,5 @@
 import { Response } from 'express';
-import { BookEntity } from '../entities';
-import { ReadingLogEntity } from '../entities/ReadingLogEntity';
+import { BookEntity, ReadingLogEntity } from '../entities';
 import { HTTP_STATUS, NotFoundError } from '../lib/responses';
 import { IExtendedRequest } from '../types';
 import handleGetRepository from '../utils/handleGetRepository';

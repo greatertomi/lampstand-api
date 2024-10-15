@@ -1,4 +1,4 @@
-import { ReadingLogEntity } from '../../entities/ReadingLogEntity';
+import { ReadingLogEntity } from '../../entities';
 import { HTTP_STATUS } from '../../lib/responses';
 import { TestFactory } from '../factory';
 import { createTestBook, createTestUser, getTestAuthToken } from '../test-utils/helper-test';
@@ -14,10 +14,9 @@ describe('Testing the reading log route', () => {
 
   afterEach(async () => {
     await factory.close();
-    jest.clearAllMocks();
   });
 
-  describe('POST /books/log-reading', () => {
+  describe('POST /read/log-reading', () => {
     const logReadingRoute = '/read/log-reading';
 
     it('should log reading event successfully', async () => {

@@ -2,7 +2,7 @@ import { Request, Response, Router } from 'express';
 import auth from './auth.route';
 import books from './books.route';
 import readingGoals from './goals.route';
-import readingLogs from './read.route';
+import readingLogs from './readingLog.route';
 import oauth from './oauth.route';
 import users from './user.route';
 
