@@ -16,8 +16,8 @@ describe('Testing the reading log route', () => {
     await factory.close();
   });
 
-  describe('POST /read/log-reading', () => {
-    const logReadingRoute = '/read/log-reading';
+  describe('POST /readingLogs/create', () => {
+    const logReadingRoute = '/readingLogs/create';
 
     it('should log reading event successfully', async () => {
       const { user } = await createTestUser(factory);

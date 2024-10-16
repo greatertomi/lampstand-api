@@ -5,7 +5,7 @@ import { asyncMiddleware, checkJwt, logReadingEventValidationRules, validate } f
 const router = Router();
 
 router.post(
-  '/log-reading',
+  '/create',
   checkJwt,
   logReadingEventValidationRules,
   validate,
