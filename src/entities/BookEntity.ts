@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
 import { UserEntity } from './UserEntity';
+import { ReadingLogEntity } from './ReadingLogEntity';
 
 export enum BookFormat {
   PDF = 'pdf',
@@ -35,4 +36,7 @@ export class BookEntity {
 
   @Column()
   url: string;
+
+  @OneToMany(() => ReadingLogEntity, readingLog => readingLog.book)
+  readingLogs: ReadingLogEntity[];
 }
