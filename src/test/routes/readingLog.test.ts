@@ -1,7 +1,13 @@
+/* eslint-disable sonarjs/no-duplicate-string */
 import { ReadingLogEntity } from '../../entities';
 import { HTTP_STATUS } from '../../lib/responses';
 import { TestFactory } from '../factory';
-import { createTestBook, createTestUser, getTestAuthToken } from '../test-utils/helper-test';
+import {
+  createTestBook,
+  createTestReadingLog,
+  createTestUser,
+  getTestAuthToken
+} from '../test-utils/helper-test';
 
 const unAuthenticatedMessage = 'Authorization header not provided';
 
@@ -151,6 +157,158 @@ describe('Testing the reading log route', () => {
           message: 'Something went wrong'
         }
       ]);
+    });
+  });
+
+  describe('GET /readingLogs', () => {
+    const getReadingLogsRoute = '/readingLogs/';
+
+    it('should get all reading logs for a user successfully', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+      const book = await createTestBook(user.id);
+      await createTestReadingLog(
+        user.id,
+        book.id,
+        60,
+        new Date(Date.now() - 7_200_000),
+        new Date(Date.now() - 3_600_000)
+      );
+      await createTestReadingLog(
+        user.id,
+        book.id,
+        30,
+        new Date(Date.now() - 3_600_000),
+        new Date()
+      );
+
+      const response = await factory.app
+        .get(getReadingLogsRoute)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(response.body).toMatchObject({
+        message: 'Reading logs fetched successfully',
+        data: expect.arrayContaining([
+          expect.objectContaining({
+            id: expect.any(String),
+            bookId: book.id,
+            bookTitle: expect.any(String),
+            startTime: expect.any(String),
+            currentTime: expect.any(String),
+            minutesRead: expect.any(Number)
+          })
+        ])
+      });
+      expect(response.body.data.length).toBe(2);
+    });
+
+    it('should get reading logs for today', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+      const book = await createTestBook(user.id);
+      await createTestReadingLog(user.id, book.id, 30, new Date(), new Date());
+      await createTestReadingLog(
+        user.id,
+        book.id,
+        60,
+        new Date(Date.now() - 86_400_000),
+        new Date(Date.now() - 86_400_000)
+      );
+
+      const response = await factory.app
+        .get(`${getReadingLogsRoute}?timespan=today`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(response.body).toMatchObject({
+        message: 'Reading logs fetched successfully',
+        data: expect.arrayContaining([
+          expect.objectContaining({
+            minutesRead: 30
+          })
+        ])
+      });
+      expect(response.body.data.length).toBe(1);
+    });
+
+    it('should get reading logs for last 7 days', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+      const book = await createTestBook(user.id);
+      await createTestReadingLog(user.id, book.id, 30, new Date(), new Date());
+      await createTestReadingLog(
+        user.id,
+        book.id,
+        60,
+        new Date(Date.now() - 6 * 86_400_000),
+        new Date(Date.now() - 6 * 86_400_000)
+      );
+      await createTestReadingLog(
+        user.id,
+        book.id,
+        90,
+        new Date(Date.now() - 8 * 86_400_000),
+        new Date(Date.now() - 8 * 86_400_000)
+      );
+
+      const response = await factory.app
+        .get(`${getReadingLogsRoute}?timespan=last7days`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(response.body).toMatchObject({
+        message: 'Reading logs fetched successfully',
+        data: expect.arrayContaining([
+          expect.objectContaining({ minutesRead: 30 }),
+          expect.objectContaining({ minutesRead: 60 })
+        ])
+      });
+      expect(response.body.data.length).toBe(2);
+    });
+
+    it('should return empty array if no logs found', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+
+      const response = await factory.app
+        .get(getReadingLogsRoute)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(response.body.data).toHaveLength(0);
+    });
+
+    it('should throw an error if auth token is not provided', async () => {
+      const response = await factory.app.get(getReadingLogsRoute);
+
+      expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
+      expect(response.body.errors).toMatchObject([
+        {
+          message: unAuthenticatedMessage
+        }
+      ]);
+    });
+
+    it('should return 500 when there is a server error', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+
+      jest
+        .spyOn(factory._connection.getRepository(ReadingLogEntity), 'find')
+        .mockRejectedValueOnce(new Error('Database error'));
+
+      const response = await factory.app
+        .get(getReadingLogsRoute)
+        .set('Authorization', `Bearer ${token}`);
+      expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      expect(response.body).toEqual({
+        errors: [
+          {
+            message: 'Something went wrong'
+          }
+        ]
+      });
     });
   });
 });
