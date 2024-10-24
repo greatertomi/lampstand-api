@@ -44,6 +44,6 @@ export class UserEntity {
   @OneToMany(() => ReadingGoal, readingGoal => readingGoal.user, { onDelete: 'CASCADE' })
   readingGoals: ReadingGoal[];
 
-  @OneToMany(() => ReadingLogEntity, readingLog => readingLog.user)
+  @OneToMany(() => ReadingLogEntity, readingLog => readingLog.user, { onDelete: 'CASCADE' })
   readingLogs: ReadingLogEntity[];
 }
