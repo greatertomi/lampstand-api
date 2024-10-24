@@ -7,6 +7,11 @@ import handleGetRepository from '../../utils/handleGetRepository';
 import { TestFactory } from '../factory';
 import { testBook, testUser } from './test-data';
 
+type ReadingLogData = Pick<ReadingLogEntity, 'minutesRead' | 'startTime' | 'currentTime'> & {
+  userId: string;
+  bookId: string;
+};
+
 export const createTestUser = async (factory: TestFactory) => {
   const uniqueEmail = `test-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@example.com`;
   const testUserData = {
@@ -48,19 +53,14 @@ export const createTestGoal = async (userId: string): Promise<ReadingGoal> => {
   });
 };
 
-export const createTestReadingLog = async (
-  userId: string,
-  bookId: string,
-  minutesRead: number,
-  startTime: Date,
-  currentTime: Date
-): Promise<ReadingLogEntity> => {
+export const createTestReadingLogs = async (readingLogs: ReadingLogData[]) => {
   const readingLogRepository = handleGetRepository(ReadingLogEntity);
-  return readingLogRepository.save({
-    user: { id: userId },
-    book: { id: bookId },
-    startTime,
-    currentTime,
-    minutesRead
-  });
+  const logsToSave = readingLogs.map((log) => ({
+    user: { id: log.userId },
+    book: { id: log.bookId },
+    startTime: log.startTime,
+    currentTime: log.currentTime,
+    minutesRead: log.minutesRead
+  }));
+  return readingLogRepository.save(logsToSave);
 };

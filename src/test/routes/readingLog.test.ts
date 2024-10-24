@@ -1,10 +1,11 @@
 /* eslint-disable sonarjs/no-duplicate-string */
-import { ReadingLogEntity } from '../../entities';
+import { BookEntity, ReadingLogEntity } from '../../entities';
 import { HTTP_STATUS } from '../../lib/responses';
+import { JwtPayload } from '../../types';
 import { TestFactory } from '../factory';
 import {
   createTestBook,
-  createTestReadingLog,
+  createTestReadingLogs,
   createTestUser,
   getTestAuthToken
 } from '../test-utils/helper-test';
@@ -13,9 +14,14 @@ const unAuthenticatedMessage = 'Authorization header not provided';
 
 describe('Testing the reading log route', () => {
   const factory: TestFactory = new TestFactory();
+  let user: JwtPayload, token: string, book: BookEntity;
 
   beforeEach(async () => {
     await factory.init();
+    const { user: current } = await createTestUser(factory);
+    user = current;
+    token = await getTestAuthToken(user);
+    book = await createTestBook(user.id);
   });
 
   afterEach(async () => {
@@ -26,10 +32,6 @@ describe('Testing the reading log route', () => {
     const logReadingRoute = '/readingLogs/create';
 
     it('should log reading event successfully', async () => {
-      const { user } = await createTestUser(factory);
-      const token = await getTestAuthToken(user);
-      const book = await createTestBook(user.id);
-
       const readingLogData = {
         bookId: book.id,
         startTime: new Date(Date.now() - 3_600_000).toISOString(),
@@ -53,9 +55,6 @@ describe('Testing the reading log route', () => {
     });
 
     it('should throw an error if reading log data is invalid', async () => {
-      const { user } = await createTestUser(factory);
-      const token = await getTestAuthToken(user);
-
       const invalidReadingLogData = {
         bookId: 'invalid-uuid',
         startTime: 'invalid-date',
@@ -76,10 +75,6 @@ describe('Testing the reading log route', () => {
     });
 
     it('should throw an error if current time is before start time', async () => {
-      const { user } = await createTestUser(factory);
-      const token = await getTestAuthToken(user);
-      const book = await createTestBook(user.id);
-
       const invalidReadingLogData = {
         bookId: book.id,
         startTime: new Date().toISOString(),
@@ -98,9 +93,6 @@ describe('Testing the reading log route', () => {
     });
 
     it('should throw an error if book does not exist', async () => {
-      const { user } = await createTestUser(factory);
-      const token = await getTestAuthToken(user);
-
       const readingLogData = {
         bookId: '00000000-0000-0000-0000-000000000000',
         startTime: new Date(Date.now() - 3_600_000).toISOString(),
@@ -132,10 +124,6 @@ describe('Testing the reading log route', () => {
     });
 
     it('should return 500 when there is a server error', async () => {
-      const { user } = await createTestUser(factory);
-      const token = await getTestAuthToken(user);
-      const book = await createTestBook(user.id);
-
       const readingLogData = {
         bookId: book.id,
         startTime: new Date(Date.now() - 3_600_000).toISOString(),
@@ -162,25 +150,25 @@ describe('Testing the reading log route', () => {
 
   describe('GET /readingLogs', () => {
     const getReadingLogsRoute = '/readingLogs/';
-
     it('should get all reading logs for a user successfully', async () => {
-      const { user } = await createTestUser(factory);
-      const token = await getTestAuthToken(user);
-      const book = await createTestBook(user.id);
-      await createTestReadingLog(
-        user.id,
-        book.id,
-        60,
-        new Date(Date.now() - 7_200_000),
-        new Date(Date.now() - 3_600_000)
-      );
-      await createTestReadingLog(
-        user.id,
-        book.id,
-        30,
-        new Date(Date.now() - 3_600_000),
-        new Date()
-      );
+      const now = new Date();
+      const readingLogs = [
+        {
+          userId: user.id,
+          bookId: book.id,
+          minutesRead: 60,
+          startTime: now,
+          currentTime: now
+        },
+        {
+          userId: user.id,
+          bookId: book.id,
+          minutesRead: 30,
+          startTime: new Date(now.getTime() - 691_200_000),
+          currentTime: new Date(now.getTime() - 691_200_000)
+        }
+      ];
+      await createTestReadingLogs(readingLogs);
 
       const response = await factory.app
         .get(getReadingLogsRoute)
@@ -202,19 +190,25 @@ describe('Testing the reading log route', () => {
       });
       expect(response.body.data.length).toBe(2);
     });
-
     it('should get reading logs for today', async () => {
-      const { user } = await createTestUser(factory);
-      const token = await getTestAuthToken(user);
-      const book = await createTestBook(user.id);
-      await createTestReadingLog(user.id, book.id, 30, new Date(), new Date());
-      await createTestReadingLog(
-        user.id,
-        book.id,
-        60,
-        new Date(Date.now() - 86_400_000),
-        new Date(Date.now() - 86_400_000)
-      );
+      const now = new Date();
+      const readingLogs = [
+        {
+          userId: user.id,
+          bookId: book.id,
+          minutesRead: 60,
+          startTime: now,
+          currentTime: now
+        },
+        {
+          userId: user.id,
+          bookId: book.id,
+          minutesRead: 30,
+          startTime: new Date(now.getTime() - 86_400_000),
+          currentTime: new Date(now.getTime() - 86_400_000)
+        }
+      ];
+      await createTestReadingLogs(readingLogs);
 
       const response = await factory.app
         .get(`${getReadingLogsRoute}?timespan=today`)
@@ -225,32 +219,38 @@ describe('Testing the reading log route', () => {
         message: 'Reading logs fetched successfully',
         data: expect.arrayContaining([
           expect.objectContaining({
-            minutesRead: 30
+            minutesRead: 60
           })
         ])
       });
       expect(response.body.data.length).toBe(1);
     });
-
     it('should get reading logs for last 7 days', async () => {
-      const { user } = await createTestUser(factory);
-      const token = await getTestAuthToken(user);
-      const book = await createTestBook(user.id);
-      await createTestReadingLog(user.id, book.id, 30, new Date(), new Date());
-      await createTestReadingLog(
-        user.id,
-        book.id,
-        60,
-        new Date(Date.now() - 6 * 86_400_000),
-        new Date(Date.now() - 6 * 86_400_000)
-      );
-      await createTestReadingLog(
-        user.id,
-        book.id,
-        90,
-        new Date(Date.now() - 8 * 86_400_000),
-        new Date(Date.now() - 8 * 86_400_000)
-      );
+      const now = new Date();
+      const readingLogs = [
+        {
+          userId: user.id,
+          bookId: book.id,
+          minutesRead: 60,
+          startTime: now,
+          currentTime: now
+        },
+        {
+          userId: user.id,
+          bookId: book.id,
+          minutesRead: 30,
+          startTime: new Date(now.getTime() - 432_000_000),
+          currentTime: new Date(now.getTime() - 432_000_000)
+        },
+        {
+          userId: user.id,
+          bookId: book.id,
+          minutesRead: 45,
+          startTime: new Date(now.getTime() - 691_200_000),
+          currentTime: new Date(now.getTime() - 691_200_000)
+        }
+      ];
+      await createTestReadingLogs(readingLogs);
 
       const response = await factory.app
         .get(`${getReadingLogsRoute}?timespan=last7days`)
@@ -260,17 +260,55 @@ describe('Testing the reading log route', () => {
       expect(response.body).toMatchObject({
         message: 'Reading logs fetched successfully',
         data: expect.arrayContaining([
-          expect.objectContaining({ minutesRead: 30 }),
-          expect.objectContaining({ minutesRead: 60 })
+          expect.objectContaining({ minutesRead: 60 }),
+          expect.objectContaining({ minutesRead: 30 })
         ])
       });
       expect(response.body.data.length).toBe(2);
     });
 
-    it('should return empty array if no logs found', async () => {
-      const { user } = await createTestUser(factory);
-      const token = await getTestAuthToken(user);
+    it('should get reading logs for last 30 days', async () => {
+      const now = new Date();
+      const readingLogs = [
+        {
+          userId: user.id,
+          bookId: book.id,
+          minutesRead: 60,
+          startTime: now,
+          currentTime: now
+        },
+        {
+          userId: user.id,
+          bookId: book.id,
+          minutesRead: 30,
+          startTime: new Date(now.getTime() - 2_505_600_000),
+          currentTime: new Date(now.getTime() - 2_505_600_000)
+        },
+        {
+          userId: user.id,
+          bookId: book.id,
+          minutesRead: 45,
+          startTime: new Date(now.getTime() - 2_678_400_000),
+          currentTime: new Date(now.getTime() - 2_678_400_000)
+        }
+      ];
+      await createTestReadingLogs(readingLogs);
 
+      const response = await factory.app
+        .get(`${getReadingLogsRoute}?timespan=last30days`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(response.body).toMatchObject({
+        message: 'Reading logs fetched successfully',
+        data: expect.arrayContaining([
+          expect.objectContaining({ minutesRead: 60 }),
+          expect.objectContaining({ minutesRead: 30 })
+        ])
+      });
+      expect(response.body.data.length).toBe(2);
+    });
+    it('should return empty array if no logs found', async () => {
       const response = await factory.app
         .get(getReadingLogsRoute)
         .set('Authorization', `Bearer ${token}`);
@@ -291,9 +329,6 @@ describe('Testing the reading log route', () => {
     });
 
     it('should return 500 when there is a server error', async () => {
-      const { user } = await createTestUser(factory);
-      const token = await getTestAuthToken(user);
-
       jest
         .spyOn(factory._connection.getRepository(ReadingLogEntity), 'find')
         .mockRejectedValueOnce(new Error('Database error'));
