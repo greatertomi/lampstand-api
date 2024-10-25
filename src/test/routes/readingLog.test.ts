@@ -328,6 +328,40 @@ describe('Testing the reading log route', () => {
       ]);
     });
 
+    it('should return 422 if invalid timespan is provided', async () => {
+      const response = await factory.app
+        .get(`${getReadingLogsRoute}?timespan=invalid`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(response.body.errors).toMatchObject({
+        timespan: 'Timespan must be one of: today, last7days, last30days'
+      });
+    });
+
+    it('should allow request without timespan parameter', async () => {
+      const response = await factory.app
+        .get(getReadingLogsRoute)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(response.body).toMatchObject({
+        message: 'Reading logs fetched successfully',
+        data: expect.any(Array)
+      });
+    });
+
+    it('should validate empty timespan value', async () => {
+      const response = await factory.app
+        .get(`${getReadingLogsRoute}?timespan=`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(response.body.errors).toMatchObject({
+        timespan: 'Timespan must be one of: today, last7days, last30days'
+      });
+    });
+
     it('should return 500 when there is a server error', async () => {
       jest
         .spyOn(factory._connection.getRepository(ReadingLogEntity), 'find')

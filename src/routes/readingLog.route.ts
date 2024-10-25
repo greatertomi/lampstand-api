@@ -1,6 +1,12 @@
 import { Router } from 'express';
 import { getUserReadingLogs, logReadingEvent } from '../controllers';
-import { asyncMiddleware, checkJwt, logReadingEventValidationRules, validate } from '../middleware';
+import {
+  asyncMiddleware,
+  checkJwt,
+  logReadingEventValidationRules,
+  readingLogsValidationRules,
+  validate
+} from '../middleware';
 
 const router = Router();
 
@@ -12,6 +18,12 @@ router.post(
   asyncMiddleware(logReadingEvent)
 );
 
-router.get('/', checkJwt, asyncMiddleware(getUserReadingLogs));
+router.get(
+  '/',
+  checkJwt,
+  readingLogsValidationRules,
+  validate,
+  asyncMiddleware(getUserReadingLogs)
+);
 
 export default router;

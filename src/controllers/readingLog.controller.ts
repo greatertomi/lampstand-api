@@ -47,16 +47,7 @@ export const logReadingEvent = async (req: IExtendedRequest, res: Response) => {
 
 export const getUserReadingLogs = async (req: IExtendedRequest, res: Response): Promise<void> => {
   const { timespan } = req.query;
-  const validTimespan: TimeSpan[] = ['today', 'last7days', 'last30days'];
   const userId = req.user.id;
-
-  if (timespan && !validTimespan.includes(timespan as TimeSpan)) {
-    res.status(HTTP_STATUS.BAD_REQUEST).json({
-      status: 'error',
-      message: 'Invalid timespan value. Must be one of: today, last7days, last30days'
-    });
-    return;
-  }
 
   const readingLogRepository = handleGetRepository(ReadingLogEntity);
 
@@ -73,7 +64,7 @@ export const getUserReadingLogs = async (req: IExtendedRequest, res: Response): 
 
   const readingLogs = await readingLogRepository.find({
     where: whereCondition,
-    relations: ['book'], //i cant remove this line. my test will fail without it
+    relations: ['book'],
     order: { startTime: 'DESC' }
   });
 
