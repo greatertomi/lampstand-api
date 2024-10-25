@@ -5,7 +5,7 @@ import { JwtPayload } from '../types';
 
 export const JwtHelper = {
   generateToken(data: JwtPayload) {
-    return jwt.sign(data, envConfig.JWT_SECRET, { expiresIn: '1d' });
+    return jwt.sign(data, envConfig.JWT_SECRET, { expiresIn: '30d' });
   },
   verifyToken(token: string): JwtPayload {
     try {
