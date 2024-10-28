@@ -15,7 +15,7 @@ export class ReadingGoal {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => UserEntity, user => user.readingGoals)
+  @ManyToOne(() => UserEntity, user => user.readingGoals, { onDelete: 'CASCADE' })
   user: UserEntity;
 
   @Column('int')

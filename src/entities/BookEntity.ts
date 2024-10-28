@@ -19,7 +19,7 @@ export class BookEntity {
   @Column()
   author: string;
 
-  @ManyToOne(() => UserEntity, user => user.books)
+  @ManyToOne(() => UserEntity, user => user.books, { onDelete: 'CASCADE' })
   owner: UserEntity;
 
   @Column('text')
@@ -37,6 +37,6 @@ export class BookEntity {
   @Column()
   url: string;
 
-  @OneToMany(() => ReadingLogEntity, readingLog => readingLog.book)
+  @OneToMany(() => ReadingLogEntity, readingLog => readingLog.book, { onDelete: 'CASCADE' })
   readingLogs: ReadingLogEntity[];
 }

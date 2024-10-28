@@ -7,10 +7,10 @@ export class ReadingLogEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => UserEntity, user => user.readingLogs)
+  @ManyToOne(() => UserEntity, user => user.readingLogs, { onDelete: 'CASCADE' })
   user: UserEntity;
 
-  @ManyToOne(() => BookEntity, book => book.readingLogs)
+  @ManyToOne(() => BookEntity, book => book.readingLogs, { onDelete: 'CASCADE' })
   book: BookEntity;
 
   @Column('timestamp')

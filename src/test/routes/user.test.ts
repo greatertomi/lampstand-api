@@ -149,4 +149,59 @@ describe('[GET] users/me', () => {
       ]);
     });
   });
+
+  describe('[DELETE] users/remove-account', () => {
+    const removeAccountRoute = '/users/remove-account';
+    it('should remove the user account and associated data successfully', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+
+      const res = await factory.app
+        .delete(removeAccountRoute)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HTTP_STATUS.OK);
+
+      expect(res.body).toEqual({
+        message: 'User and associated data successfully deleted'
+      });
+      const deletedUser = await factory._connection
+        .getRepository(UserEntity)
+        .findOne({ where: { id: user.id } });
+      expect(deletedUser).toBeNull();
+    });
+
+    it('should return 404 when trying to remove a non-existent user', async () => {
+      const nonExistentUser = {
+        id: '4f4ef67c-75fa-4490-bf02-b2429ccb4084',
+        email: 'nonexistent@example.com',
+        fullName: 'Non Existent User'
+      };
+      const token = await getTestAuthToken(nonExistentUser);
+
+      const res = await factory.app
+        .delete(removeAccountRoute)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HTTP_STATUS.NOT_FOUND);
+
+      expect(res.body).toEqual({
+        errors: [
+          {
+            message: 'User not found'
+          }
+        ]
+      });
+    });
+
+    it('should return 401 if the user is not authenticated', async () => {
+      const res = await factory.app.delete(removeAccountRoute).expect(HTTP_STATUS.UNAUTHORIZED);
+
+      expect(res.body).toEqual({
+        errors: [
+          {
+            message: 'Authorization header not provided'
+          }
+        ]
+      });
+    });
+  });
 });
