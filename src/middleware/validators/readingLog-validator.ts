@@ -1,4 +1,4 @@
-import { body } from 'express-validator';
+import { body, query } from 'express-validator';
 
 export const logReadingEventValidationRules = [
   body('bookId').isUUID().withMessage('Invalid book ID'),
@@ -13,4 +13,13 @@ export const logReadingEventValidationRules = [
       }
       return true;
     })
+];
+
+export const readingLogsValidationRules = [
+  query('timespan')
+    .optional()
+    .isString()
+    .trim()
+    .isIn(['today', 'last7days', 'last30days'])
+    .withMessage('Timespan must be one of: today, last7days, last30days')
 ];

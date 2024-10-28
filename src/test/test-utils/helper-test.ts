@@ -1,4 +1,4 @@
-import { BookEntity } from '../../entities';
+import { BookEntity, ReadingLogEntity } from '../../entities';
 import { ReadingGoal } from '../../entities/ReadingGoalEntity';
 import { JwtHelper } from '../../lib';
 import { HTTP_STATUS } from '../../lib/responses';
@@ -6,6 +6,11 @@ import { JwtPayload } from '../../types';
 import handleGetRepository from '../../utils/handleGetRepository';
 import { TestFactory } from '../factory';
 import { testBook, testUser } from './test-data';
+
+type ReadingLogData = Pick<ReadingLogEntity, 'minutesRead' | 'startTime' | 'currentTime'> & {
+  userId: string;
+  bookId: string;
+};
 
 export const createTestUser = async (factory: TestFactory) => {
   const uniqueEmail = `test-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@example.com`;
@@ -46,4 +51,16 @@ export const createTestGoal = async (userId: string): Promise<ReadingGoal> => {
     reminderTime: '08:00',
     user: { id: userId }
   });
+};
+
+export const createTestReadingLogs = async (readingLogs: ReadingLogData[]) => {
+  const readingLogRepository = handleGetRepository(ReadingLogEntity);
+  const logsToSave = readingLogs.map((log) => ({
+    user: { id: log.userId },
+    book: { id: log.bookId },
+    startTime: log.startTime,
+    currentTime: log.currentTime,
+    minutesRead: log.minutesRead
+  }));
+  return readingLogRepository.save(logsToSave);
 };
