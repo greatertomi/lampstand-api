@@ -15,7 +15,7 @@ export const signup = async (req: Request, res: Response) => {
   const userRepository = handleGetRepository(UserEntity);
 
   const user = await userRepository.findOne({
-    where: { emailAddress: email }
+    where: { email: email }
   });
 
   if (user) {
@@ -26,7 +26,7 @@ export const signup = async (req: Request, res: Response) => {
 
   const newUser = userRepository.create({
     fullName,
-    emailAddress: email,
+    email: email,
     password: hashedPassword,
     agreedToTerms
   });
@@ -36,7 +36,7 @@ export const signup = async (req: Request, res: Response) => {
   const responseData: JwtPayload = {
     id: newUser.id,
     fullName: newUser.fullName,
-    email: newUser.emailAddress
+    email: newUser.email
   };
   const token = JwtHelper.generateToken(responseData);
   await sendVerificationEmail(responseData);
@@ -74,7 +74,7 @@ export const login = async (req: Request, res: Response) => {
   const userRepository = handleGetRepository(UserEntity);
 
   const user = await userRepository.findOne({
-    where: { emailAddress: email }
+    where: { email: email }
   });
 
   const checkPassword = user ? await BcryptHelper.compare(password, user.password) : false;
@@ -85,7 +85,7 @@ export const login = async (req: Request, res: Response) => {
   const responseData: JwtPayload = {
     id: user.id,
     fullName: user.fullName,
-    email: user.emailAddress
+    email: user.email
   };
   const token = JwtHelper.generateToken(responseData);
 
@@ -102,7 +102,7 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
   const passwordResetTokenRepository = handleGetRepository(PasswordResetTokenEntity);
 
   const user = await userRepository.findOne({
-    where: { emailAddress: email }
+    where: { email: email }
   });
 
   if (!user) {
@@ -122,7 +122,7 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
 
   await passwordResetTokenRepository.save(passwordResetToken);
 
-  await sendPasswordResetEmail(user.emailAddress, token);
+  await sendPasswordResetEmail(user.email, token);
   logger.debug(`Password reset email sent to ${email}`);
 
   const response = {
@@ -130,7 +130,7 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
     message: 'A 6-digit code has been sent to your email address',
     data: {
       userId: user.id,
-      email: user.emailAddress
+      email: user.email
     }
   };
 

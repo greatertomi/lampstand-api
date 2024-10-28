@@ -42,7 +42,7 @@ describe('[GET] users/me', () => {
     expect(res.body).toMatchObject({
       id: expect.any(String),
       fullName: expect.any(String),
-      emailAddress: expect.any(String),
+      email: expect.any(String),
       phoneNumber: null,
       agreedToTerms: expect.any(Boolean),
       isEmailVerified: expect.any(Boolean),

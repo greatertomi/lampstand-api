@@ -20,7 +20,7 @@ const generateOAuthResponse = (user: UserEntity, res: Response, status: number) 
   const responseData: JwtPayload = {
     id: user.id,
     fullName: user.fullName,
-    email: user.emailAddress
+    email: user.email
   };
   const token = JwtHelper.generateToken(responseData);
 
@@ -40,12 +40,12 @@ export const handleGoogleOauthCallback = async (req: AuthenticatedRequest, res: 
   };
 
   const userRepository = handleGetRepository(UserEntity);
-  const user = await userRepository.findOne({ where: { emailAddress: oauthUser.email } });
+  const user = await userRepository.findOne({ where: { email: oauthUser.email } });
 
   if (!user) {
     const newUser = userRepository.create({
       fullName: oauthUser.fullName,
-      emailAddress: oauthUser.email,
+      email: oauthUser.email,
       agreedToTerms: true,
       isOAuthUser: true,
       profilePicture: oauthUser.profilePicture
