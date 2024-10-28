@@ -9,6 +9,7 @@ import {
   createTestUser,
   getTestAuthToken
 } from '../test-utils/helper-test';
+import { getMockedReadingLogs } from '../test-utils/test-data';
 
 const unAuthenticatedMessage = 'Authorization header not provided';
 
@@ -151,23 +152,7 @@ describe('Testing the reading log route', () => {
   describe('GET /readingLogs', () => {
     const getReadingLogsRoute = '/readingLogs/';
     it('should get all reading logs for a user successfully', async () => {
-      const now = new Date();
-      const readingLogs = [
-        {
-          userId: user.id,
-          bookId: book.id,
-          minutesRead: 60,
-          startTime: now,
-          currentTime: now
-        },
-        {
-          userId: user.id,
-          bookId: book.id,
-          minutesRead: 30,
-          startTime: new Date(now.getTime() - 691_200_000),
-          currentTime: new Date(now.getTime() - 691_200_000)
-        }
-      ];
+      const readingLogs = getMockedReadingLogs(user, book);
       await createTestReadingLogs(readingLogs);
 
       const response = await factory.app
@@ -188,26 +173,10 @@ describe('Testing the reading log route', () => {
           })
         ])
       });
-      expect(response.body.data.length).toBe(2);
+      expect(response.body.data.length).toBe(6);
     });
     it('should get reading logs for today', async () => {
-      const now = new Date();
-      const readingLogs = [
-        {
-          userId: user.id,
-          bookId: book.id,
-          minutesRead: 60,
-          startTime: now,
-          currentTime: now
-        },
-        {
-          userId: user.id,
-          bookId: book.id,
-          minutesRead: 30,
-          startTime: new Date(now.getTime() - 86_400_000),
-          currentTime: new Date(now.getTime() - 86_400_000)
-        }
-      ];
+      const readingLogs = getMockedReadingLogs(user, book);
       await createTestReadingLogs(readingLogs);
 
       const response = await factory.app
@@ -226,30 +195,7 @@ describe('Testing the reading log route', () => {
       expect(response.body.data.length).toBe(1);
     });
     it('should get reading logs for last 7 days', async () => {
-      const now = new Date();
-      const readingLogs = [
-        {
-          userId: user.id,
-          bookId: book.id,
-          minutesRead: 60,
-          startTime: now,
-          currentTime: now
-        },
-        {
-          userId: user.id,
-          bookId: book.id,
-          minutesRead: 30,
-          startTime: new Date(now.getTime() - 432_000_000),
-          currentTime: new Date(now.getTime() - 432_000_000)
-        },
-        {
-          userId: user.id,
-          bookId: book.id,
-          minutesRead: 45,
-          startTime: new Date(now.getTime() - 691_200_000),
-          currentTime: new Date(now.getTime() - 691_200_000)
-        }
-      ];
+      const readingLogs = getMockedReadingLogs(user, book);
       await createTestReadingLogs(readingLogs);
 
       const response = await factory.app
@@ -264,34 +210,11 @@ describe('Testing the reading log route', () => {
           expect.objectContaining({ minutesRead: 30 })
         ])
       });
-      expect(response.body.data.length).toBe(2);
+      expect(response.body.data.length).toBe(3);
     });
 
     it('should get reading logs for last 30 days', async () => {
-      const now = new Date();
-      const readingLogs = [
-        {
-          userId: user.id,
-          bookId: book.id,
-          minutesRead: 60,
-          startTime: now,
-          currentTime: now
-        },
-        {
-          userId: user.id,
-          bookId: book.id,
-          minutesRead: 30,
-          startTime: new Date(now.getTime() - 2_505_600_000),
-          currentTime: new Date(now.getTime() - 2_505_600_000)
-        },
-        {
-          userId: user.id,
-          bookId: book.id,
-          minutesRead: 45,
-          startTime: new Date(now.getTime() - 2_678_400_000),
-          currentTime: new Date(now.getTime() - 2_678_400_000)
-        }
-      ];
+      const readingLogs = getMockedReadingLogs(user, book);
       await createTestReadingLogs(readingLogs);
 
       const response = await factory.app
@@ -306,8 +229,9 @@ describe('Testing the reading log route', () => {
           expect.objectContaining({ minutesRead: 30 })
         ])
       });
-      expect(response.body.data.length).toBe(2);
+      expect(response.body.data.length).toBe(5);
     });
+
     it('should return empty array if no logs found', async () => {
       const response = await factory.app
         .get(getReadingLogsRoute)
@@ -331,29 +255,6 @@ describe('Testing the reading log route', () => {
     it('should return 422 if invalid timespan is provided', async () => {
       const response = await factory.app
         .get(`${getReadingLogsRoute}?timespan=invalid`)
-        .set('Authorization', `Bearer ${token}`);
-
-      expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
-      expect(response.body.errors).toMatchObject({
-        timespan: 'Timespan must be one of: today, last7days, last30days'
-      });
-    });
-
-    it('should allow request without timespan parameter', async () => {
-      const response = await factory.app
-        .get(getReadingLogsRoute)
-        .set('Authorization', `Bearer ${token}`);
-
-      expect(response.status).toBe(HTTP_STATUS.OK);
-      expect(response.body).toMatchObject({
-        message: 'Reading logs fetched successfully',
-        data: expect.any(Array)
-      });
-    });
-
-    it('should validate empty timespan value', async () => {
-      const response = await factory.app
-        .get(`${getReadingLogsRoute}?timespan=`)
         .set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);

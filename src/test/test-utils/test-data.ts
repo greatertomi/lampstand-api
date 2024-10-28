@@ -1,4 +1,5 @@
-import { BookFormat } from '../../entities';
+import { BookEntity, BookFormat } from '../../entities';
+import { JwtPayload } from '../../types';
 
 export const testUser = {
   fullName: 'David Brown',
@@ -12,4 +13,52 @@ export const testBook = {
   author: 'Test Author',
   format: BookFormat.PDF,
   cover: 'data:image/jpeg;base64,9j4j93'
+};
+
+export const getMockedReadingLogs = (user: JwtPayload, book: BookEntity) => {
+  const now = new Date();
+  return [
+    {
+      userId: user.id,
+      bookId: book.id,
+      minutesRead: 60,
+      startTime: now,
+      currentTime: now
+    },
+    {
+      userId: user.id,
+      bookId: book.id,
+      minutesRead: 30,
+      startTime: new Date(now.getTime() - 86_400_000),
+      currentTime: new Date(now.getTime() - 86_400_000)
+    },
+    {
+      userId: user.id,
+      bookId: book.id,
+      minutesRead: 30,
+      startTime: new Date(now.getTime() - 432_000_000),
+      currentTime: new Date(now.getTime() - 432_000_000)
+    },
+    {
+      userId: user.id,
+      bookId: book.id,
+      minutesRead: 30,
+      startTime: new Date(now.getTime() - 691_200_000),
+      currentTime: new Date(now.getTime() - 691_200_000)
+    },
+    {
+      userId: user.id,
+      bookId: book.id,
+      minutesRead: 30,
+      startTime: new Date(now.getTime() - 2_505_600_000),
+      currentTime: new Date(now.getTime() - 2_505_600_000)
+    },
+    {
+      userId: user.id,
+      bookId: book.id,
+      minutesRead: 45,
+      startTime: new Date(now.getTime() - 2_678_400_000),
+      currentTime: new Date(now.getTime() - 2_678_400_000)
+    }
+  ];
 };
