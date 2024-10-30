@@ -2,6 +2,7 @@ import { Entity, Column, CreateDateColumn, PrimaryGeneratedColumn, UpdateDateCol
 import { BookEntity } from './BookEntity';
 import { ReadingGoal } from './ReadingGoalEntity';
 import { ReadingLogEntity } from './ReadingLogEntity';
+import { LoginHistoryEntity } from './LoginHistoryEntity';
 
 @Entity({ name: 'users' })
 export class UserEntity {
@@ -46,4 +47,7 @@ export class UserEntity {
 
   @OneToMany(() => ReadingLogEntity, readingLog => readingLog.user, { onDelete: 'CASCADE' })
   readingLogs: ReadingLogEntity[];
+
+  @OneToMany(() => LoginHistoryEntity, loginHistory => loginHistory.user)
+  loginHistory: LoginHistoryEntity[];
 }

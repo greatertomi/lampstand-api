@@ -4,6 +4,7 @@ import { TokenStatus } from '../entities/types';
 import { BcryptHelper, JwtHelper } from '../lib';
 import { BadRequestError, HTTP_STATUS, NotFoundError } from '../lib/responses';
 import { logger, sendPasswordResetEmail, sendVerificationEmail } from '../services';
+import { LoginHistoryService } from '../services/log-history';
 import { JwtPayload } from '../types';
 import { generateUniqueToken } from '../utils';
 import handleGetRepository from '../utils/handleGetRepository';
@@ -81,7 +82,7 @@ export const login = async (req: Request, res: Response) => {
   if (!user || !checkPassword) {
     throw new NotFoundError('Invalid login credentials');
   }
-
+  await LoginHistoryService.getInstance().logLogin(user.id, 'Password');
   const responseData: JwtPayload = {
     id: user.id,
     fullName: user.fullName,

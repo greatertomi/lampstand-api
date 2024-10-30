@@ -3,6 +3,7 @@ import { UserEntity } from '../entities';
 import { JwtHelper } from '../lib';
 import { HTTP_STATUS } from '../lib/responses';
 import { logger } from '../services';
+import { LoginHistoryService } from '../services/log-history';
 import { JwtPayload } from '../types';
 import handleGetRepository from '../utils/handleGetRepository';
 
@@ -51,7 +52,9 @@ export const handleGoogleOauthCallback = async (req: AuthenticatedRequest, res: 
       profilePicture: oauthUser.profilePicture
     });
     await userRepository.save(newUser);
+    await LoginHistoryService.getInstance().logLogin(newUser.id, 'OAuth');
     return generateOAuthResponse(newUser, res, HTTP_STATUS.CREATED);
   }
+  await LoginHistoryService.getInstance().logLogin(user.id, 'OAuth');
   return generateOAuthResponse(user, res, HTTP_STATUS.OK);
 };

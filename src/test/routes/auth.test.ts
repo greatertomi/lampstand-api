@@ -1,4 +1,5 @@
 import { PasswordResetTokenEntity } from '../../entities';
+import { LoginHistoryEntity } from '../../entities/LoginHistoryEntity';
 import { TokenStatus } from '../../entities/types';
 import { JwtHelper } from '../../lib';
 import { HTTP_STATUS } from '../../lib/responses';
@@ -156,6 +157,45 @@ describe('Testing the auth route', () => {
         fullName: user.fullName,
         email: user.email
       });
+    });
+    it('should log successful password-based login', async () => {
+      const { user, password } = await createTestUser(factory);
+
+      const response = await factory.app.post(loginRoute).send({
+        email: user.email,
+        password
+      });
+
+      expect(response.status).toEqual(HTTP_STATUS.OK);
+      const loginHistoryRepository = factory._connection.getRepository(LoginHistoryEntity);
+      const loginRecord = await loginHistoryRepository.findOne({
+        where: {
+          userId: user.id,
+          loginType: 'Password'
+        },
+        order: { createdAt: 'DESC' }
+      });
+
+      expect(loginRecord).toBeDefined();
+      expect(loginRecord?.userId).toBe(user.id);
+      expect(loginRecord?.loginType).toBe('Password');
+      expect(loginRecord?.createdAt).toBeDefined();
+    });
+
+    it('should not log failed login attempts', async () => {
+      const { user } = await createTestUser(factory);
+
+      await factory.app.post(loginRoute).send({
+        email: user.email,
+        password: 'wrongPassword12345@P'
+      });
+
+      const loginHistoryRepository = factory._connection.getRepository(LoginHistoryEntity);
+      const loginRecord = await loginHistoryRepository.findOne({
+        where: { userId: user.id }
+      });
+
+      expect(loginRecord).toBeNull();
     });
 
     it('should return an error when the login credentials are invalid', async () => {
