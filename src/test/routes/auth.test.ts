@@ -1,4 +1,4 @@
-import { PasswordResetTokenEntity } from '../../entities';
+import { LoginHistoryEntity, LoginType, PasswordResetTokenEntity } from '../../entities';
 import { TokenStatus } from '../../entities/types';
 import { JwtHelper } from '../../lib';
 import { HTTP_STATUS } from '../../lib/responses';
@@ -191,6 +191,40 @@ describe('Testing the auth route', () => {
         email: 'This must be a valid email address',
         password: passwordError
       });
+    });
+
+    it('should save the last login history when the user logs in', async () => {
+      const { user, password } = await createTestUser(factory);
+
+      const response = await factory.app.post(loginRoute).send({
+        email: user.email,
+        password
+      });
+
+      expect(response.status).toEqual(HTTP_STATUS.OK);
+      expect(response.body.token).toBeDefined();
+
+      const loginHistoryRepository = factory._connection.getRepository(LoginHistoryEntity);
+
+      const userLoginHistory = await loginHistoryRepository.findOne({
+        where: { user: { id: user.id } }
+      });
+
+      expect(userLoginHistory).toBeDefined();
+      expect(userLoginHistory).toMatchObject({
+        id: expect.any(String),
+        loginType: user.isOAuthUser ? LoginType.OAUTH : LoginType.PASSWORD,
+        loginDates: expect.arrayContaining([expect.any(String)])
+      });
+
+      expect(userLoginHistory.loginDates).toHaveLength(1);
+      expect(userLoginHistory.loginDates[0]).toEqual(expect.any(String));
+
+      if (userLoginHistory.loginDates.length > 1) {
+        expect(new Date(userLoginHistory.loginDates[0]).getTime()).toBeGreaterThan(
+          new Date(userLoginHistory.loginDates[1]).getTime()
+        );
+      }
     });
   });
 

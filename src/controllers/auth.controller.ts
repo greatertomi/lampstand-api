@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { PasswordResetTokenEntity, UserEntity } from '../entities';
+import { LoginHistoryEntity, LoginType, PasswordResetTokenEntity, UserEntity } from '../entities';
 import { TokenStatus } from '../entities/types';
 import { BcryptHelper, JwtHelper } from '../lib';
 import { BadRequestError, HTTP_STATUS, NotFoundError } from '../lib/responses';
@@ -72,6 +72,7 @@ export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   const userRepository = handleGetRepository(UserEntity);
+  const loginHistoryRepository = handleGetRepository(LoginHistoryEntity);
 
   const user = await userRepository.findOne({
     where: { email: email }
@@ -88,6 +89,25 @@ export const login = async (req: Request, res: Response) => {
     email: user.email
   };
   const token = JwtHelper.generateToken(responseData);
+
+  const loginType = user.isOAuthUser ? LoginType.OAUTH : LoginType.PASSWORD;
+
+  let userLoginHistory = await loginHistoryRepository.findOne({
+    where: { user: { id: user.id } }
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+  userLoginHistory
+    ? userLoginHistory.loginDates.push(new Date().toISOString())
+    : (userLoginHistory = loginHistoryRepository.create({
+        user: user,
+        loginType,
+        loginDates: [new Date().toISOString()]
+      }));
+
+  await loginHistoryRepository.save(userLoginHistory);
+
+  logger.info('Login history updated:', userLoginHistory);
 
   res.status(HTTP_STATUS.OK).json({
     message: 'Login successful',
