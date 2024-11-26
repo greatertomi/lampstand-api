@@ -5,6 +5,7 @@ import { HTTP_STATUS } from '../lib/responses';
 import { logger } from '../services';
 import { JwtPayload } from '../types';
 import handleGetRepository from '../utils/handleGetRepository';
+import { addLoginHistories } from './helper';
 
 export interface OAuthUser {
   emails: { value: string }[];
@@ -16,13 +17,14 @@ export interface AuthenticatedRequest extends Request {
   user: OAuthUser;
 }
 
-const generateOAuthResponse = (user: UserEntity, res: Response, status: number) => {
+const generateOAuthResponse = async (user: UserEntity, res: Response, status: number) => {
   const responseData: JwtPayload = {
     id: user.id,
     fullName: user.fullName,
     email: user.email
   };
   const token = JwtHelper.generateToken(responseData);
+  await addLoginHistories(responseData);
 
   return res.status(status).json({ message: 'OAuth login successful', token, data: responseData });
 };

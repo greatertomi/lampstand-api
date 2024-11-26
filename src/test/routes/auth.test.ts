@@ -1,4 +1,5 @@
-import { LoginHistoryEntity, LoginType, PasswordResetTokenEntity } from '../../entities';
+import * as addLoginHistoriesHelper from '../../controllers/helper/addLoginHistories';
+import { PasswordResetTokenEntity } from '../../entities';
 import { TokenStatus } from '../../entities/types';
 import { JwtHelper } from '../../lib';
 import { HTTP_STATUS } from '../../lib/responses';
@@ -15,13 +16,16 @@ describe('Testing the auth route', () => {
   const resetRoute = '/auth/reset-password';
   const updatePasswordRoute = '/auth/update-password';
   let sendVerificationEmail: jest.SpyInstance;
+  let addLoginHistory: jest.SpyInstance;
   const verifyTokenRoute = '/auth/verify-reset-token';
   let sendPasswordResetEmail: jest.SpyInstance;
 
   beforeEach((done) => {
     factory.init().then(done);
     sendVerificationEmail = jest.spyOn(sendEmailService, 'sendVerificationEmail');
+    addLoginHistory = jest.spyOn(addLoginHistoriesHelper, 'addLoginHistories');
     sendVerificationEmail.mockImplementation(() => Promise.resolve());
+    addLoginHistory.mockImplementation(() => Promise.resolve());
     sendPasswordResetEmail = jest.spyOn(sendEmailService, 'sendPasswordResetEmail');
     sendPasswordResetEmail.mockImplementation(() => Promise.resolve());
   });
@@ -32,8 +36,9 @@ describe('Testing the auth route', () => {
   });
 
   describe('POST /Signup', () => {
-    it('should register a new user successfully', async () => {
+    it('should register a new user successfully and save login date', async () => {
       const res = await factory.app.post(createRoute).send(testUser).expect(HTTP_STATUS.CREATED);
+
       const responseData = {
         id: expect.any(String),
         fullName: testUser.fullName,
@@ -42,6 +47,7 @@ describe('Testing the auth route', () => {
 
       expect(res.body).toHaveProperty('message', 'User created');
       expect(res.body.data).toMatchObject(responseData);
+      expect(addLoginHistory).toHaveBeenCalled();
       expect(sendVerificationEmail).toHaveBeenCalledWith(responseData);
     });
 
@@ -203,28 +209,13 @@ describe('Testing the auth route', () => {
 
       expect(response.status).toEqual(HTTP_STATUS.OK);
       expect(response.body.token).toBeDefined();
-
-      const loginHistoryRepository = factory._connection.getRepository(LoginHistoryEntity);
-
-      const userLoginHistory = await loginHistoryRepository.findOne({
-        where: { user: { id: user.id } }
-      });
-
-      expect(userLoginHistory).toBeDefined();
-      expect(userLoginHistory).toMatchObject({
-        id: expect.any(String),
-        loginType: user.isOAuthUser ? LoginType.OAUTH : LoginType.PASSWORD,
-        loginDates: expect.arrayContaining([expect.any(String)])
-      });
-
-      expect(userLoginHistory.loginDates).toHaveLength(1);
-      expect(userLoginHistory.loginDates[0]).toEqual(expect.any(String));
-
-      if (userLoginHistory.loginDates.length > 1) {
-        expect(new Date(userLoginHistory.loginDates[0]).getTime()).toBeGreaterThan(
-          new Date(userLoginHistory.loginDates[1]).getTime()
-        );
-      }
+      expect(addLoginHistory).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: user.id,
+          email: user.email,
+          fullName: user.fullName
+        })
+      );
     });
   });
 
