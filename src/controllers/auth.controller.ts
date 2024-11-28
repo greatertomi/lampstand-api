@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { PasswordResetTokenEntity, UserEntity } from '../entities';
+import { LoginType, PasswordResetTokenEntity, UserEntity } from '../entities';
 import { TokenStatus } from '../entities/types';
 import { BcryptHelper, JwtHelper } from '../lib';
 import { BadRequestError, HTTP_STATUS, NotFoundError } from '../lib/responses';
@@ -7,7 +7,7 @@ import { logger, sendPasswordResetEmail, sendVerificationEmail } from '../servic
 import { JwtPayload } from '../types';
 import { generateUniqueToken } from '../utils';
 import handleGetRepository from '../utils/handleGetRepository';
-import { addLoginHistories } from './helper';
+import { addLoginHistories } from './utils';
 
 const userNotFound = 'User not found';
 
@@ -33,7 +33,6 @@ export const signup = async (req: Request, res: Response) => {
   });
 
   await userRepository.save(newUser);
-  await addLoginHistories(newUser);
 
   const responseData: JwtPayload = {
     id: newUser.id,
@@ -42,6 +41,7 @@ export const signup = async (req: Request, res: Response) => {
   };
   const token = JwtHelper.generateToken(responseData);
   await sendVerificationEmail(responseData);
+  await addLoginHistories(newUser.id, LoginType.PASSWORD);
 
   const response = {
     message: 'User created',
@@ -91,7 +91,7 @@ export const login = async (req: Request, res: Response) => {
   };
   const token = JwtHelper.generateToken(responseData);
 
-  await addLoginHistories(user);
+  await addLoginHistories(user.id, LoginType.PASSWORD);
 
   res.status(HTTP_STATUS.OK).json({
     message: 'Login successful',

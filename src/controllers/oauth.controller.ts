@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
-import { UserEntity } from '../entities';
+import { LoginType, UserEntity } from '../entities';
 import { JwtHelper } from '../lib';
 import { HTTP_STATUS } from '../lib/responses';
 import { logger } from '../services';
 import { JwtPayload } from '../types';
 import handleGetRepository from '../utils/handleGetRepository';
-import { addLoginHistories } from './helper';
+import { addLoginHistories } from './utils';
 
 export interface OAuthUser {
   emails: { value: string }[];
@@ -24,7 +24,7 @@ const generateOAuthResponse = async (user: UserEntity, res: Response, status: nu
     email: user.email
   };
   const token = JwtHelper.generateToken(responseData);
-  await addLoginHistories(responseData);
+  await addLoginHistories(user.id, LoginType.OAUTH);
 
   return res.status(status).json({ message: 'OAuth login successful', token, data: responseData });
 };

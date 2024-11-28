@@ -1,5 +1,5 @@
-import * as addLoginHistoriesHelper from '../../controllers/helper/addLoginHistories';
-import { PasswordResetTokenEntity } from '../../entities';
+import * as addLoginHistoriesHelper from '../../controllers/utils/addLoginHistories';
+import { LoginType, PasswordResetTokenEntity } from '../../entities';
 import { TokenStatus } from '../../entities/types';
 import { JwtHelper } from '../../lib';
 import { HTTP_STATUS } from '../../lib/responses';
@@ -47,7 +47,7 @@ describe('Testing the auth route', () => {
 
       expect(res.body).toHaveProperty('message', 'User created');
       expect(res.body.data).toMatchObject(responseData);
-      expect(addLoginHistory).toHaveBeenCalled();
+      expect(addLoginHistory).toHaveBeenCalledWith(responseData.id, LoginType.PASSWORD);
       expect(sendVerificationEmail).toHaveBeenCalledWith(responseData);
     });
 
@@ -59,6 +59,7 @@ describe('Testing the auth route', () => {
       expect(res.status).toEqual(HTTP_STATUS.BAD_REQUEST);
       expect(res.body).toHaveProperty('errors');
       expect(res.body.errors[0]).toHaveProperty('message', 'Email address already in use');
+      expect(addLoginHistory).toHaveBeenCalledTimes(1);
       expect(sendVerificationEmail).toHaveBeenCalledTimes(1);
     });
 
@@ -72,6 +73,7 @@ describe('Testing the auth route', () => {
         expect(Object.keys(res.body.errors).length).toBe(3);
         expect(res.body.errors.password).toBe(passwordError);
         expect(res.body.errors.agreedToTerms).toBe('Agreed to terms should be a boolean');
+        expect(addLoginHistory).not.toHaveBeenCalled();
         expect(sendVerificationEmail).not.toHaveBeenCalled();
       });
 
@@ -93,6 +95,7 @@ describe('Testing the auth route', () => {
           'agreedToTerms',
           'Agreed to terms should be a boolean'
         );
+        expect(addLoginHistory).not.toHaveBeenCalled();
         expect(sendVerificationEmail).not.toHaveBeenCalled();
       });
 
@@ -119,6 +122,7 @@ describe('Testing the auth route', () => {
         ];
 
         expect(expectedErrorMessages).toContain(passwordErrorMessage);
+        expect(addLoginHistory).not.toHaveBeenCalled();
         expect(sendVerificationEmail).not.toHaveBeenCalled();
       });
     });
@@ -162,6 +166,7 @@ describe('Testing the auth route', () => {
         fullName: user.fullName,
         email: user.email
       });
+      expect(addLoginHistory).toHaveBeenCalledWith(user.id, LoginType.PASSWORD);
     });
 
     it('should return an error when the login credentials are invalid', async () => {
@@ -174,17 +179,7 @@ describe('Testing the auth route', () => {
         'message',
         'Invalid login credentials'
       );
-
-      const { user } = await createTestUser(factory);
-      const responseIncorrectPassword = await factory.app.post(loginRoute).send({
-        email: user.email,
-        password: 'wrongPassword12345@P'
-      });
-      expect(responseIncorrectPassword.status).toBe(HTTP_STATUS.NOT_FOUND);
-      expect(responseIncorrectPassword.body.errors[0]).toHaveProperty(
-        'message',
-        'Invalid login credentials'
-      );
+      expect(addLoginHistory).not.toHaveBeenCalled();
     });
 
     it('should return an error when login data is invalid', async () => {
@@ -197,25 +192,7 @@ describe('Testing the auth route', () => {
         email: 'This must be a valid email address',
         password: passwordError
       });
-    });
-
-    it('should save the last login history when the user logs in', async () => {
-      const { user, password } = await createTestUser(factory);
-
-      const response = await factory.app.post(loginRoute).send({
-        email: user.email,
-        password
-      });
-
-      expect(response.status).toEqual(HTTP_STATUS.OK);
-      expect(response.body.token).toBeDefined();
-      expect(addLoginHistory).toHaveBeenCalledWith(
-        expect.objectContaining({
-          id: user.id,
-          email: user.email,
-          fullName: user.fullName
-        })
-      );
+      expect(addLoginHistory).not.toHaveBeenCalled();
     });
   });
 

@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { UserEntity } from './UserEntity';
 
 export enum LoginType {
@@ -17,6 +17,6 @@ export class LoginHistoryEntity {
   @Column({ type: 'enum', enum: LoginType })
   loginType: LoginType;
 
-  @Column('simple-array', { nullable: false, default: () => 'ARRAY[CURRENT_TIMESTAMP]' })
-  loginDates: string[];
+  @CreateDateColumn()
+  loginAt: Date;
 }
