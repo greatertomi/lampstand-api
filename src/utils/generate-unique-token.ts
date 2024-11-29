@@ -1,4 +1,5 @@
 import { Repository } from 'typeorm';
+
 import { PasswordResetTokenEntity } from '../entities';
 import { TokenStatus } from '../entities/types';
 

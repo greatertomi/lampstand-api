@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
-import { UserEntity } from './UserEntity';
+
 import { TokenStatus } from './types';
+import { UserEntity } from './UserEntity';
 
 @Entity('password_reset_tokens')
 export class PasswordResetTokenEntity {

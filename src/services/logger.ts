@@ -1,4 +1,5 @@
 import winston from 'winston';
+
 import envConfig from '../config/envConfig';
 
 const colorsConfig = {

@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
-import { UserEntity } from './UserEntity';
+
 import { ReadingLogEntity } from './ReadingLogEntity';
+import { UserEntity } from './UserEntity';
 
 export enum BookFormat {
   PDF = 'pdf',

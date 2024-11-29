@@ -1,4 +1,5 @@
 import { body } from 'express-validator';
+
 import { passwordValidationRules } from './password-validator';
 
 export const userValidationRules = () => [

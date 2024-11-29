@@ -1,4 +1,5 @@
 import { body, param } from 'express-validator';
+
 import { BookFormat } from '../../entities';
 
 export const saveBookValidationRules = [

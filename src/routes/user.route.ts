@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
+
 import { getUserProfile, removeAccount, updateProfilePicture } from '../controllers';
 import {
   asyncMiddleware,

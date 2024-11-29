@@ -1,8 +1,9 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
+
 import 'reflect-metadata';
 import envConfig from '../config/envConfig';
 
-const syncDatabase = envConfig.SYNC_DATABASE;
+const willSyncDatabase = envConfig.SYNC_DATABASE;
 
 const databaseConfig: DataSourceOptions = {
   type: 'postgres',
@@ -11,10 +12,10 @@ const databaseConfig: DataSourceOptions = {
   username: envConfig.POSTGRES_USER,
   password: envConfig.POSTGRES_PASSWORD,
   database: envConfig.POSTGRES_DB,
-  synchronize: syncDatabase,
+  synchronize: willSyncDatabase,
   logging: false,
-  entities: syncDatabase ? ['src/entities/**/*.ts'] : ['dist/entities/**/*.js'],
-  migrations: syncDatabase ? ['src/migrations/**/*.ts'] : ['dist/migrations/**/*.js'],
+  entities: willSyncDatabase ? ['src/entities/**/*.ts'] : ['dist/entities/**/*.js'],
+  migrations: willSyncDatabase ? ['src/migrations/**/*.ts'] : ['dist/migrations/**/*.js'],
   subscribers: []
 };
 

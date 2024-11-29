@@ -7,6 +7,9 @@ import sonarjs from 'eslint-plugin-sonarjs';
 import unicorn from 'eslint-plugin-unicorn';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import _import from 'eslint-plugin-import';
+import preferArrowFunctions from 'eslint-plugin-prefer-arrow-functions';
+import { fixupPluginRules } from '@eslint/compat';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,9 +32,11 @@ export default [
   ),
   {
     plugins: {
-      '@typescript-eslint': typescriptEslint,
-      unicorn,
-      sonarjs
+        "@typescript-eslint": typescriptEslint,
+        unicorn,
+        sonarjs,
+      import: fixupPluginRules(_import),
+      'prefer-arrow-functions': fixupPluginRules(preferArrowFunctions)
     },
     languageOptions: {
       globals: {
@@ -47,26 +52,62 @@ export default [
       }
     },
     rules: {
-      'unicorn/filename-case': 'off',
-      'import/prefer-default-export': 'off',
-      'unicorn/no-null': 'off',
-      'unicorn/prevent-abbreviations': 'off',
-      'no-console': 'error',
-      'no-restricted-syntax': 'off',
-      'import/no-extraneous-dependencies': 'off',
-      '@typescript-eslint/lines-between-class-members': 'off',
-      '@typescript-eslint/no-namespace': 'off',
-      'no-underscore-dangle': 'off',
-      'spaced-comment': 'off',
-      'import/extensions': 'off',
-      'comma-dangle': 'off',
-      '@typescript-eslint/comma-dangle': 'off',
-      'react/jsx-filename-extension': 'off',
-      indent: 'off',
-      '@typescript-eslint/indent': 'off',
-      'unicorn/no-anonymous-default-export': 'off',
-      'unicorn/prefer-string-replace-all': 'off',
-      'no-duplicate-imports': 'error'
-    }
-  }
-];
+      'object-shorthand': ['error', 'always'],
+      'import/order': [
+        'error',
+        {
+          groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index', 'object', 'type'],
+          pathGroups: [
+            {
+              pattern: 'react',
+              group: 'builtin'
+            },
+            {
+              pattern: 'react-native',
+              group: 'builtin'
+            },
+            {
+              pattern: '@storybook/**',
+              group: 'external'
+            }
+          ],
+          alphabetize: {
+            order: 'asc',
+            caseInsensitive: true
+          },
+          'newlines-between': 'always'
+        }
+      ],
+      'max-params': ['warn', 3],
+      'prefer-arrow-functions/prefer-arrow-functions': 'error',
+      '@typescript-eslint/naming-convention': [
+        'error',
+        {
+          selector: 'variable',
+          types: ['boolean'],
+          format: ['PascalCase'],
+          prefix: ['is', 'should', 'has', 'can', 'did', 'will']
+        }
+      ],
+        "unicorn/filename-case": "off",
+        "import/prefer-default-export": "off",
+        "unicorn/no-null": "off",
+        "unicorn/prevent-abbreviations": "off",
+        "no-console": "error",
+        "no-restricted-syntax": "off",
+        "import/no-extraneous-dependencies": "off",
+        "@typescript-eslint/lines-between-class-members": "off",
+        "@typescript-eslint/no-namespace": "off",
+        "no-underscore-dangle": "off",
+        "spaced-comment": "off",
+        "import/extensions": "off",
+        "comma-dangle": "off",
+        "@typescript-eslint/comma-dangle": "off",
+        "react/jsx-filename-extension": "off",
+        indent: "off",
+        "@typescript-eslint/indent": "off",
+        "unicorn/no-anonymous-default-export": "off",
+        "unicorn/prefer-string-replace-all": "off",
+        "no-duplicate-imports": "error",
+    },
+}];

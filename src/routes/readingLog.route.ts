@@ -1,4 +1,5 @@
 import { Router } from 'express';
+
 import { getUserReadingLogs, logReadingEvent } from '../controllers';
 import {
   asyncMiddleware,

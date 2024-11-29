@@ -1,4 +1,5 @@
 import { Response } from 'express';
+
 import { ReadingGoal } from '../entities/ReadingGoalEntity';
 import { HTTP_STATUS, NotFoundError } from '../lib/responses';
 import { IExtendedRequest } from '../types';

@@ -1,6 +1,7 @@
 import { mailgunClient } from '../config';
 import { JwtHelper } from '../lib';
 import { JwtPayload } from '../types';
+
 import { logger } from './logger';
 
 const SENDER_EMAIL = 'caleboshalusi@gmail.com';

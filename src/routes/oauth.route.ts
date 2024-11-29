@@ -1,5 +1,6 @@
 import { Request, Response, Router } from 'express';
 import passport from 'passport';
+
 import { handleGoogleOauthCallback } from '../controllers';
 import { HTTP_STATUS } from '../lib/responses';
 import { asyncMiddleware } from '../middleware';

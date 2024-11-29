@@ -1,6 +1,8 @@
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+
 import envConfig from '../config/envConfig';
+
 import { logger } from './logger';
 
 passport.use(
@@ -10,6 +12,7 @@ passport.use(
       clientSecret: envConfig.GOOGLE_CLIENT_SECRET,
       callbackURL: envConfig.GOOGLE_CALLBACK_URL
     },
+    /* eslint-disable max-params */
     async (_accessToken, _refreshToken, profile, done) => {
       try {
         return done(null, profile);
@@ -21,10 +24,10 @@ passport.use(
   )
 );
 
-passport.serializeUser(function (user, done) {
+passport.serializeUser((user, done) => {
   done(null, user);
 });
 
-passport.deserializeUser(function (user, done) {
+passport.deserializeUser((user, done) => {
   done(null, user);
 });

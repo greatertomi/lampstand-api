@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+
 import { LoginType, PasswordResetTokenEntity, UserEntity } from '../entities';
 import { TokenStatus } from '../entities/types';
 import { BcryptHelper, JwtHelper } from '../lib';
@@ -7,6 +8,7 @@ import { logger, sendPasswordResetEmail, sendVerificationEmail } from '../servic
 import { JwtPayload } from '../types';
 import { generateUniqueToken } from '../utils';
 import handleGetRepository from '../utils/handleGetRepository';
+
 import { addLoginHistories } from './utils';
 
 const userNotFound = 'User not found';
@@ -16,7 +18,7 @@ export const signup = async (req: Request, res: Response) => {
   const userRepository = handleGetRepository(UserEntity);
 
   const user = await userRepository.findOne({
-    where: { email: email }
+    where: { email }
   });
 
   if (user) {
@@ -27,7 +29,7 @@ export const signup = async (req: Request, res: Response) => {
 
   const newUser = userRepository.create({
     fullName,
-    email: email,
+    email,
     password: hashedPassword,
     agreedToTerms
   });
@@ -76,11 +78,11 @@ export const login = async (req: Request, res: Response) => {
   const userRepository = handleGetRepository(UserEntity);
 
   const user = await userRepository.findOne({
-    where: { email: email }
+    where: { email }
   });
 
-  const checkPassword = user ? await BcryptHelper.compare(password, user.password) : false;
-  if (!user || !checkPassword) {
+  const isPassword = user ? await BcryptHelper.compare(password, user.password) : false;
+  if (!user || !isPassword) {
     throw new NotFoundError('Invalid login credentials');
   }
 
@@ -106,7 +108,7 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
   const passwordResetTokenRepository = handleGetRepository(PasswordResetTokenEntity);
 
   const user = await userRepository.findOne({
-    where: { email: email }
+    where: { email }
   });
 
   if (!user) {
@@ -151,7 +153,7 @@ export const verifyResetToken = async (req: Request, res: Response) => {
 
   const passwordResetTokenRepository = handleGetRepository(PasswordResetTokenEntity);
   const resetToken = await passwordResetTokenRepository.findOne({
-    where: { token: token, status: TokenStatus.ACTIVE, user: { id: userId } }
+    where: { token, status: TokenStatus.ACTIVE, user: { id: userId } }
   });
 
   if (!resetToken) {

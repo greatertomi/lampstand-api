@@ -1,5 +1,6 @@
 import FormData from 'form-data';
 import Mailgun from 'mailgun.js';
+
 import envConfig from './envConfig';
 
 const mailgun = new Mailgun(FormData);

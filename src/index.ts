@@ -1,7 +1,8 @@
-import express from 'express';
 import cors from 'cors';
+import express from 'express';
 import helmet from 'helmet';
 import passport from 'passport';
+
 import envConfig from './config/envConfig';
 import { AppDataSource } from './database';
 import { errorHandler } from './middleware';

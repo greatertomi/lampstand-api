@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextFunction, Response } from 'express';
+
 import { handleGoogleOauthCallback } from '../../src/controllers';
 import { TestFactory } from '../factory';
 

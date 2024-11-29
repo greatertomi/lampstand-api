@@ -1,5 +1,6 @@
 /* eslint-disable sonarjs/no-duplicate-string */
 import { Response } from 'express';
+
 import { UserEntity } from '../entities';
 import { HTTP_STATUS, NotFoundError } from '../lib/responses';
 import { IExtendedRequest } from '../types';

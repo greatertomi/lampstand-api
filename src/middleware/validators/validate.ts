@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { ValidationError, validationResult } from 'express-validator';
+
 import { HTTP_STATUS } from '../../lib/responses';
 
 type FieldValidationError = ValidationError & {

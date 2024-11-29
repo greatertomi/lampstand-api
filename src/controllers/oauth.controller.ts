@@ -1,10 +1,12 @@
 import { Request, Response } from 'express';
+
 import { LoginType, UserEntity } from '../entities';
 import { JwtHelper } from '../lib';
 import { HTTP_STATUS } from '../lib/responses';
 import { logger } from '../services';
 import { JwtPayload } from '../types';
 import handleGetRepository from '../utils/handleGetRepository';
+
 import { addLoginHistories } from './utils';
 
 export interface OAuthUser {

@@ -1,5 +1,5 @@
-import { Request } from 'express';
 import { UploadApiResponse } from 'cloudinary';
+import { Request } from 'express';
 
 export type JwtPayload = {
   id: string;

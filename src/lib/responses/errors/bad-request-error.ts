@@ -1,4 +1,5 @@
 import { HTTP_STATUS } from '../constants';
+
 import { CustomError } from './custom-error';
 
 export class BadRequestError extends CustomError {

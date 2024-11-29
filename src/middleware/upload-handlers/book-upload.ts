@@ -1,6 +1,8 @@
-import { NextFunction, Response } from 'express';
-import { UploadApiResponse } from 'cloudinary';
 import stream from 'node:stream';
+
+import { UploadApiResponse } from 'cloudinary';
+import { NextFunction, Response } from 'express';
+
 import cloudinary from '../../config/cloudinary';
 import envConfig from '../../config/envConfig';
 import { logger } from '../../services';
@@ -28,7 +30,7 @@ export const bookUploadMiddleware = async (
         public_id: bookPublicId,
         folder: CLOUDINARY_FILE_FOLDER,
         resource_type: 'raw',
-        format: format,
+        format,
         access_mode: 'public'
       },
       (error, result) => {

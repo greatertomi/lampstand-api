@@ -1,5 +1,7 @@
 import { ValidationError } from 'express-validator';
+
 import { HTTP_STATUS } from '../constants';
+
 import { CustomError } from './custom-error';
 
 export class RequestValidationError extends CustomError {

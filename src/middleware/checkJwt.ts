@@ -1,4 +1,5 @@
 import { NextFunction, Response } from 'express';
+
 import { JwtHelper } from '../lib';
 import { UnAuthorizeError } from '../lib/responses';
 import { IExtendedRequest, JwtPayload } from '../types';

@@ -1,8 +1,10 @@
+import { Server, createServer } from 'node:http';
+
 import express from 'express';
 import supertest from 'supertest';
 import { DataSource } from 'typeorm';
-import { Server, createServer } from 'node:http';
 import { createDatabase } from 'typeorm-extension';
+
 import { TestDataSource, testDatabaseConfig } from '../src/database';
 import { errorHandler } from '../src/middleware';
 import routes from '../src/routes';
