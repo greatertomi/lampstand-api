@@ -1,7 +1,7 @@
 /* eslint-disable sonarjs/no-duplicate-string */
-import { BookEntity, ReadingLogEntity } from '../../entities';
-import { HTTP_STATUS } from '../../lib/responses';
-import { JwtPayload } from '../../types';
+import { BookEntity, ReadingLogEntity } from '../../src/entities';
+import { HTTP_STATUS } from '../../src/lib/responses';
+import { JwtPayload } from '../../src/types';
 import { TestFactory } from '../factory';
 import {
   createTestBook,

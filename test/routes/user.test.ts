@@ -1,12 +1,12 @@
 /* eslint-disable sonarjs/no-duplicate-string */
-import { UserEntity } from '../../entities';
-import { HTTP_STATUS } from '../../lib/responses';
-import { JwtPayload } from '../../types';
+import { UserEntity } from '../../src/entities';
+import { HTTP_STATUS } from '../../src/lib/responses';
+import { JwtPayload } from '../../src/types';
 import { TestFactory } from '../factory';
 import { createTestUser, getTestAuthToken } from '../test-utils/helper-test';
 
 const uploadLink = 'https://res.cloudinary.com/example/image/upload/v1234567890/test-profile.jpg';
-jest.mock('../../middleware/upload-handlers/picture-upload', () => ({
+jest.mock('../../src/middleware/upload-handlers/picture-upload', () => ({
   profilePictureUploadMiddleware: jest.fn((req, res, next) => {
     req.uploadedFile = {
       secure_url: uploadLink

@@ -1,5 +1,5 @@
-import { getDateRange } from '../../lib';
-import { TimeSpan } from '../../types/timespan';
+import { getDateRange } from '../../src/lib';
+import { TimeSpan } from '../../src/types/timespan';
 
 describe('getDateRange', () => {
   const mockDate = new Date('2024-01-15T15:30:25.000Z');

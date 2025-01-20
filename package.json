@@ -8,7 +8,7 @@
     "build": "rimraf dist && tsc",
     "dev": "nodemon src/index.ts",
     "test": "jest",
-    "lint": "eslint .",
+    "lint": "eslint . && tsc --noEmit",
     "lint-fix": "eslint --fix .",
     "docker:run-build": "docker-compose up --build",
     "docker:build": "docker-compose build",

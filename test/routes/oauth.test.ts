@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextFunction, Response } from 'express';
-import { handleGoogleOauthCallback } from '../../controllers';
+import { handleGoogleOauthCallback } from '../../src/controllers';
 import { TestFactory } from '../factory';
 
 jest.mock('passport', () => ({
@@ -14,7 +14,7 @@ jest.mock('passport', () => ({
   })
 }));
 
-jest.mock('../../controllers', () => ({
+jest.mock('../../src/controllers', () => ({
   handleGoogleOauthCallback: jest.fn((req, res) => res.status(200).json({ message: 'Success' }))
 }));
 

@@ -1,11 +1,10 @@
 import Docker from 'dockerode';
-
 import { containerExec, imageExists, pullImageAsync } from 'dockerode-utils';
 
 export { containerExec } from 'dockerode-utils';
 
 const CONTAINER_IMAGE = 'postgres:13-alpine';
-const CONTAINER_NAME = 'typeorm-test';
+const CONTAINER_NAME = 'lampstand-api-test';
 
 export const removePostgresContainer = async (): Promise<void> => {
   const docker = new Docker();

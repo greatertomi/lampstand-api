@@ -9,7 +9,7 @@ import users from './user.route';
 const router = Router();
 
 router.get('/', (_: Request, res: Response) => {
-  res.json({ message: 'Welcome to the API' });
+  res.json({ message: 'Welcome to Lampstand API' });
 });
 
 router.use('/auth', auth);
