@@ -1,9 +1,9 @@
-import { BookEntity, ReadingLogEntity } from '../../entities';
-import { ReadingGoal } from '../../entities/ReadingGoalEntity';
-import { JwtHelper } from '../../lib';
-import { HTTP_STATUS } from '../../lib/responses';
-import { JwtPayload } from '../../types';
-import handleGetRepository from '../../utils/handleGetRepository';
+import { BookEntity, ReadingLogEntity } from '../../src/entities';
+import { ReadingGoal } from '../../src/entities/ReadingGoalEntity';
+import { JwtHelper } from '../../src/lib';
+import { HTTP_STATUS } from '../../src/lib/responses';
+import { JwtPayload } from '../../src/types';
+import handleGetRepository from '../../src/utils/handleGetRepository';
 import { TestFactory } from '../factory';
 import { testBook, testUser } from './test-data';
 

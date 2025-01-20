@@ -1,9 +1,9 @@
-import * as addLoginHistoriesHelper from '../../controllers/utils/addLoginHistories';
-import { LoginType, PasswordResetTokenEntity } from '../../entities';
-import { TokenStatus } from '../../entities/types';
-import { JwtHelper } from '../../lib';
-import { HTTP_STATUS } from '../../lib/responses';
-import * as sendEmailService from '../../services';
+import * as addLoginHistoriesHelper from '../../src/controllers/utils/addLoginHistories';
+import { LoginType, PasswordResetTokenEntity } from '../../src/entities';
+import { TokenStatus } from '../../src/entities/types';
+import { JwtHelper } from '../../src/lib';
+import { HTTP_STATUS } from '../../src/lib/responses';
+import * as sendEmailService from '../../src/services';
 import { TestFactory } from '../factory';
 import { createTestUser } from '../test-utils/helper-test';
 import { testUser } from '../test-utils/test-data';

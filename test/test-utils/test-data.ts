@@ -1,5 +1,5 @@
-import { BookEntity, BookFormat } from '../../entities';
-import { JwtPayload } from '../../types';
+import { BookEntity, BookFormat } from '../../src/entities';
+import { JwtPayload } from '../../src/types';
 
 export const testUser = {
   fullName: 'David Brown',

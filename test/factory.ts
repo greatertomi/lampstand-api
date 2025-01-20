@@ -3,10 +3,10 @@ import supertest from 'supertest';
 import { DataSource } from 'typeorm';
 import { Server, createServer } from 'node:http';
 import { createDatabase } from 'typeorm-extension';
-import { TestDataSource, testDatabaseConfig } from '../database';
-import { errorHandler } from '../middleware';
-import routes from '../routes';
-import { logger } from '../services';
+import { TestDataSource, testDatabaseConfig } from '../src/database';
+import { errorHandler } from '../src/middleware';
+import routes from '../src/routes';
+import { logger } from '../src/services';
 
 export class TestFactory {
   private _app: express.Application;

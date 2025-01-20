@@ -1,12 +1,12 @@
 /* eslint-disable sonarjs/no-duplicate-string */
-import { BookEntity, BookFormat } from '../../entities';
-import { HTTP_STATUS } from '../../lib/responses';
+import { BookEntity, BookFormat } from '../../src/entities';
+import { HTTP_STATUS } from '../../src/lib/responses';
 import { TestFactory } from '../factory';
 import { createTestBook, createTestUser, getTestAuthToken } from '../test-utils/helper-test';
 import { testBook } from '../test-utils/test-data';
 
 const uploadLink = 'https://res.cloudinary.com/example/raw/upload/v1234567890/test-book.pdf';
-jest.mock('../../middleware/upload-handlers/book-upload', () => ({
+jest.mock('../../src/middleware/upload-handlers/book-upload', () => ({
   bookUploadMiddleware: jest.fn((req, _, next) => {
     req.uploadedFile = {
       bytes: 1024,

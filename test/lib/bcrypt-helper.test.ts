@@ -1,4 +1,4 @@
-import { BcryptHelper } from '../../lib';
+import { BcryptHelper } from '../../src/lib';
 
 describe('Testing the bcrypt helper', () => {
   it('should hash a password', async () => {

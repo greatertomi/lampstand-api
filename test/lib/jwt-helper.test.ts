@@ -1,6 +1,6 @@
-import { JwtHelper } from '../../lib';
+import { JwtHelper } from '../../src/lib';
 
-jest.mock('../../services', () => ({
+jest.mock('../../src/services', () => ({
   logger: {
     error: jest.fn()
   }

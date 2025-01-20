@@ -1,5 +1,5 @@
-import { addLoginHistories } from '../../controllers/utils';
-import { LoginHistoryEntity, LoginType } from '../../entities';
+import { addLoginHistories } from '../../src/controllers/utils';
+import { LoginHistoryEntity, LoginType } from '../../src/entities';
 import { TestFactory } from '../factory';
 import { createTestUser } from '../test-utils/helper-test';
 

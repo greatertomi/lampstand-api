@@ -1,6 +1,6 @@
 /* eslint-disable sonarjs/no-duplicate-string */
-import { ReadingGoal } from '../../entities/ReadingGoalEntity';
-import { HTTP_STATUS } from '../../lib/responses';
+import { ReadingGoal } from '../../src/entities/ReadingGoalEntity';
+import { HTTP_STATUS } from '../../src/lib/responses';
 import { TestFactory } from '../factory';
 import { createTestGoal, createTestUser, getTestAuthToken } from '../test-utils/helper-test';
 
