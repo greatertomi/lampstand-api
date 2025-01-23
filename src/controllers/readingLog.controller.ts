@@ -27,7 +27,7 @@ export const logReadingEvent = async (req: IExtendedRequest, res: Response) => {
     user: { id: req.user.id },
     book: { id: bookId },
     startTime: start,
-    currentTime: current,
+    endTime: current,
     minutesRead
   });
 
@@ -39,7 +39,7 @@ export const logReadingEvent = async (req: IExtendedRequest, res: Response) => {
       id: newReadingLog.id,
       bookId: newReadingLog.book.id,
       startTime: newReadingLog.startTime,
-      currentTime: newReadingLog.currentTime,
+      currentTime: newReadingLog.endTime,
       minutesRead: newReadingLog.minutesRead
     }
   });
@@ -75,7 +75,7 @@ export const getUserReadingLogs = async (req: IExtendedRequest, res: Response): 
       bookId: log.book.id,
       bookTitle: log.book.title,
       startTime: log.startTime,
-      currentTime: log.currentTime,
+      currentTime: log.endTime,
       minutesRead: log.minutesRead
     }))
   });
