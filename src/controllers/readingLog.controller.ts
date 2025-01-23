@@ -8,7 +8,7 @@ import { TimeSpan } from '../types/timespan';
 import handleGetRepository from '../utils/handleGetRepository';
 
 export const logReadingEvent = async (req: IExtendedRequest, res: Response) => {
-  const { bookId, startTime, currentTime } = req.body;
+  const { bookId, startTime, endTime } = req.body;
 
   const readingLogRepository = handleGetRepository(ReadingLogEntity);
   const bookRepository = handleGetRepository(BookEntity);
@@ -20,14 +20,14 @@ export const logReadingEvent = async (req: IExtendedRequest, res: Response) => {
   }
 
   const start = new Date(startTime);
-  const current = new Date(currentTime);
-  const minutesRead = Math.round((current.getTime() - start.getTime()) / 60_000);
+  const end = new Date(endTime);
+  const minutesRead = Math.round((end.getTime() - start.getTime()) / 60_000);
 
   const newReadingLog = readingLogRepository.create({
     user: { id: req.user.id },
     book: { id: bookId },
     startTime: start,
-    endTime: current,
+    endTime: end,
     minutesRead
   });
 
@@ -39,7 +39,7 @@ export const logReadingEvent = async (req: IExtendedRequest, res: Response) => {
       id: newReadingLog.id,
       bookId: newReadingLog.book.id,
       startTime: newReadingLog.startTime,
-      currentTime: newReadingLog.endTime,
+      endTime: newReadingLog.endTime,
       minutesRead: newReadingLog.minutesRead
     }
   });
@@ -75,7 +75,7 @@ export const getUserReadingLogs = async (req: IExtendedRequest, res: Response): 
       bookId: log.book.id,
       bookTitle: log.book.title,
       startTime: log.startTime,
-      currentTime: log.endTime,
+      endTime: log.endTime,
       minutesRead: log.minutesRead
     }))
   });
