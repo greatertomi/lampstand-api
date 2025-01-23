@@ -17,7 +17,7 @@ export class ReadingLogEntity {
   startTime: Date;
 
   @Column('timestamp')
-  currentTime: Date;
+  endTime: Date;
 
   @Column('int')
   minutesRead: number;

@@ -36,7 +36,7 @@ describe('Testing the reading log route', () => {
       const readingLogData = {
         bookId: book.id,
         startTime: new Date(Date.now() - 3_600_000).toISOString(),
-        currentTime: new Date().toISOString()
+        endTime: new Date().toISOString()
       };
 
       const response = await factory.app
@@ -50,7 +50,7 @@ describe('Testing the reading log route', () => {
         id: expect.any(String),
         bookId: book.id,
         startTime: expect.any(String),
-        currentTime: expect.any(String),
+        endTime: expect.any(String),
         minutesRead: expect.any(Number)
       });
     });
@@ -59,7 +59,7 @@ describe('Testing the reading log route', () => {
       const invalidReadingLogData = {
         bookId: 'invalid-uuid',
         startTime: 'invalid-date',
-        currentTime: 'invalid-date'
+        endTime: 'invalid-date'
       };
 
       const response = await factory.app
@@ -71,15 +71,15 @@ describe('Testing the reading log route', () => {
       expect(response.body.errors).toMatchObject({
         bookId: 'Invalid book ID',
         startTime: 'Invalid start time',
-        currentTime: 'Current time must be after start time'
+        endTime: 'End time must be after start time'
       });
     });
 
-    it('should throw an error if current time is before start time', async () => {
+    it('should throw an error if end time is before start time', async () => {
       const invalidReadingLogData = {
         bookId: book.id,
         startTime: new Date().toISOString(),
-        currentTime: new Date(Date.now() - 3_600_000).toISOString()
+        endTime: new Date(Date.now() - 3_600_000).toISOString()
       };
 
       const response = await factory.app
@@ -89,7 +89,7 @@ describe('Testing the reading log route', () => {
 
       expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
       expect(response.body.errors).toMatchObject({
-        currentTime: 'Current time must be after start time'
+        endTime: 'End time must be after start time'
       });
     });
 
@@ -97,7 +97,7 @@ describe('Testing the reading log route', () => {
       const readingLogData = {
         bookId: '00000000-0000-0000-0000-000000000000',
         startTime: new Date(Date.now() - 3_600_000).toISOString(),
-        currentTime: new Date().toISOString()
+        endTime: new Date().toISOString()
       };
 
       const response = await factory.app
@@ -128,7 +128,7 @@ describe('Testing the reading log route', () => {
       const readingLogData = {
         bookId: book.id,
         startTime: new Date(Date.now() - 3_600_000).toISOString(),
-        currentTime: new Date().toISOString()
+        endTime: new Date().toISOString()
       };
 
       jest
@@ -168,7 +168,7 @@ describe('Testing the reading log route', () => {
             bookId: book.id,
             bookTitle: expect.any(String),
             startTime: expect.any(String),
-            currentTime: expect.any(String),
+            endTime: expect.any(String),
             minutesRead: expect.any(Number)
           })
         ])

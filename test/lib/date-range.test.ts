@@ -13,7 +13,7 @@ describe('getDateRange', () => {
     jest.useRealTimers();
   });
 
-  it('should set start date to midnight and keep end date as current time', () => {
+  it('should set start date to midnight and keep end date as end time', () => {
     const timeSpans: TimeSpan[] = ['today', 'last7days', 'last30days'];
 
     for (const timespan of timeSpans) {
