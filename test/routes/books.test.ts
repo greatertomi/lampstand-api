@@ -3,9 +3,15 @@ import { BookEntity, BookFormat } from '../../src/entities';
 import { HTTP_STATUS } from '../../src/lib/responses';
 import { TestFactory } from '../factory';
 import { createTestBook, createTestUser, getTestAuthToken } from '../test-utils/helper-test';
-import { testBook } from '../test-utils/test-data';
+import { mockBooksData, testBook, testMultipleBooks } from '../test-utils/test-data';
 
 const uploadLink = 'https://res.cloudinary.com/example/raw/upload/v1234567890/test-book.pdf';
+
+const uploadLinks = [
+  'https://res.cloudinary.com/example/raw/upload/v1234567890/test-book.epub',
+  'https://res.cloudinary.com/example/raw/upload/v1234567890/test-book:the-duology.epub'
+];
+
 jest.mock('../../src/middleware/upload-handlers/book-upload', () => ({
   bookUploadMiddleware: jest.fn((req, _, next) => {
     req.uploadedFile = {
@@ -13,8 +19,57 @@ jest.mock('../../src/middleware/upload-handlers/book-upload', () => ({
       secure_url: uploadLink
     };
     next();
+  }),
+  multipleBooksUploadMiddleware: jest.fn((req, _, next) => {
+    req.uploadedFiles = req.files.map((file, index) => {
+      const format =
+        file.mimetype === 'application/epub+zip' ? 'epub' : file.mimetype.split('/').pop();
+      return {
+        secure_url: uploadLinks[index],
+        bytes: file.size,
+        format: format
+      };
+    });
+    next();
   })
 }));
+
+jest.mock('../../src/utils/EpubProcessor', () => ({
+  EpubProcessor: jest.fn().mockImplementation((bookPath) => ({
+    processEpubFile: jest.fn(() => {
+      if (bookPath.includes('test-book.epub')) {
+        const metadata = mockBooksData[0]?.metadata;
+
+        return Promise.resolve({
+          metadata: {
+            title: metadata?.title || '',
+            creator: metadata?.creator || ''
+          },
+          manifest: mockBooksData[0]?.manifest,
+          zipFile: mockBooksData[0]?.zipFile
+        });
+      }
+
+      if (bookPath.includes('test-book:the-duology.epub')) {
+        const metadata = mockBooksData[1]?.metadata;
+
+        return Promise.resolve({
+          metadata: {
+            title: metadata?.title || '',
+            creator: metadata?.creator || ''
+          },
+          manifest: mockBooksData[1]?.manifest,
+          zipFile: mockBooksData[1]?.zipFile
+        });
+      }
+
+      return Promise.resolve(null);
+    }),
+    getBookImage: jest.fn(async () => 'data:image/jpeg;base64,MOCK_BASE64_IMAGE'),
+    cleanup: jest.fn()
+  }))
+}));
+
 const unAuthenticatedMessage = 'Authorization header not provided';
 
 describe('Testing the books route', () => {
@@ -345,7 +400,7 @@ describe('Testing the books route', () => {
       const testBooks = await createTestBook(user.id);
 
       const invalidBookData = {
-        title: 'king authur',
+        title: 'king arthur',
         author: '',
         format: 'InvalidFormat',
         cover: 'not-a-base64-image'
@@ -373,6 +428,70 @@ describe('Testing the books route', () => {
         Object.values(errors).some((error) => error.includes(message))
       );
       expect(hasExpectedError).toBe(true);
+    });
+  });
+  describe('POST /books/saveMultiple', () => {
+    const saveMultipleBooks = '/books/saveMultiple';
+    it('should save books data successfully', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+
+      const response = await factory.app
+        .post(saveMultipleBooks)
+        .set('Authorization', `Bearer ${token}`)
+        .set('Content-Type', 'multipart/form-data')
+        .attach('files', Buffer.from('dummy epub book'), 'test-book.epub')
+        .attach('files', Buffer.from('dummy epub book'), 'test-book:the-duology.epub');
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(response.body.message).toBe('Books saved successfully');
+      expect(response.body.data).toMatchObject(
+        testMultipleBooks.map((book, index) => ({
+          id: expect.any(String),
+          title: book.title,
+          author: book.author,
+          link: uploadLinks[index],
+          size: 15
+        }))
+      );
+    });
+
+    it('should throw an error if no file is provided', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+
+      const response = await factory.app
+        .post(saveMultipleBooks)
+        .set('Authorization', `Bearer ${token}`)
+        .send();
+
+      expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(response.body.errors).toMatchObject({ files: 'At least one file must be uploaded' });
+    });
+
+    it('should throw an error if auth token is not provided', async () => {
+      const response = await factory.app.post(saveMultipleBooks);
+
+      expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
+      expect(response.body.errors).toMatchObject([
+        {
+          message: unAuthenticatedMessage
+        }
+      ]);
+    });
+
+    it('should throw an error when the file is not EPUB', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+
+      const response = await factory.app
+        .post(saveMultipleBooks)
+        .set('Authorization', `Bearer ${token}`)
+        .attach('files', Buffer.from('dummy pdf'), 'test-book.pdf');
+
+      expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(response.body.errors).toMatchObject({
+        files: 'Uploaded file must be a EPUB'
+      });
     });
   });
 });

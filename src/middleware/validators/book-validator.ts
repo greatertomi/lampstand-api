@@ -64,3 +64,26 @@ export const updateBookValidationRules = [
       return true;
     })
 ];
+
+export const saveMultipleBooksValidationRules = [
+  body('files').custom((_, { req }) => {
+    const uploadedFiles = req.files;
+
+    if (!uploadedFiles || uploadedFiles.length === 0) {
+      throw new Error('At least one file must be uploaded');
+    }
+
+    for (const file of uploadedFiles) {
+      if (file && !file.mimetype.startsWith('application/epub')) {
+        throw new Error('Uploaded file must be a EPUB');
+      }
+
+      const validExtensions = ['epub'];
+      const fileExtension = file.originalname.split('.').pop()?.toLowerCase();
+      if (!fileExtension || !validExtensions.includes(fileExtension)) {
+        throw new Error('No file extension found with file');
+      }
+    }
+    return true;
+  })
+];
