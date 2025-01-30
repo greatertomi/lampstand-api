@@ -1,10 +1,7 @@
 import { NextFunction, Response } from 'express';
-import { UploadApiResponse } from 'cloudinary';
-import stream from 'node:stream';
-import cloudinary from '../../config/cloudinary';
 import envConfig from '../../config/envConfig';
-import { logger } from '../../services';
 import { IExtendedRequest } from '../../types';
+import { uploadToCloudinary } from '../../utils/cloudinary-upload';
 
 const CLOUDINARY_FILE_FOLDER = `lampstand/${envConfig.NODE_ENV}/profile-pictures`;
 
@@ -21,29 +18,12 @@ export const profilePictureUploadMiddleware = async (
 
   const profilePicPublicId = `profile-${req.user.id}-${Date.now()}`;
 
-  req.uploadedFile = await new Promise<UploadApiResponse>((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        public_id: profilePicPublicId,
-        folder: CLOUDINARY_FILE_FOLDER,
-        resource_type: 'image',
-        allowed_formats: ['jpg', 'png', 'jpeg'],
-        access_mode: 'public'
-      },
-      (error, result) => {
-        if (result) {
-          logger.debug(`Profile picture uploaded successfully: ${result.public_id}`);
-          resolve(result);
-        } else {
-          logger.error(`Cloudinary upload error: ${error.message}`);
-          reject(error);
-        }
-      }
-    );
-
-    const readableStream = stream.Readable.from(file.buffer);
-    readableStream.pipe(uploadStream);
-  });
+  req.uploadedFile = await uploadToCloudinary(
+    file,
+    CLOUDINARY_FILE_FOLDER,
+    undefined,
+    profilePicPublicId
+  );
 
   next();
 };
