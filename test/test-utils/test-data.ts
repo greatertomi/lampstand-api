@@ -62,3 +62,40 @@ export const getMockedReadingLogs = (user: JwtPayload, book: BookEntity) => {
     }
   ];
 };
+
+const testAuthor = 'Test Authors';
+const coverImage = 'data:image/jpeg;base64,9j4j93';
+
+export const testMultipleBooks = [
+  {
+    title: 'Test Book',
+    author: testAuthor,
+    format: BookFormat.EPUB,
+    cover: coverImage
+  },
+  {
+    title: 'Test Book: The Duology',
+    author: testAuthor,
+    format: BookFormat.EPUB,
+    cover: coverImage
+  }
+];
+
+export const mockBooksData = [
+  {
+    metadata: {
+      title: 'Test Book',
+      creator: testAuthor
+    },
+    manifest: [{ id: 'cover', href: 'cover.jpg', mediaType: 'image/jpeg' }],
+    zipFile: {}
+  },
+  {
+    metadata: {
+      title: 'Test Book: The Duology',
+      creator: testAuthor
+    },
+    manifest: [{ id: 'cover', href: 'cover.jpg', mediaType: 'image/jpeg' }],
+    zipFile: {}
+  }
+];

@@ -22,12 +22,12 @@ export class BookEntity {
   @ManyToOne(() => UserEntity, user => user.books, { onDelete: 'CASCADE' })
   owner: UserEntity;
 
-  @Column('text')
+  @Column({ type: 'text', nullable: true })
   cover: string;
 
   @Column({
     type: 'enum',
-    enum: BookFormat,
+    enum: BookFormat
   })
   format: BookFormat;
 
