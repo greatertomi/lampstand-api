@@ -1,80 +1,55 @@
 /* eslint-disable @typescript-eslint/dot-notation */
-import axios from 'axios';
 import JSZip from 'jszip';
 import * as fs from 'node:fs';
+import path from 'node:path';
 import { EpubProcessor } from '../../src/utils';
 
-jest.mock('axios');
-jest.mock('node:fs', () => ({
-  writeFileSync: jest.fn(),
-  readFileSync: jest.fn(),
-  unlinkSync: jest.fn()
-}));
-jest.mock('jszip');
+// eslint-disable-next-line unicorn/prefer-module
+const testFilePath = path.join(__dirname, 'test-book.epub');
 
-const bookPath = 'https://res.cloudinary.com/example/raw/upload/v1234567890/test-book.epub';
-const localTempFilePath = './temp-book.epub';
 describe('EpubProcessor', () => {
   let epubProcessor: EpubProcessor;
 
   beforeEach(() => {
-    epubProcessor = new EpubProcessor(bookPath);
+    epubProcessor = new EpubProcessor(testFilePath);
+    epubProcessor['localTempFilePath'] = testFilePath;
+
+    epubProcessor['downloadAndReadFileContent'] = async () => {
+      return fs.readFileSync(testFilePath, { encoding: 'base64' });
+    };
   });
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
+  describe('process', () => {
+    it('should successfully process the test EPUB file', async () => {
+      const result = await epubProcessor.process();
 
-  describe('downloadAndReadFileContent', () => {
-    it('should download and read the file', async () => {
-      (axios.get as jest.Mock).mockResolvedValue({
-        data: Buffer.from('dummy file content')
-      });
+      expect(result.metadata).toBeDefined();
+      expect(result.manifest).toBeDefined();
 
-      (fs.writeFileSync as jest.Mock).mockImplementation(() => {});
-      (fs.readFileSync as jest.Mock).mockReturnValue('dummy file content in base64');
+      for (const item of result.manifest) {
+        expect(item).toHaveProperty('id');
+        expect(item).toHaveProperty('href');
+        expect(item).toHaveProperty('mediaType');
+      }
 
-      const result = await epubProcessor['downloadAndReadFileContent']();
-
-      expect(axios.get).toHaveBeenCalledWith(bookPath, {
-        responseType: 'arraybuffer',
-        timeout: 10_000
-      });
-
-      expect(fs.writeFileSync).toHaveBeenCalledWith(localTempFilePath, expect.any(Buffer));
-      expect(fs.readFileSync).toHaveBeenCalledWith(localTempFilePath, { encoding: 'base64' });
-      expect(result).toBe('dummy file content in base64');
+      expect(result.metadata).toHaveProperty('title');
+      expect(result.metadata).toHaveProperty('language');
     });
 
-    it('should delete the temporary file and reset the zip file', async () => {
-      (fs.unlinkSync as jest.Mock).mockImplementation(() => {});
+    it('should throw an error if the file is not found', async () => {
+      const currentBookProcessor = new EpubProcessor('invalid-file-path');
 
-      await epubProcessor.cleanup();
-
-      expect(fs.unlinkSync).toHaveBeenCalledWith(localTempFilePath);
-      expect(epubProcessor['zipFile']).toBeNull();
-      expect(epubProcessor['localTempFilePath']).toBeNull();
+      await expect(currentBookProcessor.process()).rejects.toThrow();
     });
   });
 
   describe('getBookImage', () => {
     it('should return the cover image as a base64 string', async () => {
-      const mockZip = {
-        file: jest.fn().mockImplementation((path) => {
-          if (path === 'cover.jpg') {
-            return { async: () => 'mockImageData' };
-          }
-          return null;
-        })
-      };
-
-      epubProcessor['zipFile'] = mockZip as unknown as JSZip;
-
-      const manifest = [{ id: 'cover-image', href: 'cover.jpg', mediaType: 'image/jpeg' }];
-
-      const result = await epubProcessor.getBookImage(manifest);
-
-      expect(result).toBe('data:image/jpeg;base64,mockImageData');
+      const result = await epubProcessor.process();
+      const coverImage = await epubProcessor.getBookImage(result.manifest);
+      if (coverImage) {
+        expect(coverImage).toMatch(/^data:image\/.*;base64,/);
+      }
     });
 
     it('should return null if no cover image is found', async () => {

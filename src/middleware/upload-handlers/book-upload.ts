@@ -6,6 +6,10 @@ import { uploadToCloudinary } from '../../utils/cloudinary-upload';
 
 const CLOUDINARY_FILE_FOLDER = `lampstand/${envConfig.NODE_ENV}/books`;
 
+const removeSpecialCharacters = (value: string) => {
+  return value.split('.')[0].replace(/[^\dA-Za-z]/g, '');
+};
+
 export const bookUploadMiddleware = async (
   req: IExtendedRequest,
   _: Response,
@@ -14,11 +18,17 @@ export const bookUploadMiddleware = async (
   const file = req.file;
   const { format } = req.body;
 
+  const bookId = `${removeSpecialCharacters(file.originalname)}-${Date.now()}.${format}`;
+
   if (!file) {
     return next();
   }
 
-  req.uploadedFile = await uploadToCloudinary(file, CLOUDINARY_FILE_FOLDER, format);
+  req.uploadedFile = await uploadToCloudinary({
+    file,
+    folder: CLOUDINARY_FILE_FOLDER,
+    publicId: bookId
+  });
 
   next();
 };
@@ -31,12 +41,21 @@ export const multipleBooksUploadMiddleware = async (
   const files = req.files as Express.Multer.File[];
 
   if (!files || files.length === 0) {
-    logger.warn('No files to upload.');
+    logger.warn('No files to upload');
     return next();
   }
 
   req.uploadedFiles = await Promise.all(
-    files.map((file) => uploadToCloudinary(file, CLOUDINARY_FILE_FOLDER))
+    files.map((file) => {
+      const fileExtension = file.originalname.split('.').pop();
+      const bookId = `${removeSpecialCharacters(file.originalname)}-${Date.now()}.${fileExtension}`;
+
+      return uploadToCloudinary({
+        file,
+        folder: CLOUDINARY_FILE_FOLDER,
+        publicId: bookId
+      });
+    })
   );
 
   next();

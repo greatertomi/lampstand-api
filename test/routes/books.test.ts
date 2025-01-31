@@ -36,7 +36,7 @@ jest.mock('../../src/middleware/upload-handlers/book-upload', () => ({
 
 jest.mock('../../src/utils/EpubProcessor', () => ({
   EpubProcessor: jest.fn().mockImplementation((bookPath) => ({
-    processEpubFile: jest.fn(() => {
+    process: jest.fn(() => {
       if (bookPath.includes('test-book.epub')) {
         const metadata = mockBooksData[0]?.metadata;
 
@@ -430,6 +430,7 @@ describe('Testing the books route', () => {
       expect(hasExpectedError).toBe(true);
     });
   });
+
   describe('POST /books/saveMultiple', () => {
     const saveMultipleBooks = '/books/saveMultiple';
     it('should save books data successfully', async () => {

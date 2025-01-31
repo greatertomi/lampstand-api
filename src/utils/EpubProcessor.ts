@@ -94,7 +94,7 @@ export class EpubProcessor {
     return content;
   }
 
-  public processEpubFile = async () => {
+  public process = async () => {
     try {
       const fileContent = await this.downloadAndReadFileContent();
 
@@ -120,10 +120,16 @@ export class EpubProcessor {
         manifest: this.cleanManifestKeys(manifestNode.item)
       };
     } catch (error) {
-      logger.error('Error processing EPUB file:', error);
+      logger.error('Error processing EPUB file:', {
+        error: error.message,
+        cause: error.cause?.message,
+        stack: error.stack
+      });
+
       if (error instanceof EpubProcessingError) {
         throw error;
       }
+
       throw new EpubProcessingError('Failed to process EPUB file', error as Error);
     }
   };

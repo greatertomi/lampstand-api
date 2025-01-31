@@ -104,7 +104,7 @@ export const saveManyBooks = async (req: IExtendedRequest, res: Response) => {
       const bookPath = uploadedFile.secure_url;
 
       const processor = new EpubProcessor(bookPath);
-      const processedData = await processor.processEpubFile();
+      const processedData = await processor.process();
       const { title, creator } = processedData.metadata;
       const bookTitle = typeof title === 'string' ? title : title?.text || '';
       const author = typeof creator === 'string' ? creator : creator?.text || '';
@@ -127,7 +127,7 @@ export const saveManyBooks = async (req: IExtendedRequest, res: Response) => {
       });
     })
   );
-  
+
   const savedBooks = await bookRepository.save(newBooks);
 
   res.status(HTTP_STATUS.OK).json({

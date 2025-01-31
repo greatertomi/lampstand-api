@@ -16,14 +16,17 @@ export const profilePictureUploadMiddleware = async (
     return next();
   }
 
+  const fileExtension = file.originalname.split('.').pop();
   const profilePicPublicId = `profile-${req.user.id}-${Date.now()}`;
 
-  req.uploadedFile = await uploadToCloudinary(
+  req.uploadedFile = await uploadToCloudinary({
     file,
-    CLOUDINARY_FILE_FOLDER,
-    undefined,
-    profilePicPublicId
-  );
+    fileFormat: fileExtension,
+    folder: CLOUDINARY_FILE_FOLDER,
+    publicId: profilePicPublicId,
+    allowedFormats: ['jpg', 'png', 'jpeg'],
+    resourceType: 'image'
+  });
 
   next();
 };
