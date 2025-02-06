@@ -10,6 +10,7 @@ passport.use(
       clientSecret: envConfig.GOOGLE_CLIENT_SECRET,
       callbackURL: envConfig.GOOGLE_CALLBACK_URL
     },
+    // eslint-disable-next-line max-params
     async (_accessToken, _refreshToken, profile, done) => {
       try {
         return done(null, profile);
@@ -21,10 +22,10 @@ passport.use(
   )
 );
 
-passport.serializeUser(function (user, done) {
+passport.serializeUser((user, done) => {
   done(null, user);
 });
 
-passport.deserializeUser(function (user, done) {
+passport.deserializeUser((user, done) => {
   done(null, user);
 });

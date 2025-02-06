@@ -27,7 +27,7 @@ jest.mock('../../src/middleware/upload-handlers/book-upload', () => ({
       return {
         secure_url: uploadLinks[index],
         bytes: file.size,
-        format: format
+        format
       };
     });
     next();

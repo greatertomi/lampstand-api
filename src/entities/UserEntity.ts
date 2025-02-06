@@ -7,9 +7,9 @@ import {
   OneToMany,
 } from 'typeorm';
 import { BookEntity } from './BookEntity';
+import { LoginHistoryEntity } from './LoginHistoryEntity';
 import { ReadingGoal } from './ReadingGoalEntity';
 import { ReadingLogEntity } from './ReadingLogEntity';
-import { LoginHistoryEntity } from './LoginHistoryEntity';
 
 @Entity({ name: 'users' })
 export class UserEntity {

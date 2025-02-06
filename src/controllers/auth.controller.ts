@@ -16,7 +16,7 @@ export const signup = async (req: Request, res: Response) => {
   const userRepository = handleGetRepository(UserEntity);
 
   const user = await userRepository.findOne({
-    where: { email: email }
+    where: { email }
   });
 
   if (user) {
@@ -27,7 +27,7 @@ export const signup = async (req: Request, res: Response) => {
 
   const newUser = userRepository.create({
     fullName,
-    email: email,
+    email,
     password: hashedPassword,
     agreedToTerms
   });
@@ -76,11 +76,11 @@ export const login = async (req: Request, res: Response) => {
   const userRepository = handleGetRepository(UserEntity);
 
   const user = await userRepository.findOne({
-    where: { email: email }
+    where: { email }
   });
 
-  const checkPassword = user ? await BcryptHelper.compare(password, user.password) : false;
-  if (!user || !checkPassword) {
+  const isPasswordValid = user ? await BcryptHelper.compare(password, user.password) : false;
+  if (!user || !isPasswordValid) {
     throw new NotFoundError('Invalid login credentials');
   }
 
@@ -106,7 +106,7 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
   const passwordResetTokenRepository = handleGetRepository(PasswordResetTokenEntity);
 
   const user = await userRepository.findOne({
-    where: { email: email }
+    where: { email }
   });
 
   if (!user) {
@@ -151,7 +151,7 @@ export const verifyResetToken = async (req: Request, res: Response) => {
 
   const passwordResetTokenRepository = handleGetRepository(PasswordResetTokenEntity);
   const resetToken = await passwordResetTokenRepository.findOne({
-    where: { token: token, status: TokenStatus.ACTIVE, user: { id: userId } }
+    where: { token, status: TokenStatus.ACTIVE, user: { id: userId } }
   });
 
   if (!resetToken) {

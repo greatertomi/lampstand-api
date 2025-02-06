@@ -7,6 +7,7 @@ import {
   ManyToOne,
   Unique,
 } from 'typeorm';
+
 import { UserEntity } from './UserEntity';
 
 @Entity()

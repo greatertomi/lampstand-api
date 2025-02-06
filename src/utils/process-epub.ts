@@ -1,16 +1,14 @@
-import JSZip from 'jszip';
-import fs from 'node:fs';
 import axios from 'axios';
+import JSZip from 'jszip';
 import { XMLParser } from 'fast-xml-parser';
+import fs from 'node:fs';
 import { logger } from '../services';
 import { EpubBookMetadata, EpubManifestItem, ManifestItem, Metadata } from '../types';
-
 
 const downloadFile = async (url: string, localPath: string) => {
   const response = await axios.get(url, { responseType: 'arraybuffer' });
   fs.writeFileSync(localPath, response.data);
 };
-
 
 export const cleanMetadataKeys = (obj: Metadata): EpubBookMetadata => {
   const cleanObj: Metadata = {};
@@ -73,8 +71,6 @@ export const processEpubFile = async (bookPath: string) => {
     const metadataNode = rootResult.package.metadata;
     const manifestNode = rootResult.package.manifest;
 
-
-
     return {
       metadata: cleanMetadataKeys(metadataNode),
       manifest: cleanManifestKeys(manifestNode.item),
@@ -85,7 +81,6 @@ export const processEpubFile = async (bookPath: string) => {
     return null;
   }
 };
-
 
 export const getBookImage = async (
   manifest: ManifestItem[],
