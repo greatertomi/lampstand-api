@@ -6,7 +6,13 @@
   "trailingComma": "none",
   "jsxSingleQuote": false,
   "bracketSpacing": true,
-  "importOrder": ["express", "^(?!express)\\w+$", "<THIRD_PARTY_MODULES>", "^assets/(.*)$", "^[./]"],
+  "importOrder": [
+    "express",
+    "^(?!express)\\w+$",
+    "<THIRD_PARTY_MODULES>",
+    "^assets/(.*)$",
+    "^[./]"
+  ],
   "importOrderSeparation": false,
   "importOrderSortSpecifiers": true
 }
