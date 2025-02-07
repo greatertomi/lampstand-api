@@ -134,25 +134,54 @@ export class EpubProcessor {
     }
   };
 
-  public getBookImage = async (manifest: ManifestItem[]): Promise<string | null> => {
-    if (!this.zipFile) throw new Error('No ZIP file loaded');
-
-    let coverImageFile: JSZip.JSZipObject | null | undefined;
+  private findCoverImageFromManifest(manifest: ManifestItem[]): JSZip.JSZipObject | null {
     const coverImagePath = manifest.find(
       (item) => item.id === 'cover-image' || item.id === 'cover'
     )?.href;
-    coverImageFile = this.zipFile?.file(`${coverImagePath}`);
+    return coverImagePath ? this.zipFile?.file(coverImagePath) || null : null;
+  }
 
-    if (!coverImageFile && this.zipFile) {
-      const secondaryCoverImagePath = Object.keys(this.zipFile.files).find((key) =>
-        /cover.*\.(jpg|png)/.test(key)
-      );
-      coverImageFile = this.zipFile.file(`${secondaryCoverImagePath}`);
-    }
+  private findCoverImageFromRegex(): JSZip.JSZipObject | null {
+    const secondaryCoverImagePath = Object.keys(this.zipFile.files).find((key) =>
+      /cover.*\.(jpg|png|jpeg)/i.test(key)
+    );
+    return secondaryCoverImagePath ? this.zipFile?.file(secondaryCoverImagePath) || null : null;
+  }
 
-    if (!coverImageFile) {
-      return null;
-    }
+  private async findCoverImageFromXHTML(
+    manifest: ManifestItem[]
+  ): Promise<JSZip.JSZipObject | null> {
+    const coverXhtmlPath = manifest.find((item) => item.id.toLowerCase().includes('cover'))?.href;
+
+    if (!coverXhtmlPath) return null;
+    const coverFilePaths = Object.keys(this.zipFile.files).filter((path) =>path.includes(coverXhtmlPath));
+    const fullPath = coverFilePaths.length > 0 ? coverFilePaths[0] : null;
+
+    const coverXhtmlFile = this.zipFile.file(fullPath);
+
+    if (!coverXhtmlFile) return null;
+
+    const coverXhtmlData = await coverXhtmlFile.async('text');
+    const imageUrlMatch = coverXhtmlData.match(/<img[^>]+src="([^"]+)"/);
+    if (!imageUrlMatch) return null;
+
+    const imageUrl = imageUrlMatch[1];
+    const basePath = fullPath.replace(/[^/]+$/, '');
+    const resolvedImageUrl = imageUrl.startsWith('http') ? imageUrl : `${basePath}${imageUrl}`;
+
+    return this.zipFile.file(resolvedImageUrl) || null;
+  }
+
+  public getBookImage = async (manifest: ManifestItem[]): Promise<string | null> => {
+    if (!this.zipFile) throw new Error('No ZIP file loaded');
+
+    let coverImageFile = this.findCoverImageFromManifest(manifest);
+
+    if (!coverImageFile) coverImageFile = this.findCoverImageFromRegex();
+
+    if (!coverImageFile) coverImageFile = await this.findCoverImageFromXHTML(manifest);
+
+    if (!coverImageFile) return null;
 
     const coverImageData = await coverImageFile?.async('base64');
     return `data:image/jpeg;base64,${coverImageData}`;
