@@ -35,9 +35,9 @@ const ensurePgServiceReadiness = async (container: Docker.Container, user: strin
 
 export const setupPostgresContainer = async (user: string, password: string, port: string) => {
   const docker = new Docker();
-  const needsToPull = !(await imageExists(docker, CONTAINER_IMAGE));
+  const shouldPullImage = !(await imageExists(docker, CONTAINER_IMAGE));
 
-  if (needsToPull) await pullImageAsync(docker, CONTAINER_IMAGE);
+  if (shouldPullImage) await pullImageAsync(docker, CONTAINER_IMAGE);
 
   await removePostgresContainer();
 

@@ -1,8 +1,11 @@
 import globals from 'globals';
+import { fixupPluginRules } from '@eslint/compat';
 import { FlatCompat } from '@eslint/eslintrc';
 import js from '@eslint/js';
 import typescriptEslint from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
+import _import from 'eslint-plugin-import';
+import preferArrowFunctions from 'eslint-plugin-prefer-arrow-functions';
 import sonarjs from 'eslint-plugin-sonarjs';
 import unicorn from 'eslint-plugin-unicorn';
 import path from 'node:path';
@@ -31,7 +34,9 @@ export default [
     plugins: {
       '@typescript-eslint': typescriptEslint,
       unicorn,
-      sonarjs
+      sonarjs,
+      import: fixupPluginRules(_import),
+      'prefer-arrow-functions': fixupPluginRules(preferArrowFunctions)
     },
     languageOptions: {
       globals: {
@@ -47,6 +52,19 @@ export default [
       }
     },
     rules: {
+      'object-shorthand': ['error', 'always'],
+      'import/order': 'off',
+      'max-params': ['error', 3],
+      'prefer-arrow-functions/prefer-arrow-functions': 'error',
+      '@typescript-eslint/naming-convention': [
+        'error',
+        {
+          selector: 'variable',
+          types: ['boolean'],
+          format: ['PascalCase'],
+          prefix: ['is', 'should', 'has', 'can', 'did', 'will']
+        }
+      ],
       'unicorn/filename-case': 'off',
       'import/prefer-default-export': 'off',
       'unicorn/no-null': 'off',

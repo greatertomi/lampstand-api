@@ -6,10 +6,10 @@ export interface EpubBookMetadata {
   };
   creator?:
     | {
-    'file-as'?: string;
-    role: string;
-    text: string;
-  }
+        'file-as'?: string;
+        role: string;
+        text: string;
+      }
     | string;
   date?: string;
   dc?: string;
@@ -17,9 +17,9 @@ export interface EpubBookMetadata {
   description?:
     | string
     | {
-    text: string;
-    xmlns?: string;
-  };
+        text: string;
+        xmlns?: string;
+      };
   identifier?: {
     scheme?: string;
     id?: string;

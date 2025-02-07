@@ -285,7 +285,7 @@ describe('Testing the auth route', () => {
         token: 123_456,
         expiresAt: new Date(Date.now() - 3_600_000),
         status: TokenStatus.ACTIVE,
-        user: user
+        user
       });
       await tokenRepository.save(token);
 

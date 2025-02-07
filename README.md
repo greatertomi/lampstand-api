@@ -1,11 +1,14 @@
 # Node TypeORM Template
+
 This template gets you started with Node.js TypeORM Postgres faster.
 
 ## Requirements
+
 - [Node v18+](https://nodejs.org/)
 - [Docker](https://www.docker.com/)
 
 ## Running the app
+
 set up the development environment with the following steps
 
 1. clone the repository
@@ -15,10 +18,12 @@ set up the development environment with the following steps
 5. Run `npm run docker:run` command, to run the docker container
 
 ## Commit message format
+
 Commit messages must meet [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) format.
 Run `npm run prepare` to install husky hooks.
 
 ## Migrations
+
 - Run `npm run migration:generate` to generate a migration file. Migrations are generated in the `src/migrations` directory with a default name and timestamp prefix. You should change the name of the migration file to something more descriptive.
 - Run `npm run migration:run` to run migrations
 - Run `npm run migration:revert` to revert migrations

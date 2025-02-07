@@ -23,7 +23,9 @@ export const multipleBooksUploadMiddleware = async (
   req.uploadedFiles = await Promise.all(
     files.map((file) => {
       const fileExtension = file.originalname.split('.').pop();
-      const bookPublicId = `${file.originalname.split('.')[0].replace(/\s+/g, '')}-${Date.now()}.${fileExtension}`;
+      const bookPublicId = `${file.originalname
+        .split('.')[0]
+        .replace(/\s+/g, '')}-${Date.now()}.${fileExtension}`;
 
       return new Promise<UploadApiResponse>((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
