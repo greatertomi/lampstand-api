@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { LoginType, PasswordResetTokenEntity, UserEntity } from '../entities';
 import { TokenStatus } from '../entities/types';
 import { BcryptHelper, JwtHelper } from '../lib';
-import { BadRequestError, HTTP_STATUS, NotFoundError } from '../lib/responses';
+import { BadRequestError, HTTP_STATUS, NotFoundError, UnAuthorizeError } from '../lib/responses';
 import { logger, sendPasswordResetEmail, sendVerificationEmail } from '../services';
 import { JwtPayload } from '../types';
 import { generateUniqueToken } from '../utils';
@@ -168,31 +168,52 @@ export const verifyResetToken = async (req: Request, res: Response) => {
 };
 
 export const updatePassword = async (req: Request, res: Response) => {
-  const { userId, password, token } = req.body;
+  const { userId, password, token, currentPassword } = req.body;
 
   const userRepository = handleGetRepository(UserEntity);
   const passwordResetTokenRepository = handleGetRepository(PasswordResetTokenEntity);
 
-  const userToken = await passwordResetTokenRepository.findOne({
-    where: { user: { id: userId }, token }
-  });
+  if (token) {
+    const userToken = await passwordResetTokenRepository.findOne({
+      where: { user: { id: userId }, token }
+    });
 
-  if (!userToken) {
-    throw new NotFoundError('User with the provided token not found');
-  }
-
-  const hashedPassword = await BcryptHelper.hash(password);
-  await userRepository.update(userId, { password: hashedPassword });
-
-  await passwordResetTokenRepository.update(
-    { id: userToken.id },
-    {
-      status: TokenStatus.USED,
-      usedAt: new Date()
+    if (!userToken) {
+      throw new NotFoundError('User with the provided token not found');
     }
-  );
 
-  logger.debug(`Password updated successfully for user: ${userId}`);
+    if (userToken.status === TokenStatus.USED) {
+      throw new UnAuthorizeError('This token has already been used. You cannot change the password again.');
+    }
+
+    const hashedPassword = await BcryptHelper.hash(password);
+    await userRepository.update(userId, { password: hashedPassword });
+
+    await passwordResetTokenRepository.update(
+      { id: userToken.id },
+      {
+        status: TokenStatus.USED,
+        usedAt: new Date()
+      }
+    );
+    logger.debug(`Password updated successfully for user: ${userId}`);
+  } else if (currentPassword) {
+    const user = await userRepository.findOne({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    const isPasswordValid = await BcryptHelper.compare(currentPassword, user.password);
+    if (!isPasswordValid) {
+      throw new UnAuthorizeError('Current password is incorrect');
+    }
+
+    const hashedPassword = await BcryptHelper.hash(password);
+    await userRepository.update(userId, { password: hashedPassword });
+
+    logger.debug(`Password changed successfully for user: ${userId}`);
+  }
 
   const response = {
     success: true,
