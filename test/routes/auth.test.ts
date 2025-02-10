@@ -1,7 +1,7 @@
 import * as addLoginHistoriesHelper from '../../src/controllers/utils/addLoginHistories';
-import { LoginType, PasswordResetTokenEntity } from '../../src/entities';
+import { LoginType, PasswordResetTokenEntity, UserEntity } from '../../src/entities';
 import { TokenStatus } from '../../src/entities/types';
-import { JwtHelper } from '../../src/lib';
+import { BcryptHelper, JwtHelper } from '../../src/lib';
 import { HTTP_STATUS } from '../../src/lib/responses';
 import * as sendEmailService from '../../src/services';
 import { TestFactory } from '../factory';
@@ -300,9 +300,11 @@ describe('Testing the auth route', () => {
     });
   });
 
-  describe('POST /update-password', () => {
+  describe('PUT /update-password', () => {
     const testPassword = 'newPassword123@';
-    it('should update password successfully', async () => {
+    const testCurrentPassword = 'oldPassword123@';
+
+    it('should update password successfully with token', async () => {
       const { user } = await createTestUser(factory);
 
       const passwordResetTokenRepository =
@@ -362,6 +364,72 @@ describe('Testing the auth route', () => {
 
       expect(res.body).toHaveProperty('errors');
       expect(res.body.errors).toHaveProperty('password');
+    });
+
+    it('should return an error if the token has been used', async () => {
+      const { user } = await createTestUser(factory);
+
+      const passwordResetTokenRepository =
+        factory._connection.getRepository(PasswordResetTokenEntity);
+      const token = 123_456;
+
+      const expiresAt = new Date(Date.now() + 3_600_000);
+
+      await passwordResetTokenRepository.save({
+        user,
+        token,
+        expiresAt,
+        status: TokenStatus.USED
+      });
+
+      const res = await factory.app
+        .put(updatePasswordRoute)
+        .send({ userId: user.id, password: testPassword, token, confirmPassword: testPassword });
+
+      expect(res.status).toBe(HTTP_STATUS.UNAUTHORIZED);
+      expect(res.body.errors[0]).toHaveProperty(
+        'message',
+        'This token has already been used. You cannot change the password again.'
+      );
+    });
+
+    it('should update password successfully with current password', async () => {
+      const { user } = await createTestUser(factory);
+      const userRepository = factory._connection.getRepository(UserEntity);
+
+      const hashedPassword = await BcryptHelper.hash(testCurrentPassword);
+      await userRepository.update(user.id, { password: hashedPassword });
+
+      const res = await factory.app.put(updatePasswordRoute).send({
+        userId: user.id,
+        password: testPassword,
+        confirmPassword: testPassword,
+        currentPassword: testCurrentPassword
+      });
+
+      expect(res.status).toBe(HTTP_STATUS.OK);
+      expect(res.body).toMatchObject({
+        success: true,
+        message: 'Password reset successfully'
+      });
+
+      const updatedUser = await userRepository.findOne({ where: { id: user.id } });
+      const isPasswordValid = await BcryptHelper.compare(testPassword, updatedUser.password);
+      expect(isPasswordValid).toBe(true);
+    });
+
+    it('should return an error for incorrect current password', async () => {
+      const { user } = await createTestUser(factory);
+
+      const res = await factory.app.put(updatePasswordRoute).send({
+        userId: user.id,
+        password: testPassword,
+        confirmPassword: testPassword,
+        currentPassword: 'wrongPassword'
+      });
+
+      expect(res.status).toBe(HTTP_STATUS.UNAUTHORIZED);
+      expect(res.body.errors[0]).toHaveProperty('message', 'Current password is incorrect');
     });
   });
 });
