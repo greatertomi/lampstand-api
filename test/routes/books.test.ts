@@ -34,8 +34,8 @@ jest.mock('../../src/middleware/upload-handlers/book-upload', () => ({
   })
 }));
 
-jest.mock('../../src/utils/EpubProcessor', () => ({
-  EpubProcessor: jest.fn().mockImplementation((bookPath) => ({
+jest.mock('../../src/utils/EpubProcessor', () => {
+  const mockEpubProcessor = jest.fn().mockImplementation((bookPath) => ({
     process: jest.fn(() => {
       if (bookPath.includes('test-book.epub')) {
         const metadata = mockBooksData[0]?.metadata;
@@ -67,8 +67,27 @@ jest.mock('../../src/utils/EpubProcessor', () => ({
     }),
     getBookImage: jest.fn(async () => 'data:image/jpeg;base64,MOCK_BASE64_IMAGE'),
     cleanup: jest.fn()
-  }))
-}));
+  }));
+
+  const mockStaticMethods = {
+    extractMetadataValue: jest.fn((property) => {
+      if (typeof property === 'string') {
+        return property;
+      }
+      if (Array.isArray(property)) {
+        return property
+          .filter((item) => typeof item === 'object' && item.text)
+          .map((item) => item.text)
+          .join(' ');
+      }
+      return property.text || '';
+    })
+  };
+
+  return {
+    EpubProcessor: Object.assign(mockEpubProcessor, mockStaticMethods)
+  };
+});
 
 const unAuthenticatedMessage = 'Authorization header not provided';
 
@@ -443,6 +462,7 @@ describe('Testing the books route', () => {
         .set('Content-Type', 'multipart/form-data')
         .attach('files', Buffer.from('dummy epub book'), 'test-book.epub')
         .attach('files', Buffer.from('dummy epub book'), 'test-book:the-duology.epub');
+
       expect(response.status).toBe(HTTP_STATUS.OK);
       expect(response.body.message).toBe('Books saved successfully');
       expect(response.body.data).toMatchObject(
