@@ -13,6 +13,8 @@ class EpubProcessingError extends Error {
   }
 }
 
+type MetadataProperty = string | { text: string; id?: string } | { text: string }[];
+
 export class EpubProcessor {
   private parser: XMLParser;
 
@@ -50,6 +52,20 @@ export class EpubProcessor {
       throw error;
     }
   };
+
+  public static extractMetadataValue(property: MetadataProperty): string | null {
+    if (typeof property === 'string') {
+      return property;
+    }
+    if (Array.isArray(property)) {
+      return property
+        .filter((item) => typeof item === 'object' && item.text)
+        .map((item) => item.text)
+        .join(' ');
+
+    }
+    return property.text || '';
+  }
 
   private cleanMetadataKeys = (obj: Metadata): EpubBookMetadata => {
     const cleanObj: Metadata = {};

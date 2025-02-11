@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { BookEntity, BookFormat } from '../entities';
 import { HTTP_STATUS, NotFoundError } from '../lib/responses';
 import { IExtendedRequest } from '../types';
-import { EpubProcessor, extractTitle, extractCreator } from '../utils';
+import { EpubProcessor } from '../utils';
 import handleGetRepository from '../utils/handleGetRepository';
 
 export const saveBook = async (req: IExtendedRequest, res: Response) => {
@@ -106,8 +106,8 @@ export const saveManyBooks = async (req: IExtendedRequest, res: Response) => {
       const processor = new EpubProcessor(bookPath);
       const processedData = await processor.process();
       const { title, creator } = processedData.metadata;
-      const bookTitle = extractTitle(title);
-      const author = extractCreator(creator);
+      const bookTitle = EpubProcessor.extractMetadataValue(title);
+      const author = EpubProcessor.extractMetadataValue(creator);
       const coverImage = await processor.getBookImage(processedData.manifest);
 
       const fileFormat: BookFormat =
