@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { BookEntity, BookFormat } from '../../src/entities';
 import { JwtPayload } from '../../src/types';
 
@@ -99,3 +100,29 @@ export const mockBooksData = [
     zipFile: {}
   }
 ];
+
+export const getMockBookData = (bookData: (typeof mockBooksData)[number]) => {
+  const metadata = bookData.metadata;
+
+  return Promise.resolve({
+    metadata: {
+      title: metadata?.title || '',
+      creator: metadata?.creator || ''
+    },
+    manifest: bookData.manifest,
+    zipFile: bookData.zipFile
+  });
+};
+
+export const extractMetadataValue = (property: any): string => {
+  if (typeof property === 'string') {
+    return property;
+  }
+  if (Array.isArray(property)) {
+    return property
+      .filter((item) => typeof item === 'object' && item.text)
+      .map((item) => item.text)
+      .join(' ');
+  }
+  return property.text || '';
+};

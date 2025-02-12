@@ -3,7 +3,13 @@ import { BookEntity, BookFormat } from '../../src/entities';
 import { HTTP_STATUS } from '../../src/lib/responses';
 import { TestFactory } from '../factory';
 import { createTestBook, createTestUser, getTestAuthToken } from '../test-utils/helper-test';
-import { mockBooksData, testBook, testMultipleBooks } from '../test-utils/test-data';
+import {
+  extractMetadataValue,
+  getMockBookData,
+  mockBooksData,
+  testBook,
+  testMultipleBooks
+} from '../test-utils/test-data';
 
 const uploadLink = 'https://res.cloudinary.com/example/raw/upload/v1234567890/test-book.pdf';
 
@@ -38,29 +44,11 @@ jest.mock('../../src/utils/EpubProcessor', () => {
   const mockEpubProcessor = jest.fn().mockImplementation((bookPath) => ({
     process: jest.fn(() => {
       if (bookPath.includes('test-book.epub')) {
-        const metadata = mockBooksData[0]?.metadata;
-
-        return Promise.resolve({
-          metadata: {
-            title: metadata?.title || '',
-            creator: metadata?.creator || ''
-          },
-          manifest: mockBooksData[0]?.manifest,
-          zipFile: mockBooksData[0]?.zipFile
-        });
+        return getMockBookData(mockBooksData[0]);
       }
 
       if (bookPath.includes('test-book:the-duology.epub')) {
-        const metadata = mockBooksData[1]?.metadata;
-
-        return Promise.resolve({
-          metadata: {
-            title: metadata?.title || '',
-            creator: metadata?.creator || ''
-          },
-          manifest: mockBooksData[1]?.manifest,
-          zipFile: mockBooksData[1]?.zipFile
-        });
+        return getMockBookData(mockBooksData[1]);
       }
 
       return Promise.resolve(null);
@@ -70,18 +58,7 @@ jest.mock('../../src/utils/EpubProcessor', () => {
   }));
 
   const mockStaticMethods = {
-    extractMetadataValue: jest.fn((property) => {
-      if (typeof property === 'string') {
-        return property;
-      }
-      if (Array.isArray(property)) {
-        return property
-          .filter((item) => typeof item === 'object' && item.text)
-          .map((item) => item.text)
-          .join(' ');
-      }
-      return property.text || '';
-    })
+    extractMetadataValue: jest.fn((property) => extractMetadataValue(property))
   };
 
   return {
