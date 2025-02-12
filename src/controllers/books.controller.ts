@@ -106,8 +106,8 @@ export const saveManyBooks = async (req: IExtendedRequest, res: Response) => {
       const processor = new EpubProcessor(bookPath);
       const processedData = await processor.process();
       const { title, creator } = processedData.metadata;
-      const bookTitle = typeof title === 'string' ? title : title?.text || '';
-      const author = typeof creator === 'string' ? creator : creator?.text || '';
+      const bookTitle = EpubProcessor.extractMetadataValue(title);
+      const author = EpubProcessor.extractMetadataValue(creator);
       const coverImage = await processor.getBookImage(processedData.manifest);
 
       const fileFormat: BookFormat =
