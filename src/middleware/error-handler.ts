@@ -5,7 +5,9 @@ import { logger } from '../services';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, max-params
 export const errorHandler = (error: Error, req: Request, res: Response, _: NextFunction) => {
   if (error instanceof CustomError) {
-    logger.warn('CustomError encountered', {
+
+    logger.error({
+      message: `CustomError encountered: ${error.message}`,
       location: 'errorHandler',
       route: req.originalUrl,
       method: req.method,
@@ -16,12 +18,12 @@ export const errorHandler = (error: Error, req: Request, res: Response, _: NextF
     return res.status(error.statusCode).send({ errors: error.serializeErrors() });
   }
 
-  logger.error('Unhandled error occurred:', {
+  logger.error( {
     location: 'errorHandler',
     route: req.originalUrl,
     method: req.method,
     errorMessage: error.message,
-    message: error.message,
+    message: `Unhandled error occurred: ${error.message}`,
     stack: error.stack
   });
 
@@ -33,12 +35,12 @@ export const errorHandler = (error: Error, req: Request, res: Response, _: NextF
 export const asyncMiddleware =
   (fn: RequestHandler) => (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch((error) => {
-      logger.error('AsyncMiddleware caught an error:', {
+      logger.error({
         location: 'asyncMiddleware',
         route: req.originalUrl,
         method: req.method,
         errorMessage: error.message,
-        message: error.message,
+        message: `AsyncMiddleware caught an error: ${error.message}`,
         stack: error.stack
       });
 

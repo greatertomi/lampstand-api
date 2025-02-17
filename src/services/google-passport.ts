@@ -18,10 +18,10 @@ passport.use(
         });
         return done(null, profile);
       } catch (error) {
-        logger.error('Error in Google OAuth', {
+        logger.error({
           location: 'GoogleStrategy',
           errorMessage: error.message,
-          message: error.message,
+          message: `Error in Google OAuth ${error.message}`,
           stack: error.stack,
         });
         return done(error);
