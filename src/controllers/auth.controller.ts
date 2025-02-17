@@ -49,6 +49,10 @@ export const signup = async (req: Request, res: Response) => {
     data: responseData
   };
 
+  logger.info('User successfully signed up', {
+    location: 'Signup Controller'
+  });
+
   res.status(HTTP_STATUS.CREATED).send(response);
 };
 
@@ -65,6 +69,10 @@ export const verifyEmail = async (req: Request, res: Response) => {
   }
 
   await userRepository.update(user.id, { isEmailVerified: true });
+
+  logger.info('User email verified successfully', {
+    location: 'VerifyEmail Controller'
+  });
   return res
     .status(HTTP_STATUS.OK)
     .send({ message: 'Email verified successfully', data: { userId: user.id } });
@@ -92,6 +100,10 @@ export const login = async (req: Request, res: Response) => {
   const token = JwtHelper.generateToken(responseData);
 
   await addLoginHistories(user.id, LoginType.PASSWORD);
+
+  logger.info('User successfully Logged in', {
+    location: 'Login Controller'
+  });
 
   res.status(HTTP_STATUS.OK).json({
     message: 'Login successful',
@@ -127,7 +139,7 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
   await passwordResetTokenRepository.save(passwordResetToken);
 
   await sendPasswordResetEmail(user.email, token);
-  logger.debug(`Password reset email sent to ${email}`);
+  logger.debug(`Password reset email sent to ${email}`, { location: 'Request Password Reset Controller' });
 
   const response = {
     success: true,
@@ -164,6 +176,10 @@ export const verifyResetToken = async (req: Request, res: Response) => {
     throw new BadRequestError('Token has expired');
   }
 
+  logger.info('Reset Token Verified', {
+    location: 'Verify Reset Token Controller'
+  });
+
   res.status(HTTP_STATUS.OK).send({ success: true });
 };
 
@@ -196,7 +212,7 @@ export const updatePassword = async (req: Request, res: Response) => {
         usedAt: new Date()
       }
     );
-    logger.debug(`Password updated successfully for user: ${userId}`);
+    logger.debug(`Password updated successfully for user: ${userId}`, { location: 'Update Password Controller' });
   } else if (currentPassword) {
     const user = await userRepository.findOne({ where: { id: userId } });
 
@@ -212,7 +228,7 @@ export const updatePassword = async (req: Request, res: Response) => {
     const hashedPassword = await BcryptHelper.hash(password);
     await userRepository.update(userId, { password: hashedPassword });
 
-    logger.debug(`Password changed successfully for user: ${userId}`);
+    logger.debug(`Password changed successfully for user: ${userId}`, { location: 'Update Password Controller' });
   }
 
   const response = {

@@ -6,6 +6,7 @@ import { HTTP_STATUS, NotFoundError } from '../lib/responses';
 import { IExtendedRequest } from '../types';
 import { TimeSpan } from '../types/timespan';
 import handleGetRepository from '../utils/handleGetRepository';
+import { logger } from '../services';
 
 export const logReadingEvent = async (req: IExtendedRequest, res: Response) => {
   const { bookId, startTime, endTime } = req.body;
@@ -32,6 +33,10 @@ export const logReadingEvent = async (req: IExtendedRequest, res: Response) => {
   });
 
   await readingLogRepository.save(newReadingLog);
+
+  logger.info('Reading event logged successfully', {
+    location: 'Log Reading Event Controller'
+  });
 
   res.status(HTTP_STATUS.OK).json({
     message: 'Reading event logged successfully',
@@ -66,6 +71,10 @@ export const getUserReadingLogs = async (req: IExtendedRequest, res: Response): 
     where: whereCondition,
     relations: ['book'],
     order: { startTime: 'DESC' }
+  });
+
+  logger.info('Reading logs retrieved successfully', {
+    location: 'Get User Reading Logs Controller'
   });
 
   res.status(HTTP_STATUS.OK).json({

@@ -3,12 +3,28 @@ import { CustomError, HTTP_STATUS } from '../lib/responses';
 import { logger } from '../services';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, max-params
-export const errorHandler = (error: Error, __: Request, res: Response, _: NextFunction) => {
+export const errorHandler = (error: Error, req: Request, res: Response, _: NextFunction) => {
   if (error instanceof CustomError) {
+    logger.warn('CustomError encountered', {
+      location: 'errorHandler',
+      route: req.originalUrl,
+      method: req.method,
+      statusCode: error.statusCode,
+      errors: error.serializeErrors()
+    });
+
     return res.status(error.statusCode).send({ errors: error.serializeErrors() });
   }
 
-  logger.error(error.message);
+  logger.error('Unhandled error occurred:', {
+    location: 'errorHandler',
+    route: req.originalUrl,
+    method: req.method,
+    errorMessage: error.message,
+    message: error.message,
+    stack: error.stack
+  });
+
   res
     .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
     .send({ errors: [{ message: 'Something went wrong' }] });
@@ -16,5 +32,17 @@ export const errorHandler = (error: Error, __: Request, res: Response, _: NextFu
 
 export const asyncMiddleware =
   (fn: RequestHandler) => (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
+    Promise.resolve(fn(req, res, next)).catch((error) => {
+      logger.error('AsyncMiddleware caught an error:', {
+        location: 'asyncMiddleware',
+        route: req.originalUrl,
+        method: req.method,
+        errorMessage: error.message,
+        message: error.message,
+        stack: error.stack
+      });
+
+      next(error);
+      // Promise.resolve(fn(req, res, next)).catch(next);
+    });
   };

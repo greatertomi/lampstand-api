@@ -17,6 +17,8 @@ export interface AuthenticatedRequest extends Request {
   user: OAuthUser;
 }
 
+const oauthRoute = 'api/v1/google';
+
 const generateOAuthResponse = async (user: UserEntity, res: Response, status: number) => {
   const responseData: JwtPayload = {
     id: user.id,
@@ -31,7 +33,10 @@ const generateOAuthResponse = async (user: UserEntity, res: Response, status: nu
 
 export const handleGoogleOauthCallback = async (req: AuthenticatedRequest, res: Response) => {
   if (!req.user) {
-    logger.warn('OAuth: No user data received');
+    logger.warn('OAuth: No user data received', {
+      location: 'handleGoogleOauthCallback',
+      route: oauthRoute
+    });
     return res.redirect('/oauth/google/failure');
   }
 
@@ -53,7 +58,17 @@ export const handleGoogleOauthCallback = async (req: AuthenticatedRequest, res: 
       profilePicture: oauthUser.profilePicture
     });
     await userRepository.save(newUser);
+
+    logger.info('OAuth user account created successfully', {
+      location: 'handleGoogleOauthCallback',
+      route: oauthRoute
+    });
+
     return generateOAuthResponse(newUser, res, HTTP_STATUS.CREATED);
   }
+  logger.info('Existing OAuth user logged in successfully', {
+    location: 'handleGoogleOauthCallback',
+    route: oauthRoute
+  });
   return generateOAuthResponse(user, res, HTTP_STATUS.OK);
 };

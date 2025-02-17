@@ -38,7 +38,7 @@ export class EpubProcessor {
     if (!this.localTempFilePath) throw new Error('Local temp file path is not set');
 
     try {
-      logger.debug('Downloading file:', this.filePath);
+      logger.debug('Downloading file:', this.filePath, { location: 'EpubProcessor' });
       const response = await axios.get(this.filePath, {
         responseType: 'arraybuffer',
         timeout: 10_000
@@ -62,7 +62,6 @@ export class EpubProcessor {
         .filter((item) => typeof item === 'object' && item.text)
         .map((item) => item.text)
         .join(' ');
-
     }
     return property.text || '';
   }
@@ -124,7 +123,7 @@ export class EpubProcessor {
       const rootFileContent = await this.zipFile.file(rootFile)?.async('string');
 
       if (!rootFileContent) {
-        logger.error('Invalid EPUB file: Missing root file');
+        logger.error('Invalid EPUB file: Missing root file', { location: 'Epub Processor' });
       }
 
       const rootContent = await this.extractZipContent(rootFile);
@@ -170,7 +169,9 @@ export class EpubProcessor {
     const coverXhtmlPath = manifest.find((item) => item.id.toLowerCase().includes('cover'))?.href;
 
     if (!coverXhtmlPath) return null;
-    const coverFilePaths = Object.keys(this.zipFile.files).filter((path) =>path.includes(coverXhtmlPath));
+    const coverFilePaths = Object.keys(this.zipFile.files).filter((path) =>
+      path.includes(coverXhtmlPath)
+    );
     const fullPath = coverFilePaths.length > 0 ? coverFilePaths[0] : null;
 
     const coverXhtmlFile = this.zipFile.file(fullPath);
@@ -213,7 +214,9 @@ export class EpubProcessor {
         unlinkSync(this.localTempFilePath);
         this.localTempFilePath = null;
       } catch {
-        logger.warn(`Failed to delete temporary file: ${this.localTempFilePath}`);
+        logger.warn(`Failed to delete temporary file: ${this.localTempFilePath}`, {
+          location: 'Epub Processor'
+        });
       }
     }
     this.zipFile = null;

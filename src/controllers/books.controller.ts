@@ -4,6 +4,7 @@ import { HTTP_STATUS, NotFoundError } from '../lib/responses';
 import { IExtendedRequest } from '../types';
 import { EpubProcessor } from '../utils';
 import handleGetRepository from '../utils/handleGetRepository';
+import { logger } from '../services';
 
 export const saveBook = async (req: IExtendedRequest, res: Response) => {
   const { title, author, format, cover } = req.body;
@@ -21,6 +22,10 @@ export const saveBook = async (req: IExtendedRequest, res: Response) => {
   });
 
   await bookRepository.save(newBook);
+
+  logger.info('Book uploaded successfully', {
+    location: 'Save Book Controller'
+  });
 
   res.status(HTTP_STATUS.OK).json({
     message: 'Book saved successfully',
@@ -60,6 +65,10 @@ export const updateBook = async (req: IExtendedRequest, res: Response) => {
 
   const updatedBook = await bookRepository.findOne({ where: { id } });
 
+  logger.info('Book updated successfully', {
+    location: 'Updated Book Controller'
+  });
+
   res.status(HTTP_STATUS.OK).json({
     message: 'Book updated successfully',
     data: updatedBook
@@ -71,6 +80,10 @@ export const getUserBooks = async (req: IExtendedRequest, res: Response) => {
 
   const books = await bookRepository.find({
     where: { owner: { id: req.user.id } }
+  });
+
+  logger.info('Books retrieved successfully', {
+    location: 'Get User Books Controller'
   });
 
   res.status(HTTP_STATUS.OK).json({
@@ -89,6 +102,10 @@ export const deleteBook = async (req: IExtendedRequest, res: Response) => {
     throw new NotFoundError('Book not found or you do not have permission to delete it');
   }
   await bookRepository.delete(book.id);
+
+  logger.info('Book deleted successfully', {
+    location: 'Delete Book Controller'
+  });
 
   return res.status(HTTP_STATUS.OK).json({
     message: 'Book deleted successfully'
@@ -129,6 +146,10 @@ export const saveManyBooks = async (req: IExtendedRequest, res: Response) => {
   );
 
   const savedBooks = await bookRepository.save(newBooks);
+
+  logger.info('Books uploaded successfully', {
+    location: 'Save Many Book Controller'
+  });
 
   res.status(HTTP_STATUS.OK).json({
     message: 'Books saved successfully',

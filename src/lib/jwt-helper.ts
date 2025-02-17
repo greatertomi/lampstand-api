@@ -9,7 +9,11 @@ export const JwtHelper = {
     try {
       return jwt.verify(token, envConfig.JWT_SECRET) as JwtPayload;
     } catch (error) {
-      logger.error('Error verifying token:', error);
+      logger.error('Error verifying token:', {
+        location: 'JwtHelper.verifyToken',
+        error: error.message,
+        message: error.message
+      });
       throw error;
     }
   }
