@@ -3,7 +3,7 @@ import { JwtHelper } from '../lib';
 import { JwtPayload } from '../types';
 import { logger } from './logger';
 
-const SENDER_EMAIL = 'caleboshalusi@gmail.com';
+const SENDER_EMAIL = process.env.SENDER_EMAIL;
 
 export const sendVerificationEmail = async (user: JwtPayload) => {
   const verificationToken = JwtHelper.generateToken(user);
@@ -41,7 +41,7 @@ export const sendVerificationEmail = async (user: JwtPayload) => {
   };
 
   try {
-    await mailgunClient.messages.create(process.env.MAILGUN_DOMAIN!, mailData);
+    await mailgunClient.messages.create(process.env.MAILGUN_DOMAIN, mailData);
     logger.info('Verification email sent', { location: 'Email Service Controller', route: '/api/v1/signup' });
   } catch (error) {
     logger.error({
@@ -89,8 +89,7 @@ export const sendPasswordResetEmail = async (email: string, token: number) => {
   };
 
   try {
-    await mailgunClient.messages.create(process.env.MAILGUN_DOMAIN!, mailData);
-    logger.debug('Password reset email sent', { location: 'Send Reset Password Email', route: '/api/v1/reset-password' });
+    await mailgunClient.messages.create(process.env.MAILGUN_DOMAIN, mailData);
   } catch (error) {
     logger.error( {
       message: `Error sending password reset email: ${error.message}`,
