@@ -4,7 +4,6 @@ import { UserEntity } from '../entities';
 import { HTTP_STATUS, NotFoundError } from '../lib/responses';
 import { IExtendedRequest } from '../types';
 import handleGetRepository from '../utils/handleGetRepository';
-import { logger } from '../services';
 
 export const getUserProfile = async (req: IExtendedRequest, res: Response) => {
   const userId = req.user?.id;
@@ -17,10 +16,6 @@ export const getUserProfile = async (req: IExtendedRequest, res: Response) => {
   }
 
   const { password, ...userResponse } = user;
-
-  logger.info('User Profile retrieved successfully', {
-    location: 'Get User Profile Controller'
-  });
 
   return res.json(userResponse);
 };
@@ -37,9 +32,6 @@ export const updateProfilePicture = async (req: IExtendedRequest, res: Response)
   }
   await userRepository.update({ id: userId }, { profilePicture: profilePictureUrl });
 
-  logger.info('Profile picture uploaded successfully', {
-    location: 'Update Profile Picture Controller'
-  });
 
   res.status(HTTP_STATUS.OK).json({
     message: 'Profile picture uploaded successfully',
@@ -64,10 +56,6 @@ export const removeAccount = async (req: IExtendedRequest, res: Response): Promi
   }
 
   await userRepository.remove(user);
-
-  logger.info('User Account deleted successfully', {
-    location: 'Remove Account Controller'
-  });
 
   return res
     .status(HTTP_STATUS.OK)

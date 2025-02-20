@@ -49,10 +49,6 @@ export const signup = async (req: Request, res: Response) => {
     data: responseData
   };
 
-  logger.info('User successfully signed up', {
-    location: 'Signup Controller'
-  });
-
   res.status(HTTP_STATUS.CREATED).send(response);
 };
 
@@ -70,9 +66,6 @@ export const verifyEmail = async (req: Request, res: Response) => {
 
   await userRepository.update(user.id, { isEmailVerified: true });
 
-  logger.info('User email verified successfully', {
-    location: 'VerifyEmail Controller'
-  });
   return res
     .status(HTTP_STATUS.OK)
     .send({ message: 'Email verified successfully', data: { userId: user.id } });
@@ -100,10 +93,6 @@ export const login = async (req: Request, res: Response) => {
   const token = JwtHelper.generateToken(responseData);
 
   await addLoginHistories(user.id, LoginType.PASSWORD);
-
-  logger.info('User successfully Logged in', {
-    location: 'Login Controller'
-  });
 
   res.status(HTTP_STATUS.OK).json({
     message: 'Login successful',
@@ -175,10 +164,6 @@ export const verifyResetToken = async (req: Request, res: Response) => {
 
     throw new BadRequestError('Token has expired');
   }
-
-  logger.info('Reset Token Verified', {
-    location: 'Verify Reset Token Controller'
-  });
 
   res.status(HTTP_STATUS.OK).send({ success: true });
 };

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
+import { HTTP_STATUS } from '../lib/responses';
 import { logger } from '../services';
-
 
 const sensitiveKeys = new Set(['authorization', 'cookie', 'token', 'accessToken', 'refreshToken']);
 
@@ -20,8 +20,8 @@ const sanitizeData = (data: unknown): unknown => {
       : Object.fromEntries(
           Object.entries(data)
             .filter(([key]) => !sensitiveKeys.has(key.toLowerCase()))
-            .map(([key, value]) => [key, sanitizeData(value)]))
-        )
+            .map(([key, value]) => [key, sanitizeData(value)])
+        ))
     : data;
 };
 
@@ -29,7 +29,6 @@ export const responseLogger = (req: Request, res: Response, next: NextFunction) 
   const startTime = Date.now();
   const maskedHeaders = sanitizeData(req.headers as Record<string, string>);
   const requestMessage = 'API request received';
-  const responseMessage = 'API response sent';
 
   logger.info(requestMessage, {
     method: req.method,
@@ -37,7 +36,6 @@ export const responseLogger = (req: Request, res: Response, next: NextFunction) 
     query: req.query,
     headers: maskedHeaders,
     ip: req.ip,
-    requestId: '',
     location: 'Request Middleware',
     route: `${req.method} ${req.path}`
   });
@@ -55,9 +53,17 @@ export const responseLogger = (req: Request, res: Response, next: NextFunction) 
     const responseTime = Date.now() - startTime;
 
     const logLevel: string =
-      res.statusCode >= 500 ? 'error' : (res.statusCode >= 400 ? 'warn' : 'info');
+      res.statusCode >= HTTP_STATUS.INTERNAL_SERVER_ERROR
+        ? 'error'
+        : (res.statusCode >= HTTP_STATUS.BAD_REQUEST
+        ? 'warn'
+        : 'info');
 
     const sanitizedBody = sanitizeData(responseBody);
+    const responseMessage =
+      typeof sanitizedBody === 'object' && sanitizedBody !== null && 'message' in sanitizedBody
+        ? (sanitizedBody as { message: string }).message
+        : 'API response sent';
 
     logger[logLevel](responseMessage, {
       status: res.statusCode,
@@ -65,10 +71,8 @@ export const responseLogger = (req: Request, res: Response, next: NextFunction) 
       body: sanitizedBody,
       responseTime,
       location: 'Response Middleware',
-      responseId: '',
       route: `${res.statusCode} ${req.method} ${req.path}`
     });
-
   });
   next();
 };

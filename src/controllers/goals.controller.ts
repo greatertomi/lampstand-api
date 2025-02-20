@@ -3,7 +3,6 @@ import { ReadingGoal } from '../entities/ReadingGoalEntity';
 import { HTTP_STATUS, NotFoundError } from '../lib/responses';
 import { IExtendedRequest } from '../types';
 import handleGetRepository from '../utils/handleGetRepository';
-import { logger } from '../services';
 
 export const createReadingGoal = async (req: IExtendedRequest, res: Response): Promise<void> => {
   const userId = req.user?.id;
@@ -31,10 +30,6 @@ export const createReadingGoal = async (req: IExtendedRequest, res: Response): P
     where: { user: { id: userId } }
   });
 
-  logger.info(`Reading goal ${existingGoal ? 'updated' : 'created'} successfully`, {
-    location: 'Create Reading Goal Controller'
-  });
-
   res.status(HTTP_STATUS.CREATED).json({
     message: `${
       existingGoal ? 'Reading goal updated successfully' : 'Reading goal created successfully'
@@ -49,10 +44,6 @@ export const getReadingGoal = async (req: IExtendedRequest, res: Response): Prom
 
   const goal = await readingGoalRepository.findOne({
     where: { user: { id: userId } }
-  });
-
-  logger.info('Reading Goal retrieved successfully', {
-    location: 'Get Reading Goal Controller'
   });
 
   res.status(HTTP_STATUS.OK).json({
@@ -73,10 +64,6 @@ export const deleteReadingGoal = async (req: IExtendedRequest, res: Response): P
   }
 
   await readingGoalRepository.delete(readingGoal.id);
-
-  logger.info('Reading goal deleted successfully', {
-    location: 'Delete Reading Goal Controller'
-  });
 
   res.status(HTTP_STATUS.OK).json({
     message: 'Reading goal deleted successfully'
