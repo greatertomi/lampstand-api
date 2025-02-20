@@ -63,11 +63,9 @@ export const removeAccount = async (req: IExtendedRequest, res: Response): Promi
 
 export const updateUser = async (req: IExtendedRequest, res: Response) => {
   const userId = req.user?.id;
-
   const { fullName } = req.body;
 
   const userRepository = handleGetRepository(UserEntity);
-
   const user = await userRepository.findOne({ where: { id: userId } });
 
   if (!user) {
@@ -75,7 +73,6 @@ export const updateUser = async (req: IExtendedRequest, res: Response) => {
   }
 
   await userRepository.update({ id: userId }, { fullName });
-
   const updatedUser = await userRepository.findOne({ where: { id: userId } });
 
   if (!updatedUser) {
