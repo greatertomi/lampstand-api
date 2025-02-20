@@ -204,4 +204,72 @@ describe('[GET] users/me', () => {
       });
     });
   });
+
+  describe('[PUT] users/update-me', () => {
+    const updateMeRoute = '/users/update-me';
+
+    it('Should update user full name', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+      const fullName = 'Updated User';
+
+      const response = await factory.app
+        .put(updateMeRoute)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ fullName })
+        .expect(HTTP_STATUS.OK);
+      const { data } = response.body;
+
+      expect(data.fullName).toEqual(fullName);
+    });
+
+    it('Should throw error 422 for less than 3 name characters', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+      const fullName = 'ai';
+      const response = await factory.app
+        .put(updateMeRoute)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ fullName })
+        .expect(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(response.body).toEqual({
+        errors: {
+          fullName: 'Full name must be more than 3 characters'
+        }
+      });
+    });
+
+    it('Should throw a 422 if an email is in the request body', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+      const fullName = 'Isaac';
+      const email = 'mosiron@gmail.com';
+      const response = await factory.app
+        .put(updateMeRoute)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ fullName, email })
+        .expect(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(response.body).toEqual({
+        errors: {
+          email: 'Email should not be included in update request'
+        }
+      });
+    });
+
+    it('Should throw a 422 if full name is a number', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+      const fullName = '1234567890';
+      const response = await factory.app
+        .put(updateMeRoute)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ fullName })
+        .expect(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(response.body).toEqual({
+        errors: {
+          fullName: 'Full name can not be a number'
+        }
+      });
+    });
+  });
 });

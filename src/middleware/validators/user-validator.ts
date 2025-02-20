@@ -34,3 +34,18 @@ export const uploadPictureValidationRules = () => [
     })
     .withMessage('Invalid file upload')
 ];
+
+export const updateUserValidationRules = () => [
+  body('fullName')
+    .exists()
+    .withMessage('Full name is required')
+    .notEmpty()
+    .withMessage('Full name cannot be empty')
+    .isString()
+    .withMessage('Full name must be a string')
+    .isLength({ min: 3 })
+    .withMessage('Full name must be more than 3 characters')
+    .matches(/^[\sA-Za-z]+$/)
+    .withMessage('Full name can not be a number'),
+  body('email').not().exists().withMessage('Email should not be included in update request')
+];
