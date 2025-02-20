@@ -37,8 +37,7 @@ export const uploadPictureValidationRules = () => [
 
 export const updateUserValidationRules = () => [
   body('fullName')
-    .exists()
-    .withMessage('Full name is required')
+    .optional()
     .notEmpty()
     .withMessage('Full name cannot be empty')
     .isString()
@@ -47,5 +46,12 @@ export const updateUserValidationRules = () => [
     .withMessage('Full name must be more than 3 characters')
     .matches(/^[\sA-Za-z]+$/)
     .withMessage('Full name can not be a number'),
-  body('email').not().exists().withMessage('Email should not be included in update request')
+  body('phoneNumber')
+    .optional()
+    .matches(/^0/)
+    .withMessage('Phone number must start with 0')
+    .matches(/^\d{11}$/)
+    .withMessage('Phone number must be exactly 11 digits')
+    .matches(/^[^A-Za-z]+$/)
+    .withMessage('Phone number cannot contain letters')
 ];

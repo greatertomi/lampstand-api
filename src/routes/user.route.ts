@@ -28,7 +28,7 @@ router.delete('/remove-account', checkJwt, asyncMiddleware(removeAccount));
 router.get('/me', checkJwt, asyncMiddleware(getUserProfile));
 
 router.put(
-  '/update-me',
+  '/update/me',
   checkJwt,
   updateUserValidationRules(),
   validate,

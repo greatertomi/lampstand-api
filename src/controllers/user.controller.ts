@@ -62,26 +62,23 @@ export const removeAccount = async (req: IExtendedRequest, res: Response): Promi
 };
 
 export const updateUser = async (req: IExtendedRequest, res: Response) => {
-  const userId = req.user?.id;
-  const { fullName } = req.body;
+  const userId = req.user.id;
+  const { fullName, phoneNumber } = req.body;
 
   const userRepository = handleGetRepository(UserEntity);
-  const user = await userRepository.findOne({ where: { id: userId } });
+  const userExists = await userRepository.findOne({
+    where: { id: userId }
+  });
 
-  if (!user) {
-    throw new NotFoundError('User not found');
+  if (!userExists) {
+    return res.status(HTTP_STATUS.NOT_FOUND).json({
+      message: 'User not found'
+    });
   }
 
-  await userRepository.update({ id: userId }, { fullName });
-  const updatedUser = await userRepository.findOne({ where: { id: userId } });
-
-  if (!updatedUser) {
-    throw new NotFoundError('Failed to retrieve updated user');
-  }
-  const { password, ...userResponse } = updatedUser;
+  await userRepository.update({ id: userId }, { fullName, phoneNumber });
 
   return res.status(HTTP_STATUS.OK).json({
-    message: 'User profile updated successfully',
-    data: userResponse
+    message: 'User profile updated successfully'
   });
 };

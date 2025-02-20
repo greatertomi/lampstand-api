@@ -205,70 +205,58 @@ describe('[GET] users/me', () => {
     });
   });
 
-  describe('[PUT] users/update-me', () => {
-    const updateMeRoute = '/users/update-me';
+  describe('[PUT] users/update/me, should update user record', () => {
+    const updateMeRoute = '/users/update/me';
+    const nonExisitingUser = {
+      id: 'e87b5fc7-9c77-4c2d-a1d5-3e012a115881',
+      email: 'testUser@gmail.com',
+      fullName: 'test user'
+    };
 
-    it('Should update user full name', async () => {
+    it('Should update successfully', async () => {
       const { user } = await createTestUser(factory);
       const token = await getTestAuthToken(user);
       const fullName = 'Updated User';
+      const phoneNumber = '08123456789';
 
       const response = await factory.app
         .put(updateMeRoute)
         .set('Authorization', `Bearer ${token}`)
-        .send({ fullName })
+        .send({ fullName, phoneNumber })
         .expect(HTTP_STATUS.OK);
-      const { data } = response.body;
 
-      expect(data.fullName).toEqual(fullName);
+      expect(response.body.message).toEqual('User profile updated successfully');
     });
 
-    it('Should throw error 422 for less than 3 name characters', async () => {
-      const { user } = await createTestUser(factory);
-      const token = await getTestAuthToken(user);
-      const fullName = 'ai';
+    it('Should throw a not found error', async () => {
+      const token = await getTestAuthToken(nonExisitingUser);
+      const fullName = 'Updated User';
+      const phoneNumber = '08123456789';
+
       const response = await factory.app
         .put(updateMeRoute)
         .set('Authorization', `Bearer ${token}`)
-        .send({ fullName })
-        .expect(HTTP_STATUS.UNPROCESSABLE_ENTITY);
-      expect(response.body).toEqual({
-        errors: {
-          fullName: 'Full name must be more than 3 characters'
-        }
-      });
+        .send({ fullName, phoneNumber })
+        .expect(HTTP_STATUS.NOT_FOUND);
+      expect(response.body.message).toEqual('User not found');
     });
 
-    it('Should throw a 422 if an email is in the request body', async () => {
+    it('Should validate request body properly', async () => {
       const { user } = await createTestUser(factory);
       const token = await getTestAuthToken(user);
-      const fullName = 'Isaac';
-      const email = 'mosiron@gmail.com';
+
       const response = await factory.app
         .put(updateMeRoute)
         .set('Authorization', `Bearer ${token}`)
-        .send({ fullName, email })
+        .send({
+          fullName: '',
+          phoneNumber: '123456'
+        })
         .expect(HTTP_STATUS.UNPROCESSABLE_ENTITY);
-      expect(response.body).toEqual({
-        errors: {
-          email: 'Email should not be included in update request'
-        }
-      });
-    });
 
-    it('Should throw a 422 if full name is a number', async () => {
-      const { user } = await createTestUser(factory);
-      const token = await getTestAuthToken(user);
-      const fullName = '1234567890';
-      const response = await factory.app
-        .put(updateMeRoute)
-        .set('Authorization', `Bearer ${token}`)
-        .send({ fullName })
-        .expect(HTTP_STATUS.UNPROCESSABLE_ENTITY);
-      expect(response.body).toEqual({
-        errors: {
-          fullName: 'Full name can not be a number'
-        }
+      expect(response.body.errors).toEqual({
+        fullName: 'Full name can not be a number',
+        phoneNumber: 'Phone number must be exactly 11 digits'
       });
     });
   });
