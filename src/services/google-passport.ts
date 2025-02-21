@@ -13,16 +13,13 @@ passport.use(
     // eslint-disable-next-line max-params
     async (_accessToken, _refreshToken, profile, done) => {
       try {
-        logger.info('Google OAuth success', {
-          location: 'GoogleStrategy'
-        });
         return done(null, profile);
       } catch (error) {
         logger.error({
           location: 'GoogleStrategy',
           errorMessage: error.message,
           message: `Error in Google OAuth ${error.message}`,
-          stack: error.stack,
+          stack: error.stack
         });
         return done(error);
       }
