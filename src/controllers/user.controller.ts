@@ -70,11 +70,8 @@ export const updateUser = async (req: IExtendedRequest, res: Response) => {
     where: { id: userId }
   });
 
-  if (!userExists) {
-    return res.status(HTTP_STATUS.NOT_FOUND).json({
-      message: 'User not found'
-    });
-  }
+  if (!userExists) throw new NotFoundError('User not found');
+
 
   await userRepository.update({ id: userId }, { fullName, phoneNumber });
 

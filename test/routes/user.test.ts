@@ -205,13 +205,8 @@ describe('[GET] users/me', () => {
     });
   });
 
-  describe('[PUT] users/update/me, should update user record', () => {
+  describe('[PUT] users/update/me', () => {
     const updateMeRoute = '/users/update/me';
-    const nonExisitingUser = {
-      id: 'e87b5fc7-9c77-4c2d-a1d5-3e012a115881',
-      email: 'testUser@gmail.com',
-      fullName: 'test user'
-    };
 
     it('Should update successfully', async () => {
       const { user } = await createTestUser(factory);
@@ -229,35 +224,76 @@ describe('[GET] users/me', () => {
     });
 
     it('Should throw a not found error', async () => {
-      const token = await getTestAuthToken(nonExisitingUser);
+      const notExistingUser = {
+        id: 'e87b5fc7-9c77-4c2d-a1d5-3e012a115881',
+        email: 'testUser@gmail.com',
+        fullName: 'test user'
+      };
+      const token = await getTestAuthToken(notExistingUser);
       const fullName = 'Updated User';
       const phoneNumber = '08123456789';
 
       const response = await factory.app
         .put(updateMeRoute)
         .set('Authorization', `Bearer ${token}`)
-        .send({ fullName, phoneNumber })
-        .expect(HTTP_STATUS.NOT_FOUND);
-      expect(response.body.message).toEqual('User not found');
+        .send({ fullName, phoneNumber });
+      expect(response.status).toBe(HTTP_STATUS.NOT_FOUND);
+      expect(response.body).toEqual({
+        errors: [
+          {
+            message: 'User not found'
+          }
+        ]
+      });
     });
 
     it('Should validate request body properly', async () => {
       const { user } = await createTestUser(factory);
       const token = await getTestAuthToken(user);
 
-      const response = await factory.app
+      const emptyFieldErrorMessages = {
+        fullName: 'Full name can only contain letters and spaces',
+        phoneNumber: 'Phone number must be a minimum of 8 digits'
+      };
+
+      const invalidFieldsError = {
+        fullName: 'Full name must be more than 3 characters',
+        phoneNumber: 'Phone number must be a minimum of 8 digits'
+      };
+
+      const emptyFieldResponse = await factory.app
         .put(updateMeRoute)
         .set('Authorization', `Bearer ${token}`)
         .send({
           fullName: '',
-          phoneNumber: '123456'
+          phoneNumber: ''
         })
         .expect(HTTP_STATUS.UNPROCESSABLE_ENTITY);
 
-      expect(response.body.errors).toEqual({
-        fullName: 'Full name can not be a number',
-        phoneNumber: 'Phone number must be exactly 11 digits'
+      const invalidNameResponse = await factory.app
+        .put(updateMeRoute)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          fullName: 'me'
+        })
+        .expect(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+
+      const invalidFieldsResponse = await factory.app
+        .put(updateMeRoute)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          fullName: 'me',
+          phoneNumber: 'we'
+        })
+        .expect(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+
+      expect(emptyFieldResponse.body.errors).toEqual(emptyFieldErrorMessages);
+      expect(Object.keys(emptyFieldResponse.body.errors)).toHaveLength(2);
+      expect(invalidNameResponse.body.errors).toEqual({
+        fullName: 'Full name must be more than 3 characters'
       });
+      expect(invalidFieldsResponse.body.errors).toEqual(invalidFieldsError);
+      expect(Object.keys(invalidFieldsResponse.body.errors)).toHaveLength(2);
     });
   });
 });
