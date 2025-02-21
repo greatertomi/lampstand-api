@@ -47,7 +47,6 @@ export const updateUserValidationRules = () => [
   body('phoneNumber')
     .optional()
     .matches(/^[^A-Za-z]+$/)
-
     .withMessage('Phone number cannot contain letters')
     .isLength({ min: 8 })
     .withMessage('Phone number must be a minimum of 8 digits')
