@@ -68,7 +68,7 @@ export const sendPasswordResetEmail = async (email: string, token: number) => {
           We received a request to reset your password. If you didn't make this request, you can safely ignore this email.
         </p>
         <p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 1.5;">
-          To reset your password, use the following 6-digit code:
+          To reset your password, use the following 4-digit code:
         </p>
         <h2 style="font-family: Arial, sans-serif; font-size: 24px; color: #007bff; text-align: center; padding: 10px; background-color: #f0f0f0; border-radius: 4px;">
           ${token}

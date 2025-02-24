@@ -205,7 +205,7 @@ describe('Testing the auth route', () => {
       expect(res.status).toBe(HTTP_STATUS.OK);
       expect(res.body).toMatchObject({
         success: true,
-        message: 'A 6-digit code has been sent to your email address',
+        message: 'A 4-digit code has been sent to your email address',
         data: { userId: user.id, email: user.email }
       });
       expect(sendPasswordResetEmail).toHaveBeenCalledWith(user.email, expect.any(Number));
@@ -236,7 +236,7 @@ describe('Testing the auth route', () => {
       // todo: mock this token storage
       const tokenRepository = factory._connection.getRepository(PasswordResetTokenEntity);
       const token = tokenRepository.create({
-        token: 123_456,
+        token: 1234,
         expiresAt: new Date(Date.now() + 3_600_000),
         status: TokenStatus.ACTIVE,
         user
@@ -245,7 +245,7 @@ describe('Testing the auth route', () => {
 
       const res = await factory.app
         .post(verifyTokenRoute)
-        .send({ token: '123456', userId: user.id });
+        .send({ token: '1234', userId: user.id });
 
       expect(res.status).toBe(HTTP_STATUS.OK);
       expect(res.body).toEqual({ success: true });
@@ -260,7 +260,7 @@ describe('Testing the auth route', () => {
 
       expect(res.status).toBe(HTTP_STATUS.BAD_REQUEST);
       expect(res.body).toEqual({
-        errors: [{ message: 'Token must be a valid 6-digit number' }]
+        errors: [{ message: 'Token must be a valid 4-digit number' }]
       });
     });
 
@@ -269,7 +269,7 @@ describe('Testing the auth route', () => {
 
       const res = await factory.app
         .post(verifyTokenRoute)
-        .send({ token: '123456', userId: user.id });
+        .send({ token: '1234', userId: user.id });
 
       expect(res.status).toBe(HTTP_STATUS.BAD_REQUEST);
       expect(res.body).toEqual({
@@ -282,7 +282,7 @@ describe('Testing the auth route', () => {
 
       const tokenRepository = factory._connection.getRepository(PasswordResetTokenEntity);
       const token = tokenRepository.create({
-        token: 123_456,
+        token: 1234,
         expiresAt: new Date(Date.now() - 3_600_000),
         status: TokenStatus.ACTIVE,
         user
@@ -291,7 +291,7 @@ describe('Testing the auth route', () => {
 
       const res = await factory.app
         .post(verifyTokenRoute)
-        .send({ token: '123456', userId: user.id });
+        .send({ token: '1234', userId: user.id });
 
       expect(res.status).toBe(HTTP_STATUS.BAD_REQUEST);
       expect(res.body).toEqual({
@@ -309,7 +309,7 @@ describe('Testing the auth route', () => {
 
       const passwordResetTokenRepository =
         factory._connection.getRepository(PasswordResetTokenEntity);
-      const token = 123_456;
+      const token = 1234;
 
       const expiresAt = new Date(Date.now() + 3_600_000);
 
@@ -343,7 +343,7 @@ describe('Testing the auth route', () => {
       const res = await factory.app.put(updatePasswordRoute).send({
         userId: user.id,
         password: testPassword,
-        token: 123_456,
+        token: 1234,
         confirmPassword: testPassword
       });
 
@@ -371,7 +371,7 @@ describe('Testing the auth route', () => {
 
       const passwordResetTokenRepository =
         factory._connection.getRepository(PasswordResetTokenEntity);
-      const token = 123_456;
+      const token = 1234;
 
       const expiresAt = new Date(Date.now() + 3_600_000);
 

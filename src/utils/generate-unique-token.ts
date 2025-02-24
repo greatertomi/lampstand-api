@@ -7,7 +7,7 @@ import { logger } from '../services';
 export const generateUniqueToken = async (
   passwordResetTokenRepository: Repository<PasswordResetTokenEntity>
 ): Promise<number> => {
-  const token = Math.floor(100_000 + Math.random() * 900_000);
+  const token = Math.floor(1000 + Math.random() * 9000);
   const existingToken = await passwordResetTokenRepository.findOne({
     where: { token, status: TokenStatus.ACTIVE }
   });

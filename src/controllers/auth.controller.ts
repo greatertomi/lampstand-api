@@ -132,7 +132,7 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
 
   const response = {
     success: true,
-    message: 'A 6-digit code has been sent to your email address',
+    message: 'A 4-digit code has been sent to your email address',
     data: {
       userId: user.id,
       email: user.email
@@ -146,8 +146,8 @@ export const verifyResetToken = async (req: Request, res: Response) => {
   const { token, userId } = req.body;
 
   const numericToken = Number(token);
-  if (Number.isNaN(numericToken) || String(numericToken).length !== 6) {
-    throw new BadRequestError('Token must be a valid 6-digit number');
+  if (Number.isNaN(numericToken) || String(numericToken).length !== 4) {
+    throw new BadRequestError('Token must be a valid 4-digit number');
   }
 
   const passwordResetTokenRepository = handleGetRepository(PasswordResetTokenEntity);
