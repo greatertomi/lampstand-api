@@ -21,6 +21,9 @@ export const bookUploadMiddleware = async (
   const bookId = `${removeSpecialCharacters(file.originalname)}-${Date.now()}.${format}`;
 
   if (!file) {
+    logger.warn('No file found in request', {
+      location: 'bookUploadMiddleware'
+    });
     return next();
   }
 
@@ -28,6 +31,11 @@ export const bookUploadMiddleware = async (
     file,
     folder: CLOUDINARY_FILE_FOLDER,
     publicId: bookId
+  });
+
+  logger.info('Book uploaded successfully', {
+    location: 'bookUploadMiddleware',
+    filename: file.originalname
   });
 
   next();
@@ -41,7 +49,9 @@ export const multipleBooksUploadMiddleware = async (
   const files = req.files as Express.Multer.File[];
 
   if (!files || files.length === 0) {
-    logger.warn('No files to upload');
+    logger.warn('No files to upload', {
+      location: 'multipleBooksUploadMiddleware'
+    });
     return next();
   }
 
@@ -49,6 +59,11 @@ export const multipleBooksUploadMiddleware = async (
     files.map((file) => {
       const fileExtension = file.originalname.split('.').pop();
       const bookId = `${removeSpecialCharacters(file.originalname)}-${Date.now()}.${fileExtension}`;
+
+      logger.info('Book uploaded successfully', {
+        location: 'multipleBooksUploadMiddleware',
+        filename: file.originalname
+      });
 
       return uploadToCloudinary({
         file,

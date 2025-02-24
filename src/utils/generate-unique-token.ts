@@ -1,6 +1,7 @@
 import { Repository } from 'typeorm';
 import { PasswordResetTokenEntity } from '../entities';
 import { TokenStatus } from '../entities/types';
+import { logger } from '../services';
 
 // todo: add test for this function
 export const generateUniqueToken = async (
@@ -14,6 +15,8 @@ export const generateUniqueToken = async (
   if (existingToken) {
     return generateUniqueToken(passwordResetTokenRepository);
   }
+
+  logger.info('Unique Token generated', { location: 'GenerateUniqueToken' });
 
   return token;
 };

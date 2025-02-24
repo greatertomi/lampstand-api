@@ -22,6 +22,7 @@ export const saveBook = async (req: IExtendedRequest, res: Response) => {
 
   await bookRepository.save(newBook);
 
+
   res.status(HTTP_STATUS.OK).json({
     message: 'Book saved successfully',
     data: {
@@ -72,6 +73,7 @@ export const getUserBooks = async (req: IExtendedRequest, res: Response) => {
   const books = await bookRepository.find({
     where: { owner: { id: req.user.id } }
   });
+
 
   res.status(HTTP_STATUS.OK).json({
     message: 'Books retrieved successfully',

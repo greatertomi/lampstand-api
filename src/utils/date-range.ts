@@ -1,3 +1,4 @@
+import { logger } from '../services';
 import { TimeSpan } from '../types/timespan';
 
 const timeSpanOffsets: Record<TimeSpan, number> = {
@@ -9,6 +10,7 @@ export const getDateRange = (timespan: TimeSpan): { start: Date; end: Date } | n
   const offset = timeSpanOffsets[timespan];
 
   if (offset === undefined) {
+    logger.warn(`Invalid timespan provided: ${timespan}`, { location: 'Get Date Range' });
     return null;
   }
 
@@ -17,6 +19,8 @@ export const getDateRange = (timespan: TimeSpan): { start: Date; end: Date } | n
 
   start.setDate(start.getDate() - offset);
   start.setHours(0, 0, 0, 0);
+
+  logger.info(`Generated date range for '${timespan}'`, { location: 'Get Date Range' });
 
   return { start, end };
 };

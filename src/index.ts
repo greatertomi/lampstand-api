@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import passport from 'passport';
 import envConfig from './config/envConfig';
 import { AppDataSource } from './database';
-import { errorHandler } from './middleware';
+import { errorHandler, responseLogger } from './middleware';
 import routes from './routes';
 import { logger } from './services';
 import './services/google-passport';
@@ -22,6 +22,7 @@ export const main = async () => {
 
     app.use(passport.initialize());
 
+    app.use(responseLogger);
     app.use('/api/v1', routes);
 
     app.use((req, res) =>

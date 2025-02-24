@@ -10,20 +10,40 @@ const colorsConfig = {
 
 const colorizer = winston.format.colorize({ all: true, colors: colorsConfig });
 
+const consoleServerLogs = winston.format.combine(
+  winston.format.timestamp(),
+  winston.format.printf(({ level, message, timestamp, location, route }) => {
+    return [
+      timestamp,
+      colorizer.colorize(level, `[${level.toUpperCase()}]`),
+      location ? `[${location}]` : '',
+      route || '',
+      message
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .trim();
+  })
+);
+
 export const logger = winston.createLogger({
   level: envConfig.LOG_LEVEL || 'info',
-  format: winston.format.combine(
-    winston.format.timestamp(),
-    winston.format.printf(({ level, message, timestamp, ...args }) => {
-      const coloredLevel = colorizer.colorize(level, `[${level.toUpperCase()}]`);
-      return `${timestamp} ${coloredLevel}: ${message} ${
-        Object.keys(args).length > 0 ? JSON.stringify(args, null, 2) : ''
-      }`;
-    })
-  ),
   transports: [
-    new winston.transports.Console(),
-    new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'logs/combined.log' })
+    new winston.transports.Console({ format: consoleServerLogs }),
+    new winston.transports.File({
+      filename: 'logs/error.log',
+      level: 'error',
+      format: winston.format.json()
+    }),
+    new winston.transports.File({
+      filename: 'logs/combined.log',
+      format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.json(),
+        winston.format.printf(({ level, message, timestamp, ...args }) => {
+          return JSON.stringify({ timestamp, level, message, ...args });
+        })
+      )
+    })
   ]
 });

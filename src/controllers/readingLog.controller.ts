@@ -33,6 +33,7 @@ export const logReadingEvent = async (req: IExtendedRequest, res: Response) => {
 
   await readingLogRepository.save(newReadingLog);
 
+
   res.status(HTTP_STATUS.OK).json({
     message: 'Reading event logged successfully',
     data: {
@@ -67,6 +68,7 @@ export const getUserReadingLogs = async (req: IExtendedRequest, res: Response): 
     relations: ['book'],
     order: { startTime: 'DESC' }
   });
+
 
   res.status(HTTP_STATUS.OK).json({
     message: 'Reading logs fetched successfully',

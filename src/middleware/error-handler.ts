@@ -3,12 +3,29 @@ import { CustomError, HTTP_STATUS } from '../lib/responses';
 import { logger } from '../services';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, max-params
-export const errorHandler = (error: Error, __: Request, res: Response, _: NextFunction) => {
+export const errorHandler = (error: Error, req: Request, res: Response, _: NextFunction) => {
   if (error instanceof CustomError) {
+    logger.error({
+      message: `CustomError encountered: ${error.message}`,
+      location: 'errorHandler',
+      route: req.originalUrl,
+      method: req.method,
+      statusCode: error.statusCode,
+      errors: error.serializeErrors()
+    });
+
     return res.status(error.statusCode).send({ errors: error.serializeErrors() });
   }
 
-  logger.error(error.message);
+  logger.error({
+    location: 'errorHandler',
+    route: req.originalUrl,
+    method: req.method,
+    errorMessage: error.message,
+    message: `Unhandled error occurred: ${error.message}`,
+    stack: error.stack
+  });
+
   res
     .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
     .send({ errors: [{ message: 'Something went wrong' }] });

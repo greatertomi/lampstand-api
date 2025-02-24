@@ -32,6 +32,7 @@ export const updateProfilePicture = async (req: IExtendedRequest, res: Response)
   }
   await userRepository.update({ id: userId }, { profilePicture: profilePictureUrl });
 
+
   res.status(HTTP_STATUS.OK).json({
     message: 'Profile picture uploaded successfully',
     data: {

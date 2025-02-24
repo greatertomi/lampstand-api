@@ -65,6 +65,7 @@ export const verifyEmail = async (req: Request, res: Response) => {
   }
 
   await userRepository.update(user.id, { isEmailVerified: true });
+
   return res
     .status(HTTP_STATUS.OK)
     .send({ message: 'Email verified successfully', data: { userId: user.id } });
@@ -127,7 +128,7 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
   await passwordResetTokenRepository.save(passwordResetToken);
 
   await sendPasswordResetEmail(user.email, token);
-  logger.debug(`Password reset email sent to ${email}`);
+  logger.debug(`Password reset email sent to ${email}`, { location: 'Request Password Reset Controller' });
 
   const response = {
     success: true,
@@ -196,7 +197,7 @@ export const updatePassword = async (req: Request, res: Response) => {
         usedAt: new Date()
       }
     );
-    logger.debug(`Password updated successfully for user: ${userId}`);
+    logger.debug(`Password updated successfully for user: ${userId}`, { location: 'Update Password Controller' });
   } else if (currentPassword) {
     const user = await userRepository.findOne({ where: { id: userId } });
 
@@ -212,7 +213,7 @@ export const updatePassword = async (req: Request, res: Response) => {
     const hashedPassword = await BcryptHelper.hash(password);
     await userRepository.update(userId, { password: hashedPassword });
 
-    logger.debug(`Password changed successfully for user: ${userId}`);
+    logger.debug(`Password changed successfully for user: ${userId}`, { location: 'Update Password Controller' });
   }
 
   const response = {

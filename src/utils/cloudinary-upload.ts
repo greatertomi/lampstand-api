@@ -32,10 +32,16 @@ export const uploadToCloudinary = ({
       },
       (error, result) => {
         if (result) {
-          logger.info(`File uploaded successfully: ${result.public_id}`);
+          logger.info(`File uploaded successfully: ${result.public_id}`, {
+            location: 'uploadToCloudinary'
+          });
           resolve(result);
         } else {
-          logger.error(`Cloudinary upload error: ${error?.message}`);
+          logger.error(`Cloudinary upload error: ${error?.message}`, {
+            location: 'uploadToCloudinary',
+            errorMessage: error?.message,
+            message: error?.message
+          });
           reject(error);
         }
       }
