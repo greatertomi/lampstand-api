@@ -34,3 +34,20 @@ export const uploadPictureValidationRules = () => [
     })
     .withMessage('Invalid file upload')
 ];
+
+export const updateUserValidationRules = () => [
+  body('fullName')
+    .optional()
+    .isString()
+    .withMessage('Full name must be a string')
+    .isLength({ min: 3 })
+    .withMessage('Full name must be more than 3 characters')
+    .matches(/^[\sA-Za-z]+$/)
+    .withMessage('Full name can only contain letters and spaces'),
+  body('phoneNumber')
+    .optional()
+    .matches(/^[^A-Za-z]+$/)
+    .withMessage('Phone number cannot contain letters')
+    .isLength({ min: 8 })
+    .withMessage('Phone number must be a minimum of 8 digits')
+];

@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { getUserProfile, removeAccount, updateProfilePicture } from '../controllers';
+import { getUserProfile, removeAccount, updateProfilePicture, updateUser } from '../controllers';
 import {
   asyncMiddleware,
   checkJwt,
   profilePictureUploadMiddleware,
+  updateUserValidationRules,
   uploadPictureValidationRules,
   validate
 } from '../middleware';
@@ -25,5 +26,13 @@ router.put(
 router.delete('/remove-account', checkJwt, asyncMiddleware(removeAccount));
 
 router.get('/me', checkJwt, asyncMiddleware(getUserProfile));
+
+router.put(
+  '/update/me',
+  checkJwt,
+  updateUserValidationRules(),
+  validate,
+  asyncMiddleware(updateUser)
+);
 
 export default router;
