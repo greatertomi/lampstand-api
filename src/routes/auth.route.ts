@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   login,
   requestPasswordReset,
+  resendPasswordRequest,
   signup,
   updatePassword,
   verifyEmail,
@@ -14,7 +15,8 @@ import {
   updatePasswordValidationRules,
   userValidationRules,
   validate,
-  verifyResetTokenValidationRules
+  verifyResetTokenValidationRules,
+  resendPasswordTokenValidationRules
 } from '../middleware';
 
 const router = Router();
@@ -42,4 +44,6 @@ router.put(
   validate,
   asyncMiddleware(updatePassword)
 );
+
+router.post('/resend-token', resendPasswordTokenValidationRules(), validate, asyncMiddleware(resendPasswordRequest));
 export default router;

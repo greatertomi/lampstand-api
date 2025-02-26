@@ -49,3 +49,7 @@ export const verifyResetTokenValidationRules = () => [
     .withMessage('Token must be a number')
     .toInt()
 ];
+
+export const resendPasswordTokenValidationRules = () => [
+  body('userId').notEmpty().withMessage('User ID is missing').bail().isUUID().withMessage('Invalid User ID format'),
+];
