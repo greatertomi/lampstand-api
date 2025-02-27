@@ -6,11 +6,12 @@ import { EpubProcessor } from '../utils';
 import handleGetRepository from '../utils/handleGetRepository';
 
 export const saveBook = async (req: IExtendedRequest, res: Response) => {
-  const { title, author, format, cover } = req.body;
+  const { id, title, author, format, cover } = req.body;
 
   const bookRepository = handleGetRepository(BookEntity);
 
   const newBook = bookRepository.create({
+    id,
     title,
     author,
     cover,
@@ -21,7 +22,6 @@ export const saveBook = async (req: IExtendedRequest, res: Response) => {
   });
 
   await bookRepository.save(newBook);
-
 
   res.status(HTTP_STATUS.OK).json({
     message: 'Book saved successfully',
@@ -73,7 +73,6 @@ export const getUserBooks = async (req: IExtendedRequest, res: Response) => {
   const books = await bookRepository.find({
     where: { owner: { id: req.user.id } }
   });
-
 
   res.status(HTTP_STATUS.OK).json({
     message: 'Books retrieved successfully',

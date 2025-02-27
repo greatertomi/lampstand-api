@@ -2,6 +2,11 @@ import { body, param } from 'express-validator';
 import { BookFormat } from '../../entities';
 
 export const saveBookValidationRules = [
+  body('id')
+    .notEmpty()
+    .withMessage('Id is required')
+    .isUUID()
+    .withMessage('Id must be a valid UUID'),
   body('title').notEmpty().withMessage('Title is required'),
   body('author').notEmpty().withMessage('Author is required'),
   body('format')
