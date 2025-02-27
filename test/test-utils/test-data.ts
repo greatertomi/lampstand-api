@@ -10,6 +10,7 @@ export const testUser = {
 };
 
 export const testBook = {
+  id: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
   title: 'Test Book',
   author: 'Test Author',
   format: BookFormat.PDF,

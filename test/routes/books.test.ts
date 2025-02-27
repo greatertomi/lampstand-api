@@ -123,6 +123,29 @@ describe('Testing the books route', () => {
       });
     });
 
+    it('should throw an error if book id is invalid', async () => {
+      const invalidIdBook = {
+        id: '',
+        title: 'Test Book',
+        author: 'Test Author',
+        format: BookFormat.PDF,
+        cover: 'data:image/jpeg;base64,9j4j93'
+      };
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+
+      const response = await factory.app
+        .post(saveBookRoute)
+        .set('Authorization', `Bearer ${token}`)
+        .attach('file', Buffer.from('dummy pdf content'), 'test-book.pdf')
+        .field(invalidIdBook);
+
+      expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(response.body.errors).toMatchObject({
+        id: 'Id must be a valid UUID'
+      });
+    });
+
     it('should throw an error if the book file is not provided', async () => {
       const { user } = await createTestUser(factory);
       const token = await getTestAuthToken(user);
