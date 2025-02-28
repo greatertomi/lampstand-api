@@ -455,13 +455,18 @@ describe('Testing the books route', () => {
     it('should save books data successfully', async () => {
       const { user } = await createTestUser(factory);
       const token = await getTestAuthToken(user);
+      const testIds = [
+        '6cd3556d-276d-4e17-8f9e-3f3a93250dba',
+        '7cd3556d-276d-4e17-8f9e-3f3a93250dcb'
+      ];
 
       const response = await factory.app
         .post(saveMultipleBooks)
         .set('Authorization', `Bearer ${token}`)
         .set('Content-Type', 'multipart/form-data')
         .attach('files', Buffer.from('dummy epub book'), 'test-book.epub')
-        .attach('files', Buffer.from('dummy epub book'), 'test-book:the-duology.epub');
+        .attach('files', Buffer.from('dummy epub book'), 'test-book:the-duology.epub')
+        .field('ids', JSON.stringify(testIds));
 
       expect(response.status).toBe(HTTP_STATUS.OK);
       expect(response.body.message).toBe('Books saved successfully');
@@ -476,7 +481,7 @@ describe('Testing the books route', () => {
       );
     });
 
-    it('should throw an error if no file is provided', async () => {
+    it('should throw an error if both file and ids are not provided', async () => {
       const { user } = await createTestUser(factory);
       const token = await getTestAuthToken(user);
 
@@ -486,7 +491,65 @@ describe('Testing the books route', () => {
         .send();
 
       expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
-      expect(response.body.errors).toMatchObject({ files: 'At least one file must be uploaded' });
+      expect(response.body.errors).toMatchObject({
+        ids: "Cannot read properties of undefined (reading 'ids')",
+        files: "Cannot destructure property 'ids' of 'req.body' as it is undefined."
+      });
+    });
+
+    it('should throw an error if no file is provided', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+
+      const response = await factory.app
+        .post(saveMultipleBooks)
+        .set('Authorization', `Bearer ${token}`)
+        .set('Content-Type', 'multipart/form-data')
+        .field('ids', JSON.stringify(['6cd3556d-276d-4e17-8f9e-3f3a93250dba']));
+
+      expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(response.body.errors).toMatchObject({
+        files: 'At least one file must be uploaded'
+      });
+    });
+
+    it('should throw error for duplicate ids', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+      const testIds = [
+        '7cd3556d-276d-4e17-8f9e-3f3a93250dcb',
+        '7cd3556d-276d-4e17-8f9e-3f3a93250dcb'
+      ];
+
+      const response = await factory.app
+        .post(saveMultipleBooks)
+        .set('Authorization', `Bearer ${token}`)
+        .set('Content-Type', 'multipart/form-data')
+        .attach('files', Buffer.from('dummy epub book'), 'test-book.epub')
+        .attach('files', Buffer.from('dummy epub book'), 'test-book:the-duology.epub')
+        .field('ids', JSON.stringify(testIds));
+
+      expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(response.body.errors).toMatchObject({
+        ids: 'Duplicate UUIDs are not allowed'
+      });
+    });
+
+    it('should throw an error if ids is an empty array', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+
+      const response = await factory.app
+        .post(saveMultipleBooks)
+        .set('Authorization', `Bearer ${token}`)
+        .set('Content-Type', 'multipart/form-data')
+        .attach('files', Buffer.from('dummy epub book'), 'test-book.epub')
+        .field('ids', JSON.stringify([]));
+
+      expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(response.body.errors).toMatchObject({
+        files: 'ids length should match uploaded files'
+      });
     });
 
     it('should throw an error if auth token is not provided', async () => {
@@ -507,7 +570,8 @@ describe('Testing the books route', () => {
       const response = await factory.app
         .post(saveMultipleBooks)
         .set('Authorization', `Bearer ${token}`)
-        .attach('files', Buffer.from('dummy pdf'), 'test-book.pdf');
+        .attach('files', Buffer.from('dummy pdf'), 'test-book.pdf')
+        .field('ids', JSON.stringify(['6cd3556d-276d-4e17-8f9e-3f3a93250dba']));
 
       expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
       expect(response.body.errors).toMatchObject({

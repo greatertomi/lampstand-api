@@ -10,7 +10,7 @@ export enum BookFormat {
 
 @Entity({ name: 'books' })
 export class BookEntity {
-  @PrimaryColumn()
+  @PrimaryColumn('uuid')
   id: string;
 
   @Column()
