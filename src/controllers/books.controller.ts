@@ -98,7 +98,6 @@ export const deleteBook = async (req: IExtendedRequest, res: Response) => {
 
 export const saveManyBooks = async (req: IExtendedRequest, res: Response) => {
   const uploadedFiles = req.uploadedFiles;
-
   const bookRepository = handleGetRepository(BookEntity);
   const newBooks: BookEntity[] = await Promise.all(
     uploadedFiles.map(async (uploadedFile) => {
