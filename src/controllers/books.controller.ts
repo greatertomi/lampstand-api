@@ -98,10 +98,13 @@ export const deleteBook = async (req: IExtendedRequest, res: Response) => {
 
 export const saveManyBooks = async (req: IExtendedRequest, res: Response) => {
   const uploadedFiles = req.uploadedFiles;
+  const ids = JSON.parse(req.body.ids);
+
   const bookRepository = handleGetRepository(BookEntity);
   const newBooks: BookEntity[] = await Promise.all(
-    uploadedFiles.map(async (uploadedFile) => {
+    uploadedFiles.map(async (uploadedFile, index) => {
       const bookPath = uploadedFile.secure_url;
+      const bookId = ids[index];
 
       const processor = new EpubProcessor(bookPath);
       const processedData = await processor.process();
@@ -117,6 +120,7 @@ export const saveManyBooks = async (req: IExtendedRequest, res: Response) => {
       await processor.cleanup();
 
       return bookRepository.create({
+        id: bookId,
         title: bookTitle,
         author,
         cover: coverImage || null,
