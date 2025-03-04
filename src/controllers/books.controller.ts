@@ -1,9 +1,11 @@
 import { Response } from 'express';
+import cloudinary from '../config/cloudinary';
 import { BookEntity, BookFormat } from '../entities';
 import { HTTP_STATUS, NotFoundError } from '../lib/responses';
 import { IExtendedRequest } from '../types';
 import { EpubProcessor } from '../utils';
 import handleGetRepository from '../utils/handleGetRepository';
+import { logger } from '../services';
 
 export const saveBook = async (req: IExtendedRequest, res: Response) => {
   const { id, title, author, format, cover } = req.body;
@@ -89,12 +91,25 @@ export const deleteBook = async (req: IExtendedRequest, res: Response) => {
   if (!book) {
     throw new NotFoundError('Book not found or you do not have permission to delete it');
   }
-  await bookRepository.delete(book.id);
+  const cloudinaryPublicId = book.url.split('/upload/')[1].split('/').slice(1).join('/');
+  if (cloudinaryPublicId) {
+      const deleteResponse = await cloudinary.uploader.destroy(cloudinaryPublicId, {
+        resource_type: 'raw'
+      });
 
-  return res.status(HTTP_STATUS.OK).json({
-    message: 'Book deleted successfully'
-  });
-};
+    if (deleteResponse.result !== 'ok') {
+      logger.error(`Failed to delete file from Cloudinary: ${cloudinaryPublicId}`);
+      throw new Error(`Cloudinary Response: ${deleteResponse.result}`);
+    }
+    logger.info(`Book deleted successfully from Cloudinary: ${cloudinaryPublicId}`);
+  }
+
+    await bookRepository.delete(book.id);
+
+    return res.status(HTTP_STATUS.OK).json({
+      message: 'Book deleted successfully'
+    });
+  };
 
 export const saveManyBooks = async (req: IExtendedRequest, res: Response) => {
   const uploadedFiles = req.uploadedFiles;
