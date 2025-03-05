@@ -6,11 +6,12 @@ import { EpubProcessor } from '../utils';
 import handleGetRepository from '../utils/handleGetRepository';
 
 export const saveBook = async (req: IExtendedRequest, res: Response) => {
-  const { title, author, format, cover } = req.body;
+  const { id, title, author, format, cover } = req.body;
 
   const bookRepository = handleGetRepository(BookEntity);
 
   const newBook = bookRepository.create({
+    id,
     title,
     author,
     cover,
@@ -21,7 +22,6 @@ export const saveBook = async (req: IExtendedRequest, res: Response) => {
   });
 
   await bookRepository.save(newBook);
-
 
   res.status(HTTP_STATUS.OK).json({
     message: 'Book saved successfully',
@@ -74,7 +74,6 @@ export const getUserBooks = async (req: IExtendedRequest, res: Response) => {
     where: { owner: { id: req.user.id } }
   });
 
-
   res.status(HTTP_STATUS.OK).json({
     message: 'Books retrieved successfully',
     data: books
@@ -99,11 +98,13 @@ export const deleteBook = async (req: IExtendedRequest, res: Response) => {
 
 export const saveManyBooks = async (req: IExtendedRequest, res: Response) => {
   const uploadedFiles = req.uploadedFiles;
+  const ids = JSON.parse(req.body.ids);
 
   const bookRepository = handleGetRepository(BookEntity);
   const newBooks: BookEntity[] = await Promise.all(
-    uploadedFiles.map(async (uploadedFile) => {
+    uploadedFiles.map(async (uploadedFile, index) => {
       const bookPath = uploadedFile.secure_url;
+      const bookId = ids[index];
 
       const processor = new EpubProcessor(bookPath);
       const processedData = await processor.process();
@@ -119,6 +120,7 @@ export const saveManyBooks = async (req: IExtendedRequest, res: Response) => {
       await processor.cleanup();
 
       return bookRepository.create({
+        id: bookId,
         title: bookTitle,
         author,
         cover: coverImage || null,

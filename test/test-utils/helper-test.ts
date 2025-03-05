@@ -34,6 +34,7 @@ export const getTestAuthToken = async (user: JwtPayload) => {
 export const createTestBook = async (userId: string): Promise<BookEntity> => {
   const bookRepository = handleGetRepository(BookEntity);
   return bookRepository.save({
+    id: testBook.id,
     title: testBook.title,
     author: testBook.author,
     format: testBook.format,

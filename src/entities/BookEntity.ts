@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
+import { Entity, Column, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
 import { ReadingLogEntity } from './ReadingLogEntity';
 import { UserEntity } from './UserEntity';
 
@@ -10,7 +10,7 @@ export enum BookFormat {
 
 @Entity({ name: 'books' })
 export class BookEntity {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn('uuid')
   id: string;
 
   @Column()

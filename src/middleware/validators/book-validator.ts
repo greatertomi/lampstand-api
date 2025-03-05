@@ -2,6 +2,11 @@ import { body, param } from 'express-validator';
 import { BookFormat } from '../../entities';
 
 export const saveBookValidationRules = [
+  body('id')
+    .notEmpty()
+    .withMessage('Id is required')
+    .isUUID()
+    .withMessage('Id must be a valid UUID'),
   body('title').notEmpty().withMessage('Title is required'),
   body('author').notEmpty().withMessage('Author is required'),
   body('format')
@@ -66,11 +71,36 @@ export const updateBookValidationRules = [
 ];
 
 export const saveMultipleBooksValidationRules = [
+  body('ids').custom((_, { req }) => {
+    const parsedIds = JSON.parse(req.body.ids);
+    const uuidPattern = /^[\da-f]{8}-[\da-f]{4}-[1-5][\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/i;
+    if (!Array.isArray(parsedIds)) {
+      throw new TypeError('Must be an array');
+    }
+    const isValid = parsedIds.every((item) => typeof item === 'string' && uuidPattern.test(item));
+
+    if (!isValid) {
+      throw new Error('All items must be valid UUIDs');
+    }
+
+    const uniqueIds = new Set(parsedIds);
+    if (uniqueIds.size !== parsedIds.length) {
+      throw new Error('Duplicate UUIDs are not allowed');
+    }
+
+    return true;
+  }),
   body('files').custom((_, { req }) => {
     const uploadedFiles = req.files;
+    const { ids } = req.body;
+    const newIds = JSON.parse(ids);
 
     if (!uploadedFiles || uploadedFiles.length === 0) {
       throw new Error('At least one file must be uploaded');
+    }
+
+    if (newIds.length !== uploadedFiles.length) {
+      throw new Error('ids length should match uploaded files');
     }
 
     for (const file of uploadedFiles) {
