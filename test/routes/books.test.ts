@@ -296,7 +296,7 @@ describe('Testing the books route', () => {
       });
 
       const cloudinaryPublicId = book.url.split('/upload/')[1].split('/').slice(1).join('/');
-      expect(cloudinary.uploader.destroy).toHaveBeenCalledWith(cloudinaryPublicId, { resource_type: 'raw' });
+      expect(cloudinary.uploader.destroy).toHaveBeenCalledWith(cloudinaryPublicId, { resource_type: 'raw', invalidate: true });
 
       const bookRepository = factory._connection.getRepository(BookEntity);
       const deletedBook = await bookRepository.findOne({ where: { id: book.id } });
@@ -355,7 +355,7 @@ describe('Testing the books route', () => {
 
       expect(response.status).toBe(500);
       const cloudinaryPublicId = book.url.split('/upload/')[1].split('/').slice(1).join('/');
-      expect(cloudinary.uploader.destroy).toHaveBeenCalledWith(cloudinaryPublicId, { resource_type: 'raw' });
+      expect(cloudinary.uploader.destroy).toHaveBeenCalledWith(cloudinaryPublicId, { resource_type: 'raw', invalidate: true });
 
       const bookRepository = factory._connection.getRepository(BookEntity);
       const existingBook = await bookRepository.findOne({ where: { id: book.id } });
