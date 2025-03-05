@@ -16,6 +16,7 @@ services:
     volumes:
       - ./src:/app/src
       - ./nodemon.json:/app/nodemon.json
+      - ./logs:/app/logs
     command: npm run dev
   postgres:
     container_name: 'lampstand-postgres'
