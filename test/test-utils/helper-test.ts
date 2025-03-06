@@ -31,7 +31,7 @@ export const getTestAuthToken = async (user: JwtPayload) => {
   });
 };
 
-export const createTestBook = async (userId: string): Promise<BookEntity> => {
+export const createTestBook = async (userId: string, url?: string): Promise<BookEntity> => {
   const bookRepository = handleGetRepository(BookEntity);
   return bookRepository.save({
     id: testBook.id,
@@ -40,7 +40,7 @@ export const createTestBook = async (userId: string): Promise<BookEntity> => {
     format: testBook.format,
     cover: testBook.cover,
     size: 1000,
-    url: 'http://test-book.com',
+    url: url || 'http://test-book.com',
     owner: { id: userId }
   });
 };

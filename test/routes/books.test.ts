@@ -10,6 +10,8 @@ import {
   testBook,
   testMultipleBooks
 } from '../test-utils/test-data';
+import cloudinary from '../../src/config/cloudinary';
+import { getPublicIdFromUrl } from '../../src/utils';
 
 const uploadLink = 'https://res.cloudinary.com/example/raw/upload/v1234567890/test-book.pdf';
 
@@ -65,6 +67,17 @@ jest.mock('../../src/utils/EpubProcessor', () => {
     EpubProcessor: Object.assign(mockEpubProcessor, mockStaticMethods)
   };
 });
+
+jest.mock('../../src/config/cloudinary', () => ({
+  uploader: {
+    destroy: jest.fn((publicId) => {
+      if (publicId === 'lampstand/development/books/incorrect-public-id.epub') {
+        return Promise.reject({ result: 'not found' });
+      }
+      return Promise.resolve({ result: 'ok' });
+    })
+  }
+}));
 
 const unAuthenticatedMessage = 'Authorization header not provided';
 
@@ -268,7 +281,11 @@ describe('Testing the books route', () => {
     it('should delete the book when authenticated and book exists', async () => {
       const { user } = await createTestUser(factory);
       const token = await getTestAuthToken(user);
-      const book = await createTestBook(user.id);
+
+      const book = await createTestBook(
+        user.id,
+        'https://res.cloudinary.com/test-account/raw/upload/v1234567890/lampstand/development/books/test-book.epub'
+      );
 
       const response = await factory.app
         .delete(`${deleteBookRoute}/${book.id}`)
@@ -278,6 +295,9 @@ describe('Testing the books route', () => {
       expect(response.body).toMatchObject({
         message: 'Book deleted successfully'
       });
+
+      const cloudinaryPublicId = getPublicIdFromUrl(book.url);
+      expect(cloudinary.uploader.destroy).toHaveBeenCalledWith(cloudinaryPublicId, { resource_type: 'raw', invalidate: true });
 
       const bookRepository = factory._connection.getRepository(BookEntity);
       const deletedBook = await bookRepository.findOne({ where: { id: book.id } });
@@ -319,6 +339,28 @@ describe('Testing the books route', () => {
           message: 'Something went wrong'
         }
       ]);
+    });
+
+    it('should throw an error and prevent book deletion if Cloudinary file deletion fails', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+
+      const book = await createTestBook(
+        user.id,
+        'https://res.cloudinary.com/test-account/raw/upload/v1234567890/lampstand/development/books/incorrect-public-id.epub'
+      );
+
+      const response = await factory.app
+          .delete(`${deleteBookRoute}/${book.id}`)
+          .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(500);
+      const cloudinaryPublicId = getPublicIdFromUrl(book.url);
+      expect(cloudinary.uploader.destroy).toHaveBeenCalledWith(cloudinaryPublicId, { resource_type: 'raw', invalidate: true });
+
+      const bookRepository = factory._connection.getRepository(BookEntity);
+      const existingBook = await bookRepository.findOne({ where: { id: book.id } });
+      expect(existingBook).not.toBeNull();
     });
   });
 

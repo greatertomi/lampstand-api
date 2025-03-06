@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { BookEntity, BookFormat } from '../entities';
 import { HTTP_STATUS, NotFoundError } from '../lib/responses';
 import { IExtendedRequest } from '../types';
-import { EpubProcessor } from '../utils';
+import { EpubProcessor, deleteCloudinaryAsset } from '../utils';
 import handleGetRepository from '../utils/handleGetRepository';
 
 export const saveBook = async (req: IExtendedRequest, res: Response) => {
@@ -89,6 +89,11 @@ export const deleteBook = async (req: IExtendedRequest, res: Response) => {
   if (!book) {
     throw new NotFoundError('Book not found or you do not have permission to delete it');
   }
+
+  if (book.url) {
+    await deleteCloudinaryAsset(book.url);
+  }
+
   await bookRepository.delete(book.id);
 
   return res.status(HTTP_STATUS.OK).json({
