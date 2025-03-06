@@ -11,6 +11,9 @@ export const userValidationRules = () => [
     .withMessage('Full name must be a string'),
   body('email').isEmail().withMessage('This must be a proper email address'),
   ...passwordValidationRules(),
+  body('confirmPassword')
+    .custom((value, { req }) => value === req.body.password)
+    .withMessage('Confirm password must match the password'),
   body('agreedToTerms').isBoolean().withMessage('Agreed to terms should be a boolean')
 ];
 
