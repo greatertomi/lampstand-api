@@ -11,6 +11,7 @@ import {
   testMultipleBooks
 } from '../test-utils/test-data';
 import cloudinary from '../../src/config/cloudinary';
+import { getPublicIdFromUrl } from '../../src/utils';
 
 const uploadLink = 'https://res.cloudinary.com/example/raw/upload/v1234567890/test-book.pdf';
 
@@ -295,7 +296,7 @@ describe('Testing the books route', () => {
         message: 'Book deleted successfully'
       });
 
-      const cloudinaryPublicId = book.url.split('/upload/')[1].split('/').slice(1).join('/');
+      const cloudinaryPublicId = getPublicIdFromUrl(book.url);
       expect(cloudinary.uploader.destroy).toHaveBeenCalledWith(cloudinaryPublicId, { resource_type: 'raw', invalidate: true });
 
       const bookRepository = factory._connection.getRepository(BookEntity);
@@ -354,7 +355,7 @@ describe('Testing the books route', () => {
           .set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(500);
-      const cloudinaryPublicId = book.url.split('/upload/')[1].split('/').slice(1).join('/');
+      const cloudinaryPublicId = getPublicIdFromUrl(book.url);
       expect(cloudinary.uploader.destroy).toHaveBeenCalledWith(cloudinaryPublicId, { resource_type: 'raw', invalidate: true });
 
       const bookRepository = factory._connection.getRepository(BookEntity);

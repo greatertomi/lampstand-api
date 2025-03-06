@@ -1,8 +1,7 @@
 import cloudinary from '../config/cloudinary';
 import { logger } from '../services';
 
-
-const getPublicIdFromUrl = (url: string): string => {
+export const getPublicIdFromUrl = (url: string): string => {
   try {
     const urlObj = new URL(url);
     const pathSegments = urlObj.pathname.split('/');
@@ -12,7 +11,6 @@ const getPublicIdFromUrl = (url: string): string => {
   } catch (error) {
     logger.error(`Failed to get PublicId: ${error}`);
     throw new Error('Invalid URL format');
-
   }
 };
 

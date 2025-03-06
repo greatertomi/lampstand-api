@@ -2,9 +2,8 @@ import { Response } from 'express';
 import { BookEntity, BookFormat } from '../entities';
 import { HTTP_STATUS, NotFoundError } from '../lib/responses';
 import { IExtendedRequest } from '../types';
-import { EpubProcessor } from '../utils';
+import { EpubProcessor, deleteCloudinaryAsset } from '../utils';
 import handleGetRepository from '../utils/handleGetRepository';
-import { deleteCloudinaryAsset } from '../utils/delete-cloudinary-asset';
 
 export const saveBook = async (req: IExtendedRequest, res: Response) => {
   const { id, title, author, format, cover } = req.body;
@@ -95,12 +94,12 @@ export const deleteBook = async (req: IExtendedRequest, res: Response) => {
     await deleteCloudinaryAsset(book.url);
   }
 
-    await bookRepository.delete(book.id);
+  await bookRepository.delete(book.id);
 
-    return res.status(HTTP_STATUS.OK).json({
-      message: 'Book deleted successfully'
-    });
-  };
+  return res.status(HTTP_STATUS.OK).json({
+    message: 'Book deleted successfully'
+  });
+};
 
 export const saveManyBooks = async (req: IExtendedRequest, res: Response) => {
   const uploadedFiles = req.uploadedFiles;
