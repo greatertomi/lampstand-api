@@ -6,6 +6,7 @@ export const testUser = {
   fullName: 'David Brown',
   email: 'davidbrown@gmail.com',
   password: 'Str0ngP@ssw0rd!',
+  confirmPassword: 'Str0ngP@ssw0rd!',
   agreedToTerms: true
 };
 

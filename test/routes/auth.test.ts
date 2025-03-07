@@ -63,7 +63,7 @@ describe('Testing the auth route', () => {
       expect(sendVerificationEmail).toHaveBeenCalledTimes(1);
     });
 
-    describe('should return an error if submitted data has missing values', () => {
+    describe('should return an error if submitted data has missing values or mis-match', () => {
       it('should return an error if only full name is provided', async () => {
         const res = await factory.app.post(createRoute).send({
           fullName: testUser.fullName
@@ -120,6 +120,28 @@ describe('Testing the auth route', () => {
           'Password must have at least one number',
           passwordError
         ];
+
+        expect(expectedErrorMessages).toContain(passwordErrorMessage);
+        expect(addLoginHistory).not.toHaveBeenCalled();
+        expect(sendVerificationEmail).not.toHaveBeenCalled();
+      });
+
+      it('should return an error if the password and confirmPassword do not match', async () => {
+        const PasswordData = {
+          ...testUser,
+          confirmPassword: '!dep2@304ee'
+        };
+
+        const res = await factory.app
+          .post(createRoute)
+          .send(PasswordData)
+          .expect(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+
+        expect(res.body).toHaveProperty('errors');
+        expect(res.body.errors).toHaveProperty('confirmPassword');
+
+        const passwordErrorMessage = res.body.errors.confirmPassword;
+        const expectedErrorMessages = 'Confirm password must match the password';
 
         expect(expectedErrorMessages).toContain(passwordErrorMessage);
         expect(addLoginHistory).not.toHaveBeenCalled();
@@ -243,9 +265,7 @@ describe('Testing the auth route', () => {
       });
       await tokenRepository.save(token);
 
-      const res = await factory.app
-        .post(verifyTokenRoute)
-        .send({ token: '1234', userId: user.id });
+      const res = await factory.app.post(verifyTokenRoute).send({ token: '1234', userId: user.id });
 
       expect(res.status).toBe(HTTP_STATUS.OK);
       expect(res.body).toEqual({ success: true });
@@ -267,9 +287,7 @@ describe('Testing the auth route', () => {
     it('should return an error for a non-existent token', async () => {
       const { user } = await createTestUser(factory);
 
-      const res = await factory.app
-        .post(verifyTokenRoute)
-        .send({ token: '1234', userId: user.id });
+      const res = await factory.app.post(verifyTokenRoute).send({ token: '1234', userId: user.id });
 
       expect(res.status).toBe(HTTP_STATUS.BAD_REQUEST);
       expect(res.body).toEqual({
@@ -289,9 +307,7 @@ describe('Testing the auth route', () => {
       });
       await tokenRepository.save(token);
 
-      const res = await factory.app
-        .post(verifyTokenRoute)
-        .send({ token: '1234', userId: user.id });
+      const res = await factory.app.post(verifyTokenRoute).send({ token: '1234', userId: user.id });
 
       expect(res.status).toBe(HTTP_STATUS.BAD_REQUEST);
       expect(res.body).toEqual({
