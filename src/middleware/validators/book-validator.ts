@@ -21,6 +21,7 @@ export const saveBookValidationRules = [
   body('cover')
     .optional()
     .custom((value) => {
+      if (value === '') return true;
       const base64Pattern = /^data:image\/(jpeg|jpg|png|gif);base64,[\d+/A-Za-z]+={0,2}$/;
       if (!base64Pattern.test(value)) {
         throw new Error('must be a valid Base64 encoded image');
