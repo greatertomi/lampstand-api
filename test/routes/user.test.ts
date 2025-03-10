@@ -133,7 +133,14 @@ describe('[GET] users/me', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
-      expect(response.body.errors).toHaveProperty('profilePicture', 'Invalid file upload');
+      expect(response.body.errors).toEqual(
+        expect.arrayContaining([
+          {
+            field: 'profilePicture',
+            message: 'Invalid file upload'
+          }
+        ])
+      );
     });
 
     it('should throw an error if auth token is not provided', async () => {
@@ -251,15 +258,15 @@ describe('[GET] users/me', () => {
       const { user } = await createTestUser(factory);
       const token = await getTestAuthToken(user);
 
-      const emptyFieldErrorMessages = {
-        fullName: 'Full name can only contain letters and spaces',
-        phoneNumber: 'Phone number must be a minimum of 8 digits'
-      };
+      const emptyFieldErrorMessages = [
+        { field: 'fullName', message: 'Full name can only contain letters and spaces' },
+        { field: 'phoneNumber', message: 'Phone number must be a minimum of 8 digits' }
+      ];
 
-      const invalidFieldsError = {
-        fullName: 'Full name must be more than 3 characters',
-        phoneNumber: 'Phone number must be a minimum of 8 digits'
-      };
+      const invalidFieldsError = [
+        { field: 'fullName', message: 'Full name must be more than 3 characters' },
+        { field: 'phoneNumber', message: 'Phone number must be a minimum of 8 digits' }
+      ];
 
       const emptyFieldResponse = await factory.app
         .put(updateMeRoute)
@@ -287,13 +294,13 @@ describe('[GET] users/me', () => {
         })
         .expect(HTTP_STATUS.UNPROCESSABLE_ENTITY);
 
-      expect(emptyFieldResponse.body.errors).toEqual(emptyFieldErrorMessages);
-      expect(Object.keys(emptyFieldResponse.body.errors)).toHaveLength(2);
-      expect(invalidNameResponse.body.errors).toEqual({
-        fullName: 'Full name must be more than 3 characters'
-      });
-      expect(invalidFieldsResponse.body.errors).toEqual(invalidFieldsError);
-      expect(Object.keys(invalidFieldsResponse.body.errors)).toHaveLength(2);
+      expect(emptyFieldResponse.body.errors).toEqual(expect.arrayContaining(emptyFieldErrorMessages));
+      expect(Object.keys(emptyFieldResponse.body.errors)).toHaveLength(4);
+      expect(invalidNameResponse.body.errors).toEqual(expect.arrayContaining([
+        { field: 'fullName', message: 'Full name must be more than 3 characters' }
+      ]));
+      expect(invalidFieldsResponse.body.errors).toEqual(expect.arrayContaining(invalidFieldsError));
+      expect(Object.keys(invalidFieldsResponse.body.errors)).toHaveLength(3);
     });
   });
 });

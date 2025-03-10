@@ -1,6 +1,8 @@
 /* eslint-disable sonarjs/no-duplicate-string */
+import cloudinary from '../../src/config/cloudinary';
 import { BookEntity, BookFormat } from '../../src/entities';
 import { HTTP_STATUS } from '../../src/lib/responses';
+import { getPublicIdFromUrl } from '../../src/utils';
 import { TestFactory } from '../factory';
 import { createTestBook, createTestUser, getTestAuthToken } from '../test-utils/helper-test';
 import {
@@ -10,8 +12,6 @@ import {
   testBook,
   testMultipleBooks
 } from '../test-utils/test-data';
-import cloudinary from '../../src/config/cloudinary';
-import { getPublicIdFromUrl } from '../../src/utils';
 
 const uploadLink = 'https://res.cloudinary.com/example/raw/upload/v1234567890/test-book.pdf';
 
@@ -130,10 +130,30 @@ describe('Testing the books route', () => {
         .field(bookData);
 
       expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
-      expect(response.body.errors).toMatchObject({
-        author: 'Author is required',
-        format: 'Invalid book format'
-      });
+      expect(response.body.errors).toEqual(
+        expect.arrayContaining([
+          {
+            field: 'id',
+            message: 'Id is required'
+          },
+          {
+            field: 'id',
+            message: 'Id must be a valid UUID'
+          },
+          {
+            field: 'author',
+            message: 'Author is required'
+          },
+          {
+            field: 'format',
+            message: 'Format is required'
+          },
+          {
+            field: 'format',
+            message: 'Invalid book format'
+          }
+        ])
+      );
     });
 
     it('should throw an error if book id is invalid', async () => {
@@ -154,9 +174,18 @@ describe('Testing the books route', () => {
         .field(invalidIdBook);
 
       expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
-      expect(response.body.errors).toMatchObject({
-        id: 'Id must be a valid UUID'
-      });
+      expect(response.body.errors).toEqual(
+        expect.arrayContaining([
+          {
+            field: 'id',
+            message: 'Id is required'
+          },
+          {
+            field: 'id',
+            message: 'Id must be a valid UUID'
+          }
+        ])
+      );
     });
 
     it('should throw an error if the book file is not provided', async () => {
@@ -169,9 +198,9 @@ describe('Testing the books route', () => {
         .field(testBook);
 
       expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
-      expect(response.body.errors).toMatchObject({
-        file: 'No file uploaded'
-      });
+      expect(response.body.errors).toEqual(
+        expect.arrayContaining([{ field: 'file', message: 'No file uploaded' }])
+      );
     });
 
     it('should throw an error if auth token is not provided', async () => {
@@ -297,7 +326,10 @@ describe('Testing the books route', () => {
       });
 
       const cloudinaryPublicId = getPublicIdFromUrl(book.url);
-      expect(cloudinary.uploader.destroy).toHaveBeenCalledWith(cloudinaryPublicId, { resource_type: 'raw', invalidate: true });
+      expect(cloudinary.uploader.destroy).toHaveBeenCalledWith(cloudinaryPublicId, {
+        resource_type: 'raw',
+        invalidate: true
+      });
 
       const bookRepository = factory._connection.getRepository(BookEntity);
       const deletedBook = await bookRepository.findOne({ where: { id: book.id } });
@@ -351,12 +383,15 @@ describe('Testing the books route', () => {
       );
 
       const response = await factory.app
-          .delete(`${deleteBookRoute}/${book.id}`)
-          .set('Authorization', `Bearer ${token}`);
+        .delete(`${deleteBookRoute}/${book.id}`)
+        .set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(500);
       const cloudinaryPublicId = getPublicIdFromUrl(book.url);
-      expect(cloudinary.uploader.destroy).toHaveBeenCalledWith(cloudinaryPublicId, { resource_type: 'raw', invalidate: true });
+      expect(cloudinary.uploader.destroy).toHaveBeenCalledWith(cloudinaryPublicId, {
+        resource_type: 'raw',
+        invalidate: true
+      });
 
       const bookRepository = factory._connection.getRepository(BookEntity);
       const existingBook = await bookRepository.findOne({ where: { id: book.id } });
@@ -484,9 +519,9 @@ describe('Testing the books route', () => {
         'Uploaded file must be a PDF'
       ];
 
-      const errors = updateResponse.body.errors as Record<string, string>;
+      const errors = updateResponse.body.errors as { field: string; message: string }[];
       const hasExpectedError = expectedErrorMessages.some((message) =>
-        Object.values(errors).some((error) => error.includes(message))
+        errors.some((error) => error.message.includes(message))
       );
       expect(hasExpectedError).toBe(true);
     });
@@ -533,10 +568,18 @@ describe('Testing the books route', () => {
         .send();
 
       expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
-      expect(response.body.errors).toMatchObject({
-        ids: "Cannot read properties of undefined (reading 'ids')",
-        files: "Cannot destructure property 'ids' of 'req.body' as it is undefined."
-      });
+      expect(response.body.errors).toEqual(
+        expect.arrayContaining([
+          {
+            field: 'ids',
+            message: "Cannot read properties of undefined (reading 'ids')"
+          },
+          {
+            field: 'files',
+            message: "Cannot destructure property 'ids' of 'req.body' as it is undefined."
+          }
+        ])
+      );
     });
 
     it('should throw an error if no file is provided', async () => {
@@ -550,9 +593,14 @@ describe('Testing the books route', () => {
         .field('ids', JSON.stringify(['6cd3556d-276d-4e17-8f9e-3f3a93250dba']));
 
       expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
-      expect(response.body.errors).toMatchObject({
-        files: 'At least one file must be uploaded'
-      });
+      expect(response.body.errors).toEqual(
+        expect.arrayContaining([
+          {
+            field: 'files',
+            message: 'At least one file must be uploaded'
+          }
+        ])
+      );
     });
 
     it('should throw error for duplicate ids', async () => {
@@ -572,9 +620,14 @@ describe('Testing the books route', () => {
         .field('ids', JSON.stringify(testIds));
 
       expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
-      expect(response.body.errors).toMatchObject({
-        ids: 'Duplicate UUIDs are not allowed'
-      });
+      expect(response.body.errors).toEqual(
+        expect.arrayContaining([
+          {
+            field: 'ids',
+            message: 'Duplicate UUIDs are not allowed'
+          }
+        ])
+      );
     });
 
     it('should throw an error if ids is an empty array', async () => {
@@ -589,9 +642,14 @@ describe('Testing the books route', () => {
         .field('ids', JSON.stringify([]));
 
       expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
-      expect(response.body.errors).toMatchObject({
-        files: 'ids length should match uploaded files'
-      });
+      expect(response.body.errors).toEqual(
+        expect.arrayContaining([
+          {
+            field: 'files',
+            message: 'ids length should match uploaded files'
+          }
+        ])
+      );
     });
 
     it('should throw an error if auth token is not provided', async () => {
@@ -616,9 +674,14 @@ describe('Testing the books route', () => {
         .field('ids', JSON.stringify(['6cd3556d-276d-4e17-8f9e-3f3a93250dba']));
 
       expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
-      expect(response.body.errors).toMatchObject({
-        files: 'Uploaded file must be a EPUB'
-      });
+      expect(response.body.errors).toEqual(
+        expect.arrayContaining([
+          {
+            field: 'files',
+            message: 'Uploaded file must be a EPUB'
+          }
+        ])
+      );
     });
   });
 });
