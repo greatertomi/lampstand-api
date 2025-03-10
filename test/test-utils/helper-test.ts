@@ -7,7 +7,7 @@ import handleGetRepository from '../../src/utils/handleGetRepository';
 import { TestFactory } from '../factory';
 import { testBook, testUser } from './test-data';
 
-type ReadingLogData = Pick<ReadingLogEntity, 'minutesRead' | 'startTime' | 'endTime'> & {
+type ReadingLogData = Pick<ReadingLogEntity, 'secondsRead' | 'startTime' | 'endTime'> & {
   userId: string;
   bookId: string;
 };
@@ -61,7 +61,7 @@ export const createTestReadingLogs = async (readingLogs: ReadingLogData[]) => {
     book: { id: log.bookId },
     startTime: log.startTime,
     endTime: log.endTime,
-    minutesRead: log.minutesRead
+    secondsRead: log.secondsRead
   }));
   return readingLogRepository.save(logsToSave);
 };

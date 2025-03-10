@@ -20,5 +20,5 @@ export class ReadingLogEntity {
   endTime: Date;
 
   @Column('int')
-  minutesRead: number;
+  secondsRead: number;
 }

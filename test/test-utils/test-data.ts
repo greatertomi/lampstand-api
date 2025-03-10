@@ -24,42 +24,42 @@ export const getMockedReadingLogs = (user: JwtPayload, book: BookEntity) => {
     {
       userId: user.id,
       bookId: book.id,
-      minutesRead: 60,
+      secondsRead: 3600,
       startTime: now,
       endTime: now
     },
     {
       userId: user.id,
       bookId: book.id,
-      minutesRead: 30,
+      secondsRead: 1800,
       startTime: new Date(now.getTime() - 86_400_000),
       endTime: new Date(now.getTime() - 86_400_000)
     },
     {
       userId: user.id,
       bookId: book.id,
-      minutesRead: 30,
+      secondsRead: 1800,
       startTime: new Date(now.getTime() - 432_000_000),
       endTime: new Date(now.getTime() - 432_000_000)
     },
     {
       userId: user.id,
       bookId: book.id,
-      minutesRead: 30,
+      secondsRead: 1800,
       startTime: new Date(now.getTime() - 691_200_000),
       endTime: new Date(now.getTime() - 691_200_000)
     },
     {
       userId: user.id,
       bookId: book.id,
-      minutesRead: 30,
+      secondsRead: 1800,
       startTime: new Date(now.getTime() - 2_505_600_000),
       endTime: new Date(now.getTime() - 2_505_600_000)
     },
     {
       userId: user.id,
       bookId: book.id,
-      minutesRead: 45,
+      secondsRead: 2700,
       startTime: new Date(now.getTime() - 2_678_400_000),
       endTime: new Date(now.getTime() - 2_678_400_000)
     }

@@ -51,7 +51,7 @@ describe('Testing the reading log route', () => {
         bookId: book.id,
         startTime: expect.any(String),
         endTime: expect.any(String),
-        minutesRead: expect.any(Number)
+        secondsRead: expect.any(Number)
       });
     });
 
@@ -169,7 +169,7 @@ describe('Testing the reading log route', () => {
             bookTitle: expect.any(String),
             startTime: expect.any(String),
             endTime: expect.any(String),
-            minutesRead: expect.any(Number)
+            secondsRead: expect.any(Number)
           })
         ])
       });
@@ -188,7 +188,7 @@ describe('Testing the reading log route', () => {
         message: 'Reading logs fetched successfully',
         data: expect.arrayContaining([
           expect.objectContaining({
-            minutesRead: 60
+            secondsRead: 3600
           })
         ])
       });
@@ -206,8 +206,8 @@ describe('Testing the reading log route', () => {
       expect(response.body).toMatchObject({
         message: 'Reading logs fetched successfully',
         data: expect.arrayContaining([
-          expect.objectContaining({ minutesRead: 60 }),
-          expect.objectContaining({ minutesRead: 30 })
+          expect.objectContaining({ secondsRead: 3600 }),
+          expect.objectContaining({ secondsRead: 1800 })
         ])
       });
       expect(response.body.data.length).toBe(3);
@@ -225,8 +225,8 @@ describe('Testing the reading log route', () => {
       expect(response.body).toMatchObject({
         message: 'Reading logs fetched successfully',
         data: expect.arrayContaining([
-          expect.objectContaining({ minutesRead: 60 }),
-          expect.objectContaining({ minutesRead: 30 })
+          expect.objectContaining({ secondsRead: 3600 }),
+          expect.objectContaining({ secondsRead: 1800 })
         ])
       });
       expect(response.body.data.length).toBe(5);
