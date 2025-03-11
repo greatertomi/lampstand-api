@@ -2,7 +2,9 @@ import { Response } from 'express';
 import { ReadingGoal } from '../entities/ReadingGoalEntity';
 import { HTTP_STATUS, NotFoundError } from '../lib/responses';
 import { IExtendedRequest } from '../types';
+import { sendPushNotification } from '../utils';
 import handleGetRepository from '../utils/handleGetRepository';
+
 
 export const createReadingGoal = async (req: IExtendedRequest, res: Response): Promise<void> => {
   const userId = req.user?.id;
@@ -29,6 +31,9 @@ export const createReadingGoal = async (req: IExtendedRequest, res: Response): P
   const newGoal = await readingGoalRepository.findOne({
     where: { user: { id: userId } }
   });
+
+  await sendPushNotification(userId,  'Reading Goal Reminder',
+    `Your reading goal Time is set for ${goalInMinutes}. Stay consistent! 📚`);
 
   res.status(HTTP_STATUS.CREATED).json({
     message: `${

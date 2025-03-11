@@ -5,9 +5,10 @@ import { BcryptHelper, JwtHelper } from '../lib';
 import { BadRequestError, HTTP_STATUS, NotFoundError, UnAuthorizeError } from '../lib/responses';
 import { logger, sendPasswordResetEmail, sendVerificationEmail } from '../services';
 import { JwtPayload } from '../types';
-import { generateUniqueToken } from '../utils';
+import { generateUniqueToken, saveOrUpdatePushToken } from '../utils';
 import handleGetRepository from '../utils/handleGetRepository';
 import { addLoginHistories } from './utils';
+
 
 const userNotFound = 'User not found';
 
@@ -72,9 +73,10 @@ export const verifyEmail = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  const { email, password, pushToken } = req.body;
 
   const userRepository = handleGetRepository(UserEntity);
+
 
   const user = await userRepository.findOne({
     where: { email }
@@ -91,6 +93,10 @@ export const login = async (req: Request, res: Response) => {
     email: user.email
   };
   const token = JwtHelper.generateToken(responseData);
+
+  if (pushToken) {
+    await saveOrUpdatePushToken(user.id, pushToken);
+  }
 
   await addLoginHistories(user.id, LoginType.PASSWORD);
 

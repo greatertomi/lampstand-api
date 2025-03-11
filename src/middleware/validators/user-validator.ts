@@ -19,6 +19,7 @@ export const userValidationRules = () => [
 
 export const loginValidationRules = () => [
   body('email', 'This must be a valid email address').isEmail(),
+  body('pushToken').notEmpty().withMessage('Push Token is required'),
   ...passwordValidationRules()
 ];
 
