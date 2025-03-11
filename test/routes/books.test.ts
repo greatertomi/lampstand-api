@@ -268,7 +268,7 @@ describe('Testing the books route', () => {
       expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
       expect(response.body.errors).toMatchObject([
         {
-          message: 'An unexpected error occurred: Database error'
+          message: 'Something went wrong'
         }
       ]);
     });
@@ -368,7 +368,7 @@ describe('Testing the books route', () => {
       expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
       expect(response.body.errors).toMatchObject([
         {
-          message: 'An unexpected error occurred: Database error'
+          message: 'Something went wrong'
         }
       ]);
     });
@@ -486,7 +486,7 @@ describe('Testing the books route', () => {
 
       expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
       expect(response.body).toMatchObject({
-        errors: [{ message: 'An unexpected error occurred: Database error' }]
+        errors: [{ message: 'Something went wrong' }]
       });
     });
 

@@ -157,7 +157,7 @@ describe('Testing the reading log route', () => {
       expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
       expect(response.body.errors).toMatchObject([
         {
-          message: 'An unexpected error occurred: Database error'
+          message: 'Something went wrong'
         }
       ]);
     });
@@ -294,7 +294,7 @@ describe('Testing the reading log route', () => {
       expect(response.body).toMatchObject({
         errors: [
           {
-            message: 'An unexpected error occurred: Database error'
+            message: 'Something went wrong'
           }
         ]
       });
