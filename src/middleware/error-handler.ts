@@ -28,7 +28,8 @@ export const errorHandler = (error: Error, req: Request, res: Response, _: NextF
 
   res
     .status(HTTP_STATUS.INTERNAL_SERVER_ERROR)
-    .send({ errors: [{ message: 'Something went wrong' }] });
+    .send({ errors: [{ message: `An unexpected error occurred: ${error.message}`, route: req.originalUrl,
+        stack: error.stack.split('/n') }] });
 };
 
 export const asyncMiddleware =
