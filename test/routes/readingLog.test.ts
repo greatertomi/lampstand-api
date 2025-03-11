@@ -68,11 +68,20 @@ describe('Testing the reading log route', () => {
         .send(invalidReadingLogData);
 
       expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
-      expect(response.body.errors).toMatchObject({
-        bookId: 'Invalid book ID',
-        startTime: 'Invalid start time',
-        endTime: 'End time must be after start time'
-      });
+      expect(response.body.errors).toEqual(
+        expect.arrayContaining([
+          {
+            field: 'bookId',
+            message: 'Invalid book ID'
+          },
+          { field: 'startTime', message: 'Invalid start time' },
+          {
+            field: 'endTime',
+            message: 'Invalid current time'
+          },
+          { field: 'endTime', message: 'End time must be after start time' }
+        ])
+      );
     });
 
     it('should throw an error if end time is before start time', async () => {
@@ -88,9 +97,14 @@ describe('Testing the reading log route', () => {
         .send(invalidReadingLogData);
 
       expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
-      expect(response.body.errors).toMatchObject({
-        endTime: 'End time must be after start time'
-      });
+      expect(response.body.errors).toEqual(
+        expect.arrayContaining([
+          {
+            field: 'endTime',
+            message: 'End time must be after start time'
+          }
+        ])
+      );
     });
 
     it('should throw an error if book does not exist', async () => {
@@ -258,9 +272,14 @@ describe('Testing the reading log route', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
-      expect(response.body.errors).toMatchObject({
-        timespan: 'Timespan must be one of: today, last7days, last30days'
-      });
+      expect(response.body.errors).toEqual(
+        expect.arrayContaining([
+          {
+            field: 'timespan',
+            message: 'Timespan must be one of: today, last7days, last30days'
+          }
+        ])
+      );
     });
 
     it('should return 500 when there is a server error', async () => {

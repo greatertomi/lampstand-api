@@ -116,9 +116,12 @@ describe('Testing the goals route', () => {
         .expect(HTTP_STATUS.UNPROCESSABLE_ENTITY);
 
       expect(res1.body).toEqual({
-        errors: {
-          goalInMinutes: 'goalInMinutes must be a positive integer'
-        }
+        errors: [
+          {
+            field: 'goalInMinutes',
+            message: 'goalInMinutes must be a positive integer'
+          }
+        ]
       });
 
       const invalidGoal2 = { goalInMinutes: 30 };
@@ -129,9 +132,16 @@ describe('Testing the goals route', () => {
         .expect(HTTP_STATUS.UNPROCESSABLE_ENTITY);
 
       expect(res2.body).toEqual({
-        errors: {
-          reminderTime: 'reminderTime must be in HH:MM:SS format'
-        }
+        errors: [
+          {
+            field: 'reminderTime',
+            message: 'reminderTime is required'
+          },
+          {
+            field: 'reminderTime',
+            message: 'reminderTime must be in HH:MM:SS format'
+          }
+        ]
       });
     });
   });
