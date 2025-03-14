@@ -10,8 +10,9 @@
     "experimentalDecorators": true,
     "sourceMap": true,
     "esModuleInterop": true,
+    "skipLibCheck": true,
     "typeRoots": ["./src/types", "./node_modules/@types"]
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "scripts"],
   "exclude": ["node_modules"]
 }
