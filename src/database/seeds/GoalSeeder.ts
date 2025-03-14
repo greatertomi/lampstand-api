@@ -17,6 +17,12 @@ export class GoalSeeder implements Seeder {
     const readingGoals = [];
 
     for (const user of users) {
+      const existingGoal = await goalRepository.findOne({ where: { user: { id: user.id } } });
+
+      if (existingGoal) {
+        continue;
+      }
+
       readingGoals.push(
         goalRepository.create({
           user,

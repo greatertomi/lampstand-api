@@ -22,11 +22,11 @@
     "migration:revert": "yarn run typeorm migration:revert",
     "format": "prettier --write \"src/**/*.{ts,js,json,md}\"",
     "format:check": "prettier --check \"src/**/*.{ts,js,json,md}\""
-    "seed:run": "ts-node scripts/run-seeder.ts"
+    "seed:run": "ts-node src/scripts/run-seeder.ts"
 
   },
   "dependencies": {
-    "@faker-js/faker": "^9.6.0",
+    "@faker-js/faker": "^8.4.1 ",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.2.0",
     "cors": "^2.8.5",

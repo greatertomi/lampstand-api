@@ -31,6 +31,6 @@ export class PasswordTokenResetSeeder implements Seeder {
     });
 
     await passwordResetTokenRepository.save(passwordResetTokenSeeds);
-    logger.info('🕵️️ Password reset tokens seeding complete!');
+    logger.info('🕵️ Password reset tokens seeding complete!');
   }
 }

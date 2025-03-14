@@ -6,10 +6,11 @@ import {
   LoginHistorySeeder,
   ReadingLogSeeder,
   UserSeeder
-} from '../src/database';
-import { PasswordTokenResetSeeder } from '../src/database/seeds/PasswordTokenSeeder';
-import { logger } from '../src/services';
+} from '../database';
+import { PasswordTokenResetSeeder } from '../database/seeds/PasswordTokenSeeder';
+import { logger } from '../services';
 
+// eslint-disable-next-line unicorn/prefer-top-level-await
 (async () => {
   try {
     await AppDataSource.initialize();
