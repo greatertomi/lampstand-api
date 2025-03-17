@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { BookEntity, BookFormat } from '../../src/entities';
 import { JwtPayload } from '../../src/types';
+import { getCurrentWeekRange } from '../../src/utils';
 
 export const testUser = {
   fullName: 'David Brown',
@@ -128,3 +129,81 @@ export const extractMetadataValue = (property: any): string => {
   }
   return property.text || '';
 };
+
+export const getCurrentWeekReadingLogs = (user: JwtPayload, book: BookEntity) => {
+  const { start } = getCurrentWeekRange();
+
+  const logs = [];
+
+  for (let i = 0; i < 7; i++) {
+    const readingStartDate = new Date(start);
+    readingStartDate.setDate(readingStartDate.getDate() + i);
+    const readingEndDate = new Date(readingStartDate.getTime() + 3600 * 1000);
+
+    logs.push({
+      userId: user.id,
+      bookId: book.id,
+      // secondsRead: Math.floor(Math.random() * (3600 - 1800) + 1800),
+      secondsRead: Math.floor(Math.random() * (3600 - 1800 + 1) + 1800),
+      startTime: readingStartDate,
+      endTime: readingEndDate
+    });
+  }
+
+  return logs;
+};
+
+export const pastReadingLogs = (user: JwtPayload, book: BookEntity) => {
+  return [
+    {
+      userId: user.id,
+      bookId: book.id,
+      secondsRead: 900,
+      startTime: new Date('2025-01-04T06:15:00.000Z'),
+      endTime: new Date('2025-01-04T06:30:00.000Z')
+    },
+    {
+      userId: user.id,
+      bookId: book.id,
+      secondsRead: 2700,
+      startTime: new Date('2025-01-05T12:00:00.000Z'),
+      endTime: new Date('2025-01-05T12:45:00.000Z')
+    },
+    {
+      userId: user.id,
+      bookId: book.id,
+      secondsRead: 3600,
+      startTime: new Date('2025-01-06T18:20:00.000Z'),
+      endTime: new Date('2025-01-06T19:20:00.000Z')
+    },
+    {
+      userId: user.id,
+      bookId: book.id,
+      secondsRead: 5400,
+      startTime: new Date('2025-01-07T22:10:00.000Z'),
+      endTime: new Date('2025-01-07T23:40:00.000Z')
+    },
+    {
+      userId: user.id,
+      bookId: book.id,
+      secondsRead: 750,
+      startTime: new Date('2025-01-08T09:05:15.000Z'),
+      endTime: new Date('2025-01-08T09:17:45.000Z')
+    },
+    {
+      userId: user.id,
+      bookId: book.id,
+      secondsRead: 4200,
+      startTime: new Date('2025-01-09T14:50:00.000Z'),
+      endTime: new Date('2025-01-09T16:00:00.000Z')
+    },
+    {
+      userId: user.id,
+      bookId: book.id,
+      secondsRead: 3000,
+      startTime: new Date('2025-01-10T23:30:00.000Z'),
+      endTime: new Date('2025-01-11T00:20:00.000Z')
+    }
+  ];
+};
+

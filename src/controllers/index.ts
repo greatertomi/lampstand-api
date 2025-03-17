@@ -4,3 +4,4 @@ export * from './books.controller';
 export * from './goals.controller';
 export * from './oauth.controller';
 export * from './readingLog.controller';
+export * from './reports.controller';

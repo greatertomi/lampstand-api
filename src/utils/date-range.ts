@@ -24,3 +24,22 @@ export const getDateRange = (timespan: TimeSpan): { start: Date; end: Date } | n
 
   return { start, end };
 };
+
+export const getCurrentWeekRange = () => {
+  const now = new Date();
+  const dayOfWeek = now.getUTCDay();
+
+  const startOfWeek = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  startOfWeek.setUTCDate(startOfWeek.getUTCDate() - (dayOfWeek === 0 ? 6 : dayOfWeek));
+
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setUTCDate(startOfWeek.getUTCDate() + 6);
+  endOfWeek.setUTCHours(23, 59, 59, 999);
+
+  return { start: startOfWeek, end: endOfWeek };
+};
+
+export const getDayOfWeek = (date: Date): string => {
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  return days[date.getUTCDay()];
+};
