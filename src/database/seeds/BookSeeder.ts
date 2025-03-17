@@ -16,8 +16,7 @@ export class BookSeeder implements Seeder {
 
     const books = [];
 
-    for (let i = 0; i < 100; i++) {
-      const owner = users[Math.floor(Math.random() * users.length)];
+    for (const user of users) {
 
       books.push(
         bookRepository.create({
@@ -27,7 +26,7 @@ export class BookSeeder implements Seeder {
           format: BookFormat.EPUB,
           size: faker.number.int({ min: 500, max: 5000 }),
           url: faker.internet.url(),
-          owner,
+          owner: user,
         })
       );
     }
