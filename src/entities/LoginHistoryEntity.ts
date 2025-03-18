@@ -6,12 +6,12 @@ export enum LoginType {
   PASSWORD = 'Password'
 }
 
-@Entity({ name:'login_histories' })
+@Entity({ name: 'login_histories' })
 export class LoginHistoryEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => UserEntity, user => user.loginHistories, { onDelete: 'CASCADE' })
+  @ManyToOne(() => UserEntity, (user) => user.loginHistories, { onDelete: 'CASCADE' })
   user: UserEntity;
 
   @Column({ type: 'enum', enum: LoginType })

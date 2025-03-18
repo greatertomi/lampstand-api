@@ -128,7 +128,9 @@ export const requestPasswordReset = async (req: Request, res: Response) => {
   await passwordResetTokenRepository.save(passwordResetToken);
 
   await sendPasswordResetEmail(user.email, token);
-  logger.debug(`Password reset email sent to ${email}`, { location: 'Request Password Reset Controller' });
+  logger.debug(`Password reset email sent to ${email}`, {
+    location: 'Request Password Reset Controller'
+  });
 
   const response = {
     success: true,
@@ -184,7 +186,9 @@ export const updatePassword = async (req: Request, res: Response) => {
     }
 
     if (userToken.status === TokenStatus.USED) {
-      throw new UnAuthorizeError('This token has already been used. You cannot change the password again.');
+      throw new UnAuthorizeError(
+        'This token has already been used. You cannot change the password again.'
+      );
     }
 
     const hashedPassword = await BcryptHelper.hash(password);
@@ -197,7 +201,9 @@ export const updatePassword = async (req: Request, res: Response) => {
         usedAt: new Date()
       }
     );
-    logger.debug(`Password updated successfully for user: ${userId}`, { location: 'Update Password Controller' });
+    logger.debug(`Password updated successfully for user: ${userId}`, {
+      location: 'Update Password Controller'
+    });
   } else if (currentPassword) {
     const user = await userRepository.findOne({ where: { id: userId } });
 
@@ -213,7 +219,9 @@ export const updatePassword = async (req: Request, res: Response) => {
     const hashedPassword = await BcryptHelper.hash(password);
     await userRepository.update(userId, { password: hashedPassword });
 
-    logger.debug(`Password changed successfully for user: ${userId}`, { location: 'Update Password Controller' });
+    logger.debug(`Password changed successfully for user: ${userId}`, {
+      location: 'Update Password Controller'
+    });
   }
 
   const response = {

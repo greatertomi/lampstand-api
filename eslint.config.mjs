@@ -84,7 +84,8 @@ export default [
       '@typescript-eslint/indent': 'off',
       'unicorn/no-anonymous-default-export': 'off',
       'unicorn/prefer-string-replace-all': 'off',
-      'no-duplicate-imports': 'error'
+      'no-duplicate-imports': 'error',
+      'unicorn/no-nested-ternary': 'off'
     }
   }
 ];

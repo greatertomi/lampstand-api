@@ -1,6 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
-import { TokenStatus } from './types';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn
+} from 'typeorm';
 import { UserEntity } from './UserEntity';
+import { TokenStatus } from './types';
 
 @Entity('password_reset_tokens')
 export class PasswordResetTokenEntity {
@@ -17,7 +24,7 @@ export class PasswordResetTokenEntity {
   @CreateDateColumn()
   createdAt: Date;
 
-  @Column({ type: 'timestamp', })
+  @Column({ type: 'timestamp' })
   expiresAt: Date;
 
   @Column({ type: 'timestamp', nullable: true })
@@ -30,4 +37,3 @@ export class PasswordResetTokenEntity {
   })
   status: TokenStatus;
 }
-

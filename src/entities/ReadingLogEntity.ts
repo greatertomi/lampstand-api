@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { BookEntity } from './BookEntity';
 import { UserEntity } from './UserEntity';
 
@@ -7,10 +7,10 @@ export class ReadingLogEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => UserEntity, user => user.readingLogs, { onDelete: 'CASCADE' })
+  @ManyToOne(() => UserEntity, (user) => user.readingLogs, { onDelete: 'CASCADE' })
   user: UserEntity;
 
-  @ManyToOne(() => BookEntity, book => book.readingLogs, { onDelete: 'CASCADE' })
+  @ManyToOne(() => BookEntity, (book) => book.readingLogs, { onDelete: 'CASCADE' })
   book: BookEntity;
 
   @Column('timestamp')

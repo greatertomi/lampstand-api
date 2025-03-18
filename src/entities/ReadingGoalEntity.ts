@@ -1,13 +1,12 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn,
+  Entity,
   ManyToOne,
+  PrimaryGeneratedColumn,
   Unique,
+  UpdateDateColumn
 } from 'typeorm';
-
 import { UserEntity } from './UserEntity';
 
 @Entity()
@@ -16,7 +15,7 @@ export class ReadingGoal {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne(() => UserEntity, user => user.readingGoals, { onDelete: 'CASCADE' })
+  @ManyToOne(() => UserEntity, (user) => user.readingGoals, { onDelete: 'CASCADE' })
   user: UserEntity;
 
   @Column('int')

@@ -1,10 +1,10 @@
 import {
-  Entity,
   Column,
   CreateDateColumn,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
+  Entity,
   OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn
 } from 'typeorm';
 import { BookEntity } from './BookEntity';
 import { LoginHistoryEntity } from './LoginHistoryEntity';
@@ -46,15 +46,15 @@ export class UserEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany(() => BookEntity, book => book.owner, { onDelete: 'CASCADE' })
+  @OneToMany(() => BookEntity, (book) => book.owner, { onDelete: 'CASCADE' })
   books: BookEntity[];
 
-  @OneToMany(() => ReadingGoal, readingGoal => readingGoal.user, { onDelete: 'CASCADE' })
+  @OneToMany(() => ReadingGoal, (readingGoal) => readingGoal.user, { onDelete: 'CASCADE' })
   readingGoals: ReadingGoal[];
 
-  @OneToMany(() => ReadingLogEntity, readingLog => readingLog.user, { onDelete: 'CASCADE' })
+  @OneToMany(() => ReadingLogEntity, (readingLog) => readingLog.user, { onDelete: 'CASCADE' })
   readingLogs: ReadingLogEntity[];
 
-  @OneToMany(() => LoginHistoryEntity, loginHistory => loginHistory.user, { onDelete: 'CASCADE' } )
+  @OneToMany(() => LoginHistoryEntity, (loginHistory) => loginHistory.user, { onDelete: 'CASCADE' })
   loginHistories: LoginHistoryEntity[];
 }

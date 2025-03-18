@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
 import { ReadingLogEntity } from './ReadingLogEntity';
 import { UserEntity } from './UserEntity';
 
@@ -19,7 +19,7 @@ export class BookEntity {
   @Column()
   author: string;
 
-  @ManyToOne(() => UserEntity, user => user.books, { onDelete: 'CASCADE' })
+  @ManyToOne(() => UserEntity, (user) => user.books, { onDelete: 'CASCADE' })
   owner: UserEntity;
 
   @Column({ type: 'text', nullable: true })
@@ -37,6 +37,6 @@ export class BookEntity {
   @Column()
   url: string;
 
-  @OneToMany(() => ReadingLogEntity, readingLog => readingLog.book, { onDelete: 'CASCADE' })
+  @OneToMany(() => ReadingLogEntity, (readingLog) => readingLog.book, { onDelete: 'CASCADE' })
   readingLogs: ReadingLogEntity[];
 }
