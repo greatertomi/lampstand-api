@@ -19,7 +19,9 @@
     "typeorm": "yarn run build && POSTGRES_HOST=localhost SYNC_DATABASE=false npx typeorm -d dist/database/data-source.js",
     "migration:generate": "yarn run typeorm migration:generate src/migrations/new-migration",
     "migration:run": "yarn run typeorm migration:run",
-    "migration:revert": "yarn run typeorm migration:revert"
+    "migration:revert": "yarn run typeorm migration:revert",
+    "format": "prettier --write \"src/**/*.{ts,js,json,md}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,js,json,md}\""
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -90,5 +92,6 @@
     "typeorm-extension": "^2.8.1",
     "typescript": "4.9.5",
     "winston": "^3.13.0"
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610"
 }

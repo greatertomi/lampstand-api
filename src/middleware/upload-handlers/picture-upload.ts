@@ -1,8 +1,8 @@
 import { NextFunction, Response } from 'express';
 import envConfig from '../../config/envConfig';
+import { logger } from '../../services';
 import { IExtendedRequest } from '../../types';
 import { uploadToCloudinary } from '../../utils/cloudinary-upload';
-import { logger } from '../../services';
 
 const CLOUDINARY_FILE_FOLDER = `lampstand/${envConfig.NODE_ENV}/profile-pictures`;
 

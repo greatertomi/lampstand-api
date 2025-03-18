@@ -15,13 +15,13 @@ const sanitizeData = (data: unknown): unknown => {
   }
 
   return typeof data === 'object' && data !== null
-    ? (Array.isArray(data)
+    ? Array.isArray(data)
       ? data.map((item) => sanitizeData(item))
       : Object.fromEntries(
           Object.entries(data)
             .filter(([key]) => !sensitiveKeys.has(key.toLowerCase()))
             .map(([key, value]) => [key, sanitizeData(value)])
-        ))
+        )
     : data;
 };
 
@@ -55,9 +55,9 @@ export const responseLogger = (req: Request, res: Response, next: NextFunction) 
     const logLevel: string =
       res.statusCode >= HTTP_STATUS.INTERNAL_SERVER_ERROR
         ? 'error'
-        : (res.statusCode >= HTTP_STATUS.BAD_REQUEST
+        : res.statusCode >= HTTP_STATUS.BAD_REQUEST
         ? 'warn'
-        : 'info');
+        : 'info';
 
     const sanitizedBody = sanitizeData(responseBody);
     const responseMessage =

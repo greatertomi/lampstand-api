@@ -42,7 +42,10 @@ export const sendVerificationEmail = async (user: JwtPayload) => {
 
   try {
     await mailgunClient.messages.create(process.env.MAILGUN_DOMAIN, mailData);
-    logger.info('Verification email sent', { location: 'Email Service Controller', route: '/api/v1/signup' });
+    logger.info('Verification email sent', {
+      location: 'Email Service Controller',
+      route: '/api/v1/signup'
+    });
   } catch (error) {
     logger.error({
       message: `Error sending verification email: ${error.message}`,
@@ -91,7 +94,7 @@ export const sendPasswordResetEmail = async (email: string, token: number) => {
   try {
     await mailgunClient.messages.create(process.env.MAILGUN_DOMAIN, mailData);
   } catch (error) {
-    logger.error( {
+    logger.error({
       message: `Error sending password reset email: ${error.message}`,
       location: 'Send Reset Password Email',
       route: '/api/v1/reset-password'
