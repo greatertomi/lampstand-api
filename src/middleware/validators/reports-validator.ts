@@ -7,7 +7,7 @@ export const reportValidationRules = [
     .optional()
     .isDate()
     .withMessage('startDate must be a valid date in YYYY-MM-DD format.')
-    .custom((value, { req }) => {
+    .custom((_, { req }) => {
       if (req.query.currentWeek === 'true') {
         throw new Error('Cannot use startDate with currentWeek.');
       }
@@ -24,7 +24,7 @@ export const reportValidationRules = [
       }
       return true;
     })
-    .custom((value, { req }) => {
+    .custom((_, { req }) => {
       if (req.query.startDate && !req.query.endDate) {
         throw new Error('Both startDate and endDate must be provided.');
       }

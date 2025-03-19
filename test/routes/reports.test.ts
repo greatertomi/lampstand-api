@@ -41,9 +41,8 @@ describe('Testing the reading log route', () => {
         .query({ currentWeek: 'true' });
 
       expect(response.status).toBe(HTTP_STATUS.OK);
-      expect(response.body).toHaveProperty('streaks');
-      expect(Array.isArray(response.body.streaks)).toBe(true);
-      for (const streak of response.body.streaks) {
+      expect(Array.isArray(response.body)).toBe(true);
+      for (const streak of response.body) {
         expect(streak).toHaveProperty('date');
         expect(streak).toHaveProperty('completed');
         expect(streak).toHaveProperty('dayOfWeek');
@@ -53,7 +52,6 @@ describe('Testing the reading log route', () => {
     it('should return streaks for startTime and endTime is provided', async () => {
       const readingGoal = await createTestGoal(user.id);
       const dailyGoal = readingGoal.goalInMinutes * 60;
-      // const readingLogs = getCurrentWeekReadingLogs(user, book);
       const readingLogs = pastReadingLogs(user, book);
       await createTestActivityStreaks(readingLogs, dailyGoal);
       const response = await factory.app
@@ -62,9 +60,8 @@ describe('Testing the reading log route', () => {
         .query({ startDate: '2025-01-04', endDate: '2025-01-09' });
 
       expect(response.status).toBe(HTTP_STATUS.OK);
-      expect(response.body).toHaveProperty('streaks');
-      expect(Array.isArray(response.body.streaks)).toBe(true);
-      for (const streak of response.body.streaks) {
+      expect(Array.isArray(response.body)).toBe(true);
+      for (const streak of response.body) {
         expect(streak).toHaveProperty('date');
         expect(streak).toHaveProperty('completed');
         expect(streak).toHaveProperty('dayOfWeek');

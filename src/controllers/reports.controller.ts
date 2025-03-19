@@ -3,9 +3,8 @@ import { Between } from 'typeorm';
 import { ReadingGoal, ReadingLogEntity } from '../entities';
 import { BadRequestError, HTTP_STATUS } from '../lib/responses';
 import { IExtendedRequest } from '../types';
-import handleGetRepository from '../utils/handleGetRepository';
 import { getCurrentWeekRange, getDayOfWeek } from '../utils';
-
+import handleGetRepository from '../utils/handleGetRepository';
 
 export const getActivityStreaks = async (req: IExtendedRequest, res: Response): Promise<void> => {
   const { currentWeek, startDate, endDate } = req.query;
@@ -15,19 +14,22 @@ export const getActivityStreaks = async (req: IExtendedRequest, res: Response): 
 
   if (currentWeek === 'true') {
     dateRange = getCurrentWeekRange();
-
   } else if (startDate && endDate) {
     dateRange = {
       start: new Date(new Date(startDate as string).toISOString()),
-      end: new Date(new Date(endDate as string).toISOString().replace('T00:00:00.000Z', 'T23:59:59.999Z'))
+      end: new Date(
+        new Date(endDate as string).toISOString().replace('T00:00:00.000Z', 'T23:59:59.999Z')
+      )
     };
   } else {
     throw new BadRequestError('Either currentWeek or startDate and endDate must be provided.');
   }
 
   const readingGoals = handleGetRepository(ReadingGoal);
-  const userGoal = await readingGoals.findOne({ where: { user: { id: userId } } });
-
+  const userGoal = await readingGoals.findOne({
+    where: { user: { id: userId } },
+    order: { updatedAt: 'DESC' }
+  });
   if (!userGoal) {
     throw new BadRequestError('User does not have a reading goal set.');
   }
@@ -62,5 +64,5 @@ export const getActivityStreaks = async (req: IExtendedRequest, res: Response): 
     currentDate.setDate(currentDate.getDate() + 1);
   }
 
-  res.status(HTTP_STATUS.OK).json({ streaks });
+  res.status(HTTP_STATUS.OK).json(streaks);
 };

@@ -94,5 +94,5 @@ export const createTestActivityStreaks = async (
     currentDate.setDate(currentDate.getDate() + 1);
   }
 
-  return { streaks };
+  return streaks;
 };
