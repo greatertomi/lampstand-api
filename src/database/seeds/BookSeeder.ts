@@ -1,8 +1,8 @@
 import { faker } from '@faker-js/faker';
 import { Seeder } from 'typeorm-extension';
-import { UserEntity, BookEntity, BookFormat } from '../../entities';
-import handleGetRepository from '../../utils/handleGetRepository';
+import { BookEntity, BookFormat, UserEntity } from '../../entities';
 import { logger } from '../../services';
+import handleGetRepository from '../../utils/handleGetRepository';
 
 export class BookSeeder implements Seeder {
   async run(): Promise<void> {
@@ -17,7 +17,6 @@ export class BookSeeder implements Seeder {
     const books = [];
 
     for (const user of users) {
-
       books.push(
         bookRepository.create({
           id: faker.string.uuid(),
@@ -26,7 +25,7 @@ export class BookSeeder implements Seeder {
           format: BookFormat.EPUB,
           size: faker.number.int({ min: 500, max: 5000 }),
           url: faker.internet.url(),
-          owner: user,
+          owner: user
         })
       );
     }

@@ -1,8 +1,8 @@
-import { Seeder } from 'typeorm-extension';
 import { faker } from '@faker-js/faker';
-import { UserEntity, LoginHistoryEntity, LoginType } from '../../entities';
-import handleGetRepository from '../../utils/handleGetRepository';
+import { Seeder } from 'typeorm-extension';
+import { LoginHistoryEntity, LoginType, UserEntity } from '../../entities';
 import { logger } from '../../services';
+import handleGetRepository from '../../utils/handleGetRepository';
 
 export class LoginHistorySeeder implements Seeder {
   async run(): Promise<void> {
@@ -26,7 +26,7 @@ export class LoginHistorySeeder implements Seeder {
         loginHistoryRepository.create({
           user,
           loginType,
-          loginAt,
+          loginAt
         })
       );
     }
@@ -35,4 +35,3 @@ export class LoginHistorySeeder implements Seeder {
     logger.info('📋 Login history seeding complete!');
   }
 }
-

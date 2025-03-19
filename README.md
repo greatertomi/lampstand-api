@@ -27,3 +27,10 @@ Run `npm run prepare` to install husky hooks.
 - Run `npm run migration:generate` to generate a migration file. Migrations are generated in the `src/migrations` directory with a default name and timestamp prefix. You should change the name of the migration file to something more descriptive.
 - Run `npm run migration:run` to run migrations
 - Run `npm run migration:revert` to revert migrations
+
+## Seeding the database
+If you need to seed the database with test data for development or testing, follow these steps:
+1. Run `npm run docker:run` command, to run the docker container
+2. Run `npm run seed:run` command to run the seeder script.
+
+This will execute the src/scripts/run-seeder.ts file, which contains the logic for populating the database with test data.
