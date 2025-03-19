@@ -16,14 +16,16 @@
     "docker:stop": "docker-compose down",
     "prepare": "husky install",
     "cleanup": "rm -rf node_modules yarn.lock",
-    "typeorm": "yarn run build && POSTGRES_HOST=localhost SYNC_DATABASE=false npx typeorm -d dist/database/data-source.js",
+    "typeorm": "yarn run build && cross-env POSTGRES_HOST=localhost SYNC_DATABASE=false npx typeorm -d dist/database/data-source.js",
     "migration:generate": "yarn run typeorm migration:generate src/migrations/new-migration",
     "migration:run": "yarn run typeorm migration:run",
     "migration:revert": "yarn run typeorm migration:revert",
     "format": "prettier --write \"src/**/*.{ts,js,json,md}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,js,json,md}\""
+    "format:check": "prettier --check \"src/**/*.{ts,js,json,md}\"",
+    "seed:run": "cross-env POSTGRES_HOST=localhost ts-node src/scripts/run-seeder.ts"
   },
   "dependencies": {
+    "@faker-js/faker": "^8.4.1 ",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.2.0",
     "cors": "^2.8.5",
@@ -70,6 +72,7 @@
     "@types/supertest": "^2.0.12",
     "@typescript-eslint/eslint-plugin": "^7.9.0",
     "@typescript-eslint/parser": "^7.9.0",
+    "cross-env": "^7.0.3",
     "dockerode": "^4.0.2",
     "dockerode-utils": "^0.0.7",
     "eslint": "^8.42.0",
@@ -89,7 +92,7 @@
     "ts-jest": "^29.1.0",
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
-    "typeorm-extension": "^2.8.1",
+    "typeorm-extension": "^3.7.0",
     "typescript": "4.9.5",
     "winston": "^3.13.0"
   },
