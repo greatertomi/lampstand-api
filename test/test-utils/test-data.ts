@@ -143,7 +143,6 @@ export const getCurrentWeekReadingLogs = (user: JwtPayload, book: BookEntity) =>
     logs.push({
       userId: user.id,
       bookId: book.id,
-      // secondsRead: Math.floor(Math.random() * (3600 - 1800) + 1800),
       secondsRead: Math.floor(Math.random() * (3600 - 1800 + 1) + 1800),
       startTime: readingStartDate,
       endTime: readingEndDate

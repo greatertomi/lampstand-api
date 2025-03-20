@@ -28,7 +28,7 @@ export const getActivityStreaks = async (req: IExtendedRequest, res: Response): 
   const readingGoals = handleGetRepository(ReadingGoal);
   const userGoal = await readingGoals.findOne({
     where: { user: { id: userId } },
-    order: { updatedAt: 'DESC' }
+    order: { createdAt: 'DESC' }
   });
   if (!userGoal) {
     throw new BadRequestError('User does not have a reading goal set.');
