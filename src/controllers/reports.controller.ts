@@ -34,7 +34,7 @@ export const getActivityStreaks = async (req: IExtendedRequest, res: Response): 
     throw new BadRequestError('User does not have a reading goal set.');
   }
 
-  const dailyGoal = userGoal.goalInMinutes * 60;
+  const dailyGoal = userGoal.goalInSeconds;
 
   const readingLogs = handleGetRepository(ReadingLogEntity);
   const userLogs = await readingLogs.find({

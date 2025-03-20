@@ -26,11 +26,11 @@ export class GoalSeeder implements Seeder {
       readingGoals.push(
         goalRepository.create({
           user,
-          goalInMinutes: faker.number.int({ min: 15, max: 90 }),
+          goalInSeconds: faker.number.int({ min: 900, max: 5400 }),
           reminderTime: faker.date
             .between({
-              from: '2024-01-01T06:00:00.000Z',
-              to: '2024-03-01T22:00:00.000Z'
+              from: '2025-01-01T06:00:00.000Z',
+              to: '2025-03-01T22:00:00.000Z'
             })
             .toISOString()
             .split('T')[1]

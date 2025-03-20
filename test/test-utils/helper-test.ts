@@ -47,7 +47,7 @@ export const createTestBook = async (userId: string, url?: string): Promise<Book
 export const createTestGoal = async (userId: string): Promise<ReadingGoal> => {
   const readingGoalRepository = handleGetRepository(ReadingGoal);
   return readingGoalRepository.save({
-    goalInMinutes: 30,
+    goalInSeconds: 1800,
     reminderTime: '08:00',
     user: { id: userId }
   });

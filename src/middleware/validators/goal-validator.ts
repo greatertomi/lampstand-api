@@ -1,7 +1,7 @@
 import { body } from 'express-validator';
 
 export const createReadingGoalValidationRules = [
-  body('goalInMinutes').isInt({ min: 1 }).withMessage('goalInMinutes must be a positive integer'),
+  body('goalInSeconds').isInt({ min: 1 }).withMessage('goalInSeconds must be a positive integer'),
 
   body('reminderTime')
     .notEmpty()
