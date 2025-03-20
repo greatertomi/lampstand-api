@@ -1,6 +1,5 @@
-import { BookEntity, ReadingLogEntity } from '../../src/entities';
-import { ReadingGoal } from '../../src/entities/ReadingGoalEntity';
-import { JwtHelper } from '../../src/lib';
+import { BookEntity, ReadingGoal, ReadingLogEntity } from '../../src/entities';
+import { JwtHelper, getCurrentWeekRange, getDayOfWeek } from '../../src/lib';
 import { HTTP_STATUS } from '../../src/lib/responses';
 import { JwtPayload } from '../../src/types';
 import handleGetRepository from '../../src/utils/handleGetRepository';
@@ -64,4 +63,36 @@ export const createTestReadingLogs = async (readingLogs: ReadingLogData[]) => {
     secondsRead: log.secondsRead
   }));
   return readingLogRepository.save(logsToSave);
+};
+
+export const createTestActivityStreaks = async (
+  readingLogs: ReadingLogData[],
+  userGoal: number
+) => {
+  const { start, end } = getCurrentWeekRange();
+  const streakMap = new Map<string, number>();
+
+  for (const log of readingLogs) {
+    const dateStr = log.startTime.toISOString().split('T')[0];
+    streakMap.set(dateStr, (streakMap.get(dateStr) || 0) + log.secondsRead);
+  }
+
+  const streaks = [];
+  const currentDate = new Date(start);
+
+  while (currentDate <= end) {
+    const dateStr = new Date(currentDate.toISOString().split('T')[0]).toISOString().split('T')[0];
+    const loggedSeconds = streakMap.get(dateStr) || 0;
+    const isCompleted = loggedSeconds >= userGoal;
+
+    streaks.push({
+      date: dateStr,
+      completed: isCompleted,
+      dayOfWeek: getDayOfWeek(currentDate)
+    });
+
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return streaks;
 };
