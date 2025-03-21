@@ -19,7 +19,7 @@ export class ReadingGoal {
   user: UserEntity;
 
   @Column('int')
-  goalInMinutes: number;
+  goalInSeconds: number;
 
   @Column('time')
   reminderTime: string;

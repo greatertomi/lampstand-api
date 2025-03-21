@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { ReadingGoal } from '../entities/ReadingGoalEntity';
+import { ReadingGoal } from '../entities';
 import { HTTP_STATUS, NotFoundError } from '../lib/responses';
 import { IExtendedRequest } from '../types';
 import handleGetRepository from '../utils/handleGetRepository';
@@ -7,7 +7,7 @@ import handleGetRepository from '../utils/handleGetRepository';
 export const createReadingGoal = async (req: IExtendedRequest, res: Response): Promise<void> => {
   const userId = req.user?.id;
 
-  const { goalInMinutes, reminderTime } = req.body;
+  const { goalInSeconds, reminderTime } = req.body;
   const readingGoalRepository = handleGetRepository(ReadingGoal);
 
   const existingGoal = await readingGoalRepository.findOne({
@@ -17,7 +17,7 @@ export const createReadingGoal = async (req: IExtendedRequest, res: Response): P
   await readingGoalRepository.upsert(
     {
       user: { id: userId },
-      goalInMinutes,
+      goalInSeconds,
       reminderTime
     },
     {

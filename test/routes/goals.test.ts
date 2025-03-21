@@ -1,5 +1,5 @@
 /* eslint-disable sonarjs/no-duplicate-string */
-import { ReadingGoal } from '../../src/entities/ReadingGoalEntity';
+import { ReadingGoal } from '../../src/entities';
 import { HTTP_STATUS } from '../../src/lib/responses';
 import { TestFactory } from '../factory';
 import { createTestGoal, createTestUser, getTestAuthToken } from '../test-utils/helper-test';
@@ -23,7 +23,7 @@ describe('Testing the goals route', () => {
       const token = await getTestAuthToken(user);
 
       const newGoal = {
-        goalInMinutes: 30,
+        goalInSeconds: 1800,
         reminderTime: '19:00:00'
       };
 
@@ -37,7 +37,7 @@ describe('Testing the goals route', () => {
         message: 'Reading goal created successfully',
         data: expect.objectContaining({
           id: expect.any(String),
-          goalInMinutes: newGoal.goalInMinutes,
+          goalInSeconds: newGoal.goalInSeconds,
           reminderTime: '19:00:00',
           createdAt: expect.any(String),
           updatedAt: expect.any(String)
@@ -50,7 +50,7 @@ describe('Testing the goals route', () => {
       const token = await getTestAuthToken(user);
 
       const newGoal = {
-        goalInMinutes: 30,
+        goalInSeconds: 1800,
         reminderTime: '19:00:00'
       };
 
@@ -61,7 +61,7 @@ describe('Testing the goals route', () => {
         .expect(HTTP_STATUS.CREATED);
 
       const updateGoal = {
-        goalInMinutes: 50,
+        goalInSeconds: 3000,
         reminderTime: '02:00:00'
       };
 
@@ -75,7 +75,7 @@ describe('Testing the goals route', () => {
         message: 'Reading goal updated successfully',
         data: expect.objectContaining({
           id: expect.any(String),
-          goalInMinutes: updateGoal.goalInMinutes,
+          goalInSeconds: updateGoal.goalInSeconds,
           reminderTime: '02:00:00',
           createdAt: expect.any(String),
           updatedAt: expect.any(String)
@@ -85,7 +85,7 @@ describe('Testing the goals route', () => {
 
     it('should return 401 if the user is not authenticated', async () => {
       const newGoal = {
-        goalInMinutes: 30,
+        goalInSeconds: 1800,
         reminderTime: '19:00'
       };
 
@@ -103,7 +103,7 @@ describe('Testing the goals route', () => {
       });
     });
 
-    it('should return 400 if goalInMinutes or reminderTime is missing', async () => {
+    it('should return 400 if goalInSeconds or reminderTime is missing', async () => {
       const { user } = await createTestUser(factory);
       const token = await getTestAuthToken(user);
 
@@ -118,13 +118,13 @@ describe('Testing the goals route', () => {
       expect(res1.body).toEqual({
         errors: [
           {
-            field: 'goalInMinutes',
-            message: 'goalInMinutes must be a positive integer'
+            field: 'goalInSeconds',
+            message: 'goalInSeconds must be a positive integer'
           }
         ]
       });
 
-      const invalidGoal2 = { goalInMinutes: 30 };
+      const invalidGoal2 = { goalInSeconds: 1800 };
       const res2 = await factory.app
         .post(readingGoalRoute)
         .set('Authorization', `Bearer ${token}`)
@@ -172,7 +172,7 @@ describe('Testing the goals route', () => {
         message: 'Reading goal retrieved successfully',
         data: expect.objectContaining({
           id: expect.any(String),
-          goalInMinutes: newGoal.goalInMinutes,
+          goalInSeconds: newGoal.goalInSeconds,
           reminderTime: '08:00:00',
           createdAt: expect.any(String),
           updatedAt: expect.any(String)
@@ -205,7 +205,7 @@ describe('Testing the goals route', () => {
         .post(createGoalRoute)
         .set('Authorization', `Bearer ${token}`)
         .send({
-          goalInMinutes: 30,
+          goalInSeconds: 1800,
           reminderTime: '19:00:00'
         });
 

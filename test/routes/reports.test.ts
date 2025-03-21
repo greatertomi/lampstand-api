@@ -32,7 +32,7 @@ describe('Testing the reading log route', () => {
   describe('GET /reports/', () => {
     it('should return streaks for the current week', async () => {
       const readingGoal = await createTestGoal(user.id);
-      const dailyGoal = readingGoal.goalInMinutes * 60;
+      const dailyGoal = readingGoal.goalInSeconds;
       const readingLogs = getCurrentWeekReadingLogs(user, book);
       await createTestActivityStreaks(readingLogs, dailyGoal);
       const response = await factory.app
@@ -51,7 +51,7 @@ describe('Testing the reading log route', () => {
 
     it('should return streaks for startTime and endTime is provided', async () => {
       const readingGoal = await createTestGoal(user.id);
-      const dailyGoal = readingGoal.goalInMinutes * 60;
+      const dailyGoal = readingGoal.goalInSeconds;
       const readingLogs = pastReadingLogs(user, book);
       await createTestActivityStreaks(readingLogs, dailyGoal);
       const response = await factory.app
@@ -70,7 +70,7 @@ describe('Testing the reading log route', () => {
 
     it('should return an error when no query parameters are given', async () => {
       const readingGoal = await createTestGoal(user.id);
-      const dailyGoal = readingGoal.goalInMinutes * 60;
+      const dailyGoal = readingGoal.goalInSeconds;
       const readingLogs = pastReadingLogs(user, book);
       await createTestActivityStreaks(readingLogs, dailyGoal);
       const response = await factory.app.get(reportsRoute).set('Authorization', `Bearer ${token}`);
@@ -83,7 +83,7 @@ describe('Testing the reading log route', () => {
 
     it('should return an error when date queries are invalid date formats ', async () => {
       const readingGoal = await createTestGoal(user.id);
-      const dailyGoal = readingGoal.goalInMinutes * 60;
+      const dailyGoal = readingGoal.goalInSeconds;
       const readingLogs = pastReadingLogs(user, book);
       await createTestActivityStreaks(readingLogs, dailyGoal);
       const response = await factory.app
@@ -107,7 +107,7 @@ describe('Testing the reading log route', () => {
     });
     it('should return an error if currentWeek is used with startDate/endDate', async () => {
       const readingGoal = await createTestGoal(user.id);
-      const dailyGoal = readingGoal.goalInMinutes * 60;
+      const dailyGoal = readingGoal.goalInSeconds;
       const readingLogs = pastReadingLogs(user, book);
       await createTestActivityStreaks(readingLogs, dailyGoal);
       const response = await factory.app
