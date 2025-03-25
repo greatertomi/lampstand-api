@@ -55,7 +55,7 @@ describe('Testing the reading log route', () => {
       }
     });
 
-    it('should return streaks for a given date range', async () => {
+    it('should return streaks when startDate and endDate are provided', async () => {
       const readingGoal = await createTestGoal(user.id);
       const dailyGoal = readingGoal.goalInSeconds;
       const readingLogs = pastReadingLogs(user, book);
@@ -81,6 +81,56 @@ describe('Testing the reading log route', () => {
       expect(response.body.errors).toContainEqual({
         message: 'Either currentWeek or startDate and endDate must be provided.'
       });
+    });
+
+    it('should return an error when date queries are invalid date formats ', async () => {
+      const readingGoal = await createTestGoal(user.id);
+      const dailyGoal = readingGoal.goalInSeconds;
+      const readingLogs = pastReadingLogs(user, book);
+      await createTestActivityStreaks(readingLogs, dailyGoal);
+      const response = await factory.app
+        .get(reportsRoute)
+        .set('Authorization', `Bearer ${token}`)
+        .query({ startDate: '2025-01-0', endDate: '2025-01-0' });
+
+      expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(response.body.errors).toEqual(
+        expect.arrayContaining([
+          {
+            message: 'startDate must be a valid date in YYYY-MM-DD format.',
+            field: 'startDate'
+          },
+          {
+            message: 'endDate must be a valid date in YYYY-MM-DD format.',
+            field: 'endDate'
+          }
+        ])
+      );
+    });
+
+    it('should return an error if currentWeek is used with startDate/endDate', async () => {
+      const readingGoal = await createTestGoal(user.id);
+      const dailyGoal = readingGoal.goalInSeconds;
+      const readingLogs = pastReadingLogs(user, book);
+      await createTestActivityStreaks(readingLogs, dailyGoal);
+      const response = await factory.app
+        .get(reportsRoute)
+        .set('Authorization', `Bearer ${token}`)
+        .query({ currentWeek: 'true', startDate: '2024-03-01', endDate: '2024-03-03' });
+
+      expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(response.body.errors).toEqual(
+        expect.arrayContaining([
+          {
+            message: 'Cannot use startDate with currentWeek.',
+            field: 'startDate'
+          },
+          {
+            message: 'Cannot use endDate with currentWeek.',
+            field: 'endDate'
+          }
+        ])
+      );
     });
   });
 
