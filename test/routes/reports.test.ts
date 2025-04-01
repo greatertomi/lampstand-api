@@ -136,7 +136,6 @@ describe('Testing the reading log route', () => {
 
   describe('GET /reports/current-streaks', () => {
     it('Should return streaks when today\'s reading goal is met.', async () => {
-      await createTestGoal(user.id);
       const readingLogs = getCurrentDateReadingLogs(user, book);
       await createTestReadingLogs(readingLogs);
       const response = await factory.app.get(currentRoute).set('Authorization', `Bearer ${token}`);
@@ -150,7 +149,6 @@ describe('Testing the reading log route', () => {
       expect(response.body.lastReadDate).toBe(today);
     });
     it('should return no streak count when the last Read Date is not the current Date', async () => {
-      await createTestGoal(user.id);
       const readingLogs = getCurrentWeekReadingLogs(user, book);
       await createTestReadingLogs(readingLogs);
       const response = await factory.app.get(currentRoute).set('Authorization', `Bearer ${token}`);
@@ -165,7 +163,6 @@ describe('Testing the reading log route', () => {
     });
 
     it('should continue streak if the last read date is yesterday', async () => {
-      await createTestGoal(user.id);
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
       const yesterdayStr = yesterday.toISOString().split('T')[0];
@@ -194,24 +191,13 @@ describe('Testing the reading log route', () => {
     });
 
     it('should return 0 streaks if user has no reading logs', async () => {
-      await createTestGoal(user.id);
       const response = await factory.app.get(currentRoute).set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
-      expect(response.body.errors).toContainEqual({ message: 'User does not have any reading Logs' });
-    });
-
-    it('should return an error if user does not have a reading goal set', async () => {
-      const response = await factory.app.get(currentRoute).set('Authorization', `Bearer ${token}`);
-
-      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
-      expect(response.body.errors).toContainEqual({
-        message: 'User does not have a reading goal set.'
-      });
+      expect(response.body.errors).toContainEqual({ message: 'User does not have any reading logs' });
     });
 
     it('should return streaks for multiple consecutive days of meeting the goal', async () => {
-      await createTestGoal(user.id);
       const readingLogs = getCurrentDateReadingLogs(user, book);
       await createTestReadingLogs(readingLogs);
       const response = await factory.app.get(currentRoute).set('Authorization', `Bearer ${token}`);
@@ -228,6 +214,5 @@ describe('Testing the reading log route', () => {
       expect(response.body.startDate).toBe(expectedStartDateStr);
       expect(response.body.lastReadDate).toBe(todayStr);
     });
-
   });
 });
