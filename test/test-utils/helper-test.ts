@@ -96,3 +96,9 @@ export const createTestActivityStreaks = async (
 
   return streaks;
 };
+
+export const getDateXDaysAgo = (daysAgo: number): string => {
+  const date = new Date();
+  date.setDate(date.getDate() - daysAgo);
+  return date.toISOString().split('T')[0];
+};

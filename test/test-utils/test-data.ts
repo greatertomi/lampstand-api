@@ -206,3 +206,24 @@ export const pastReadingLogs = (user: JwtPayload, book: BookEntity) => {
   ];
 };
 
+export const getCurrentDateReadingLogs = (user, book) => {
+  const logs = [];
+  const now = new Date();
+  now.setUTCHours(0, 0, 0, 0);
+
+  for (let i = 4; i >= 0; i--) {
+    const readingStartDate = new Date(now);
+    readingStartDate.setUTCDate(now.getUTCDate() - i);
+    const readingEndDate = new Date(readingStartDate.getTime() + 3600 * 1000);
+
+    logs.push({
+      userId: user.id,
+      bookId: book.id,
+      secondsRead: Math.floor(Math.random() * (3600 - 1800 + 1) + 1800),
+      startTime: readingStartDate.toISOString(),
+      endTime: readingEndDate.toISOString(),
+    });
+  }
+
+  return logs;
+};

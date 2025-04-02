@@ -6,12 +6,19 @@ import {
   createTestActivityStreaks,
   createTestBook,
   createTestGoal,
+  createTestReadingLogs,
   createTestUser,
+  getDateXDaysAgo,
   getTestAuthToken
 } from '../test-utils/helper-test';
-import { getCurrentWeekReadingLogs, pastReadingLogs } from '../test-utils/test-data';
+import {
+  getCurrentDateReadingLogs,
+  getCurrentWeekReadingLogs,
+  pastReadingLogs
+} from '../test-utils/test-data';
 
 const reportsRoute = '/reports/activity-streaks';
+const currentRoute = '/reports/current-streaks';
 
 describe('Testing the reading log route', () => {
   const factory: TestFactory = new TestFactory();
@@ -29,7 +36,7 @@ describe('Testing the reading log route', () => {
     await factory.close();
   });
 
-  describe('GET /reports/', () => {
+  describe('GET /reports/activity-streaks', () => {
     it('should return streaks for the current week', async () => {
       const readingGoal = await createTestGoal(user.id);
       const dailyGoal = readingGoal.goalInSeconds;
@@ -49,7 +56,7 @@ describe('Testing the reading log route', () => {
       }
     });
 
-    it('should return streaks for startTime and endTime is provided', async () => {
+    it('should return streaks when startDate and endDate are provided', async () => {
       const readingGoal = await createTestGoal(user.id);
       const dailyGoal = readingGoal.goalInSeconds;
       const readingLogs = pastReadingLogs(user, book);
@@ -69,10 +76,6 @@ describe('Testing the reading log route', () => {
     });
 
     it('should return an error when no query parameters are given', async () => {
-      const readingGoal = await createTestGoal(user.id);
-      const dailyGoal = readingGoal.goalInSeconds;
-      const readingLogs = pastReadingLogs(user, book);
-      await createTestActivityStreaks(readingLogs, dailyGoal);
       const response = await factory.app.get(reportsRoute).set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
@@ -105,6 +108,7 @@ describe('Testing the reading log route', () => {
         ])
       );
     });
+
     it('should return an error if currentWeek is used with startDate/endDate', async () => {
       const readingGoal = await createTestGoal(user.id);
       const dailyGoal = readingGoal.goalInSeconds;
@@ -128,6 +132,93 @@ describe('Testing the reading log route', () => {
           }
         ])
       );
+    });
+  });
+
+  describe('GET /reports/current-streaks', () => {
+    it('should return streaks when the user reads today', async () => {
+      const readingLogs = getCurrentDateReadingLogs(user, book);
+      await createTestReadingLogs(readingLogs);
+      const response = await factory.app.get(currentRoute).set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+
+      const todayStr = getDateXDaysAgo(0);
+      const fiveDaysAgoStr = getDateXDaysAgo(4);
+      expect(response.body).toMatchObject({
+        count: 5,
+        startDate: fiveDaysAgoStr,
+        lastReadDate: todayStr
+      });
+    });
+
+    it('should return no streak count when the last reading log is not from today', async () => {
+      const readingLogs = getCurrentWeekReadingLogs(user, book);
+      await createTestReadingLogs(readingLogs);
+      const response = await factory.app.get(currentRoute).set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(response.body).toMatchObject({
+        count: 0,
+        startDate: null,
+        lastReadDate: expect.any(String)
+      });
+    });
+
+    it('should continue streak if the last read date is yesterday', async () => {
+      const yesterdayStr = getDateXDaysAgo(1);
+      const yesterday = new Date(yesterdayStr);
+
+      const readingStartDate = new Date(
+        Date.UTC(
+          yesterday.getUTCFullYear(),
+          yesterday.getUTCMonth(),
+          yesterday.getUTCDate(),
+          10,
+          0,
+          0
+        )
+      );
+      const readingEndDate = new Date(
+        Date.UTC(
+          yesterday.getUTCFullYear(),
+          yesterday.getUTCMonth(),
+          yesterday.getUTCDate(),
+          10,
+          30,
+          0
+        )
+      );
+
+      const readingLogs = [
+        {
+          userId: user.id,
+          bookId: book.id,
+          date: yesterdayStr,
+          secondsRead: Math.floor(Math.random() * (3600 - 1800 + 1) + 1800),
+          startTime: readingStartDate,
+          endTime: readingEndDate
+        }
+      ];
+      await createTestReadingLogs(readingLogs);
+
+      const response = await factory.app.get(currentRoute).set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(response.body).toMatchObject({
+        count: 1,
+        startDate: yesterdayStr,
+        lastReadDate: yesterdayStr
+      });
+    });
+
+    it('should return 0 streaks if user has no reading logs', async () => {
+      const response = await factory.app.get(currentRoute).set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(response.body.errors).toContainEqual({
+        message: 'User does not have any reading logs'
+      });
     });
   });
 });
