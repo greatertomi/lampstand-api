@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { BookEntity } from './BookEntity';
 import { LoginHistoryEntity } from './LoginHistoryEntity';
+import { PasswordResetTokenEntity } from './PasswordResetTokenEntity';
 import { ReadingGoal } from './ReadingGoalEntity';
 import { ReadingLogEntity } from './ReadingLogEntity';
 
@@ -57,4 +58,7 @@ export class UserEntity {
 
   @OneToMany(() => LoginHistoryEntity, (loginHistory) => loginHistory.user, { onDelete: 'CASCADE' })
   loginHistories: LoginHistoryEntity[];
+
+  @OneToMany(() => PasswordResetTokenEntity, (token) => token.user, { onDelete: 'CASCADE' })
+  passwordResetTokens: PasswordResetTokenEntity[];
 }

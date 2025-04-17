@@ -3,6 +3,7 @@ import { Response } from 'express';
 import { UserEntity } from '../entities';
 import { HTTP_STATUS, NotFoundError } from '../lib/responses';
 import { IExtendedRequest } from '../types';
+import { deleteCloudinaryAsset } from '../utils';
 import handleGetRepository from '../utils/handleGetRepository';
 
 export const getUserProfile = async (req: IExtendedRequest, res: Response) => {
@@ -47,11 +48,19 @@ export const removeAccount = async (req: IExtendedRequest, res: Response): Promi
 
   const user = await userRepository.findOne({
     where: { id: userId },
-    relations: ['books', 'readingGoals', 'readingLogs']
+    relations: ['books', 'readingGoals', 'readingLogs', 'loginHistories', 'passwordResetTokens']
   });
 
   if (!user) {
     throw new NotFoundError('User not found');
+  }
+
+  if (user.books) {
+    try {
+      await Promise.all(user.books.map((book) => deleteCloudinaryAsset(book.url)));
+    } catch (error) {
+      if (!error.message.includes('not found')) throw error;
+    }
   }
 
   await userRepository.remove(user);
