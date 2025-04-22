@@ -231,3 +231,34 @@ export const updatePassword = async (req: Request, res: Response) => {
 
   res.status(HTTP_STATUS.OK).send(response);
 };
+
+export const resendVerificationEmail = async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  const userRepository = handleGetRepository(UserEntity);
+  const user = await userRepository.findOne({ where: { email } });
+
+  if (!user) {
+    throw new NotFoundError(userNotFound);
+  }
+
+  if (user.isEmailVerified) {
+    return res.status(HTTP_STATUS.BAD_REQUEST).json({
+      success: false,
+      message: 'Email is already verified'
+    });
+  }
+
+  const payload: JwtPayload = {
+    id: user.id,
+    fullName: user.fullName,
+    email: user.email
+  };
+
+  await sendVerificationEmail(payload);
+
+  res.status(HTTP_STATUS.OK).json({
+    success: true,
+    message: 'Verification email resent successfully'
+  });
+};

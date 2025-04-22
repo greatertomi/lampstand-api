@@ -49,3 +49,7 @@ export const verifyResetTokenValidationRules = () => [
     .withMessage('Token must be a number')
     .toInt()
 ];
+
+export const resendVerificationEmailValidationRules = () => [
+  body('email').notEmpty().withMessage('This must be a valid email address')
+];
