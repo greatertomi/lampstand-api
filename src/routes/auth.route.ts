@@ -46,7 +46,7 @@ router.put(
 );
 
 router.post(
-  '/resend-email',
+  '/resend-verification-email',
   resendVerificationEmailValidationRules(),
   validate,
   asyncMiddleware(resendVerificationEmail)
