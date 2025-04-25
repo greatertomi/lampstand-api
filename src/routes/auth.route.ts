@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
   login,
   requestPasswordReset,
+  resendVerificationEmail,
   signup,
   updatePassword,
   verifyEmail,
@@ -11,6 +12,7 @@ import {
   asyncMiddleware,
   forgotPasswordValidationRules,
   loginValidationRules,
+  resendVerificationEmailValidationRules,
   updatePasswordValidationRules,
   userValidationRules,
   validate,
@@ -42,4 +44,12 @@ router.put(
   validate,
   asyncMiddleware(updatePassword)
 );
+
+router.post(
+  '/resend-verification-email',
+  resendVerificationEmailValidationRules(),
+  validate,
+  asyncMiddleware(resendVerificationEmail)
+);
+
 export default router;

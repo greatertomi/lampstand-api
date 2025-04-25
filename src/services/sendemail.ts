@@ -7,6 +7,7 @@ const SENDER_EMAIL = process.env.SENDER_EMAIL;
 
 export const sendVerificationEmail = async (user: JwtPayload) => {
   const verificationToken = JwtHelper.generateToken(user);
+  const redirectURL = process.env.REDIRECT_URL;
 
   const mailData = {
     from: SENDER_EMAIL,
@@ -25,7 +26,7 @@ export const sendVerificationEmail = async (user: JwtPayload) => {
         <p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 1.5;">
           Please click the following link or copy and paste it into your browser to verify your email address:
         </p>
-        <a href="http://localhost:8000/auth/verify-email?token=${verificationToken}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #ffffff; text-decoration: none; font-family: Arial, sans-serif; font-size: 16px; border-radius: 4px;">
+        <a href="${redirectURL}/auth/verify-email?token=${verificationToken}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #ffffff; text-decoration: none; font-family: Arial, sans-serif; font-size: 16px; border-radius: 4px;">
           Verify Email
         </a>
         <p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 1.5;">
