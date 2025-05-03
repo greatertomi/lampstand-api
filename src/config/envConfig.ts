@@ -11,6 +11,7 @@ type EnvConfig = {
   POSTGRES_HOST: string;
   POSTGRES_PORT: number;
   POSTGRES_DB: string;
+  DATABASE_URL: string;
   JWT_SECRET: string;
   MAILGUN_API_KEY: string;
   MAILGUN_API_URL: string;
@@ -34,6 +35,7 @@ const getConfig = (): ENV => ({
   POSTGRES_PASSWORD: process.env.POSTGRES_PASSWORD,
   POSTGRES_HOST: process.env.POSTGRES_HOST,
   POSTGRES_DB: process.env.POSTGRES_DB,
+  DATABASE_URL: process.env.DATABASE_URL,
   NODE_ENV: process.env.NODE_ENV,
   JWT_SECRET: process.env.JWT_SECRET,
   MAILGUN_API_KEY: process.env.MAILGUN_API_KEY,
