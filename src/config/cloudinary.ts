@@ -1,10 +1,5 @@
 import { v2 as cloudinary } from 'cloudinary';
-import { logger } from '../services';
 import envConfig from './envConfig';
-
-logger.info(`Configuring Cloudinary with cloud name: ${envConfig.CLOUDINARY_CLOUD_NAME}`, {
-  location: 'CloudinaryConfig'
-});
 
 cloudinary.config({
   cloud_name: envConfig.CLOUDINARY_CLOUD_NAME,
