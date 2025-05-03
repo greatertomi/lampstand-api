@@ -15,7 +15,8 @@ const databaseConfig: DataSourceOptions = {
   logging: false,
   entities: isSyncDatabase ? ['src/entities/**/*.ts'] : ['dist/entities/**/*.js'],
   migrations: isSyncDatabase ? ['src/migrations/**/*.ts'] : ['dist/migrations/**/*.js'],
-  subscribers: []
+  subscribers: [],
+  ...(envConfig.NODE_ENV === 'production' && { ssl: { rejectUnauthorized: false } })
 };
 
 export const AppDataSource = new DataSource(databaseConfig);
