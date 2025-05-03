@@ -6,11 +6,7 @@ const isSyncDatabase = envConfig.SYNC_DATABASE;
 
 const databaseConfig: DataSourceOptions = {
   type: 'postgres',
-  host: envConfig.POSTGRES_HOST,
-  port: envConfig.POSTGRES_PORT,
-  username: envConfig.POSTGRES_USER,
-  password: envConfig.POSTGRES_PASSWORD,
-  database: envConfig.POSTGRES_DB,
+  url: envConfig.DATABASE_URL,
   synchronize: isSyncDatabase,
   logging: false,
   entities: isSyncDatabase ? ['src/entities/**/*.ts'] : ['dist/entities/**/*.js'],

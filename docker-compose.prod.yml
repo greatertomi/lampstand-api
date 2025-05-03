@@ -1,0 +1,32 @@
+services:
+  api:
+    container_name: 'lampstand-api'
+    build:
+      dockerfile: Dockerfile
+      context: .
+      target: production
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+    expose:
+      - ${PORT}/tcp
+    ports:
+      - ${PORT}:${PORT}
+    restart: always
+    volumes:
+      - ./src:/app/src
+      - ./nodemon.json:/app/nodemon.json
+      - ./logs:/app/logs
+    command: npm dist/index.js
+  postgres:
+    container_name: 'lampstand-postgres'
+    image: 'postgres:13'
+    restart: always
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    env_file:
+      - .env
+    volumes:
+      - ./data:/var/lib/postgresql/data
+
