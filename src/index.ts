@@ -6,6 +6,7 @@ import envConfig from './config/envConfig';
 import { AppDataSource } from './database';
 import { errorHandler, responseLogger } from './middleware';
 import routes from './routes';
+import homepageRouter from './routes/homepage.route';
 import { logger } from './services';
 import './services/google-passport';
 
@@ -23,6 +24,7 @@ export const main = async () => {
     app.use(passport.initialize());
 
     app.use(responseLogger);
+    app.use('/', homepageRouter);
     app.use('/api/v1', routes);
 
     app.use((req, res) =>

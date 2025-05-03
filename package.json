@@ -47,7 +47,8 @@
     "reflect-metadata": "^0.1.13",
     "supertest": "^6.3.3",
     "typedi": "^0.10.0",
-    "typeorm": "0.3.16"
+    "typeorm": "0.3.16",
+    "winston": "^3.13.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.3.0",
@@ -94,8 +95,7 @@
     "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.2.0",
     "typeorm-extension": "^3.7.0",
-    "typescript": "4.9.5",
-    "winston": "^3.13.0"
+    "typescript": "4.9.5"
   },
   "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610"
 }
