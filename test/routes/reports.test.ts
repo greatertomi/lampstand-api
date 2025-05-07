@@ -149,7 +149,6 @@ describe('Testing the reading log route', () => {
       });
     });
 
-    // TODO: Check why this test is failing
     it('should return no streak count when the last reading log is not from today', async () => {
       await createTestGoal(user.id);
       const readingLogs = getCurrentWeekReadingLogs(user, book);
