@@ -17,9 +17,7 @@ export const getActivityStreaks = async (req: IExtendedRequest, res: Response): 
   } else if (startDate && endDate) {
     dateRange = {
       start: new Date(new Date(startDate as string).toISOString()),
-      end: new Date(
-        new Date(endDate as string).toISOString().replace('T00:00:00.000Z', 'T23:59:59.999Z')
-      )
+      end: new Date(new Date(endDate as string).toISOString().replace('T00:00:00.000Z', 'T23:59:59.999Z'))
     };
   } else {
     throw new BadRequestError('Either currentWeek or startDate and endDate must be provided.');
@@ -70,6 +68,15 @@ export const getActivityStreaks = async (req: IExtendedRequest, res: Response): 
 export const getCurrentStreaks = async (req: IExtendedRequest, res: Response) => {
   const userId = req.user.id;
 
+  const readingGoals = handleGetRepository(ReadingGoal);
+  const readingGoal = await readingGoals.findOne({ where: { user: { id: userId } }, order: { createdAt: 'DESC' } });
+
+  if (!readingGoal) {
+    throw new BadRequestError('User does not have a reading goal set.');
+  }
+
+  const goalTime = readingGoal.goalInSeconds;
+
   const readingLogs = handleGetRepository(ReadingLogEntity);
   const readingLog = await readingLogs.find({
     where: { user: { id: userId } },
@@ -86,9 +93,12 @@ export const getCurrentStreaks = async (req: IExtendedRequest, res: Response) =>
     readingByDate.set(startDate, (readingByDate.get(startDate) || 0) + log.secondsRead);
   }
 
-  const readingDates = [...readingByDate.keys()].sort(
-    (a, b) => new Date(b).getTime() - new Date(a).getTime()
-  );
+  for (const [date, secondsRead] of readingByDate.entries()) {
+    if (secondsRead < goalTime) {
+      readingByDate.delete(date);
+    }
+  }
+  const readingDates = [...readingByDate.keys()].sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
   const today = new Date().toISOString().split('T')[0];
   const yesterday = new Date();
