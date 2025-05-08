@@ -25,12 +25,17 @@ export const getDateRange = (timespan: TimeSpan): { start: Date; end: Date } | n
   return { start, end };
 };
 
-export const getCurrentWeekRange = () => {
-  const now = new Date();
-  const dayOfWeek = now.getUTCDay();
+export const getCurrentWeekRange = (date?: string | Date) => {
+  const inputDate = date ? new Date(date) : new Date();
 
-  const startOfWeek = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-  startOfWeek.setUTCDate(startOfWeek.getUTCDate() - (dayOfWeek === 0 ? 6 : dayOfWeek));
+  const utcDate = new Date(
+    Date.UTC(inputDate.getUTCFullYear(), inputDate.getUTCMonth(), inputDate.getUTCDate())
+  );
+
+  const dayOfWeek = utcDate.getUTCDay();
+  const startOfWeek = new Date(utcDate);
+  startOfWeek.setUTCDate(utcDate.getUTCDate() - dayOfWeek);
+  startOfWeek.setUTCHours(0, 0, 0, 0);
 
   const endOfWeek = new Date(startOfWeek);
   endOfWeek.setUTCDate(startOfWeek.getUTCDate() + 6);

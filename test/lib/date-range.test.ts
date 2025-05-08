@@ -1,7 +1,6 @@
 import { getDateRange, getDayOfWeek, getCurrentWeekRange } from '../../src/lib';
 import { TimeSpan } from '../../src/types/timespan';
 
-
 describe('getDateRange', () => {
   const mockDate = new Date('2024-01-15T15:30:25.000Z');
 
@@ -67,6 +66,15 @@ describe('Date Utility Functions', () => {
 
       expect(end.toISOString().split('T')[0]).toBe('2025-03-22');
     });
+
+    it('should calculate the start and end of the week for a provided date', () => {
+      const date = '2024-12-25';
+      const { start, end } = getCurrentWeekRange(date);
+
+      expect(start.toISOString().split('T')[0]).toBe('2024-12-22');
+
+      expect(end.toISOString().split('T')[0]).toBe('2024-12-28');
+    });
   });
 
   describe('getDayOfWeek', () => {
@@ -78,7 +86,7 @@ describe('Date Utility Functions', () => {
         { date: '2025-03-19', expected: 'Wednesday' },
         { date: '2025-03-20', expected: 'Thursday' },
         { date: '2025-03-21', expected: 'Friday' },
-        { date: '2025-03-22', expected: 'Saturday' },
+        { date: '2025-03-22', expected: 'Saturday' }
       ];
 
       for (const { date, expected } of days) {

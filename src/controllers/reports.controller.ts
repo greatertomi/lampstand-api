@@ -144,3 +144,51 @@ export const getCurrentStreaks = async (req: IExtendedRequest, res: Response) =>
 
   res.status(HTTP_STATUS.OK).json({ count: streakCount, startDate, lastReadDate });
 };
+
+export const getWeeklyReadingActivities = async (req: IExtendedRequest, res: Response) => {
+  const { date } = req.query;
+  const userId = req.user.id;
+
+  let weekRange: { start: Date; end: Date };
+
+  const readingLogs = handleGetRepository(ReadingLogEntity);
+
+  const readingDate = new Map<string, number>();
+
+  if (date) {
+    const inputDate = new Date(date as string);
+    weekRange = getCurrentWeekRange(inputDate);
+  } else {
+    weekRange = getCurrentWeekRange();
+  }
+  const readingLog = await readingLogs.find({
+    where: {
+      user: { id: userId },
+      startTime: Between(weekRange.start, weekRange.end)
+    }
+  });
+
+  const weeklyData = [];
+  const currentDate = new Date(weekRange.start);
+
+  for (const log of readingLog) {
+    const dateStr = log.startTime.toISOString().split('T')[0];
+    readingDate.set(dateStr, (readingDate.get(dateStr) || 0) + log.secondsRead);
+  }
+
+  while (currentDate <= weekRange.end) {
+    const dateStr = currentDate.toISOString().split('T')[0];
+    weeklyData.push({
+      secondsRead: readingDate.get(dateStr) || 0,
+      label:
+        getDayOfWeek(currentDate).slice(0, 3) === 'Thu'
+          ? 'Thur'
+          : getDayOfWeek(currentDate).slice(0, 3),
+      date: dateStr
+    });
+    currentDate.setDate(currentDate.getDate() + 1);
+    currentDate.setHours(0, 0, 0, 0);
+  }
+
+  res.status(HTTP_STATUS.OK).json(weeklyData);
+};

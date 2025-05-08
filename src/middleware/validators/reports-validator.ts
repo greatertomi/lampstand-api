@@ -31,3 +31,7 @@ export const reportValidationRules = [
       return true;
     })
 ];
+
+export const weeklyActivitiesValidationRules = [
+  query('date').optional().isDate().withMessage('Date must be a valid date in YYYY-MM-DD format.')
+];

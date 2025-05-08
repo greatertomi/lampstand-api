@@ -15,6 +15,7 @@ import { getCurrentDateReadingLogs, getCurrentWeekReadingLogs, pastReadingLogs }
 
 const reportsRoute = '/reports/activity-streaks';
 const currentRoute = '/reports/current-streaks';
+const weeklyRoute = '/reports/weekly-reading-activities';
 
 describe('Testing the reading log route', () => {
   const factory: TestFactory = new TestFactory();
@@ -214,6 +215,99 @@ describe('Testing the reading log route', () => {
       expect(response.body.errors).toContainEqual({
         message: 'User does not have a reading goal set.'
       });
+    });
+  });
+
+  describe('GET /reports/weekly-reading-activities', () => {
+    it('should return the reading summary of the week if date is provided', async () => {
+      const readingLogs = pastReadingLogs(user, book);
+      await createTestReadingLogs(readingLogs);
+      const response = await factory.app
+        .get(weeklyRoute)
+        .set('Authorization', `Bearer ${token}`)
+        .query({ date: '2025-01-06' });
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(response.body).toEqual(
+        expect.arrayContaining([
+          {
+            secondsRead: 2700,
+            label: 'Sun',
+            date: '2025-01-05'
+          },
+          {
+            secondsRead: 3600,
+            label: 'Mon',
+            date: '2025-01-06'
+          },
+          {
+            secondsRead: 5400,
+            label: 'Tue',
+            date: '2025-01-07'
+          },
+          {
+            secondsRead: 750,
+            label: 'Wed',
+            date: '2025-01-08'
+          },
+          {
+            secondsRead: 4200,
+            label: 'Thur',
+            date: '2025-01-09'
+          },
+          {
+            secondsRead: 3000,
+            label: 'Fri',
+            date: '2025-01-10'
+          },
+          {
+            secondsRead: 0,
+            label: 'Sat',
+            date: '2025-01-11'
+          }
+        ])
+      );
+    });
+
+    it('should return the reading summary for current week if no query is provided', async () => {
+      const readingLogs = getCurrentWeekReadingLogs(user, book);
+      await createTestReadingLogs(readingLogs);
+      const response = await factory.app.get(weeklyRoute).set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      const expected = readingLogs.map((log) => {
+        const date = log.startTime.toISOString().split('T')[0];
+        const label =
+          log.startTime.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' }) === 'Thu'
+            ? 'Thur'
+            : log.startTime.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'UTC' });
+
+        return {
+          date,
+          label,
+          secondsRead: log.secondsRead
+        };
+      });
+      expect(response.body).toEqual(expect.arrayContaining(expected));
+    });
+
+    it('should return the reading summary of the week if date is provided', async () => {
+      const readingLogs = pastReadingLogs(user, book);
+      await createTestReadingLogs(readingLogs);
+      const response = await factory.app
+        .get(weeklyRoute)
+        .set('Authorization', `Bearer ${token}`)
+        .query({ date: '18-06-2025' });
+
+      expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(response.body.errors).toEqual(
+        expect.arrayContaining([
+          {
+            message: 'Date must be a valid date in YYYY-MM-DD format.',
+            field: 'date'
+          }
+        ])
+      );
     });
   });
 });
