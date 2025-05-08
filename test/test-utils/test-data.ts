@@ -221,7 +221,7 @@ export const getCurrentDateReadingLogs = (user, book) => {
       bookId: book.id,
       secondsRead: Math.floor(Math.random() * (3600 - 1800 + 1) + 1800),
       startTime: readingStartDate.toISOString(),
-      endTime: readingEndDate.toISOString(),
+      endTime: readingEndDate.toISOString()
     });
   }
 

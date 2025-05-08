@@ -11,11 +11,7 @@ import {
   getDateXDaysAgo,
   getTestAuthToken
 } from '../test-utils/helper-test';
-import {
-  getCurrentDateReadingLogs,
-  getCurrentWeekReadingLogs,
-  pastReadingLogs
-} from '../test-utils/test-data';
+import { getCurrentDateReadingLogs, getCurrentWeekReadingLogs, pastReadingLogs } from '../test-utils/test-data';
 
 const reportsRoute = '/reports/activity-streaks';
 const currentRoute = '/reports/current-streaks';
@@ -137,6 +133,7 @@ describe('Testing the reading log route', () => {
 
   describe('GET /reports/current-streaks', () => {
     it('should return streaks when the user reads today', async () => {
+      await createTestGoal(user.id);
       const readingLogs = getCurrentDateReadingLogs(user, book);
       await createTestReadingLogs(readingLogs);
       const response = await factory.app.get(currentRoute).set('Authorization', `Bearer ${token}`);
@@ -152,8 +149,8 @@ describe('Testing the reading log route', () => {
       });
     });
 
-    // TODO: Check why this test is failing
-    xit('should return no streak count when the last reading log is not from today', async () => {
+    it('should return no streak count when the last reading log is not from today', async () => {
+      await createTestGoal(user.id);
       const readingLogs = getCurrentWeekReadingLogs(user, book);
       await createTestReadingLogs(readingLogs);
       const response = await factory.app.get(currentRoute).set('Authorization', `Bearer ${token}`);
@@ -167,28 +164,15 @@ describe('Testing the reading log route', () => {
     });
 
     it('should continue streak if the last read date is yesterday', async () => {
+      await createTestGoal(user.id);
       const yesterdayStr = getDateXDaysAgo(1);
       const yesterday = new Date(yesterdayStr);
 
       const readingStartDate = new Date(
-        Date.UTC(
-          yesterday.getUTCFullYear(),
-          yesterday.getUTCMonth(),
-          yesterday.getUTCDate(),
-          10,
-          0,
-          0
-        )
+        Date.UTC(yesterday.getUTCFullYear(), yesterday.getUTCMonth(), yesterday.getUTCDate(), 10, 0, 0)
       );
       const readingEndDate = new Date(
-        Date.UTC(
-          yesterday.getUTCFullYear(),
-          yesterday.getUTCMonth(),
-          yesterday.getUTCDate(),
-          10,
-          30,
-          0
-        )
+        Date.UTC(yesterday.getUTCFullYear(), yesterday.getUTCMonth(), yesterday.getUTCDate(), 10, 30, 0)
       );
 
       const readingLogs = [
@@ -214,11 +198,21 @@ describe('Testing the reading log route', () => {
     });
 
     it('should return 0 streaks if user has no reading logs', async () => {
+      await createTestGoal(user.id);
       const response = await factory.app.get(currentRoute).set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
       expect(response.body.errors).toContainEqual({
         message: 'User does not have any reading logs'
+      });
+    });
+
+    it('should return 0 streaks if user has no reading goal set', async () => {
+      const response = await factory.app.get(currentRoute).set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(response.body.errors).toContainEqual({
+        message: 'User does not have a reading goal set.'
       });
     });
   });

@@ -70,6 +70,18 @@ export const getActivityStreaks = async (req: IExtendedRequest, res: Response): 
 export const getCurrentStreaks = async (req: IExtendedRequest, res: Response) => {
   const userId = req.user.id;
 
+  const readingGoals = handleGetRepository(ReadingGoal);
+  const readingGoal = await readingGoals.findOne({
+    where: { user: { id: userId } },
+    order: { createdAt: 'DESC' }
+  });
+
+  if (!readingGoal) {
+    throw new BadRequestError('User does not have a reading goal set.');
+  }
+
+  const goalTime = readingGoal.goalInSeconds;
+
   const readingLogs = handleGetRepository(ReadingLogEntity);
   const readingLog = await readingLogs.find({
     where: { user: { id: userId } },
@@ -86,6 +98,11 @@ export const getCurrentStreaks = async (req: IExtendedRequest, res: Response) =>
     readingByDate.set(startDate, (readingByDate.get(startDate) || 0) + log.secondsRead);
   }
 
+  for (const [date, secondsRead] of readingByDate.entries()) {
+    if (secondsRead < goalTime) {
+      readingByDate.delete(date);
+    }
+  }
   const readingDates = [...readingByDate.keys()].sort(
     (a, b) => new Date(b).getTime() - new Date(a).getTime()
   );
