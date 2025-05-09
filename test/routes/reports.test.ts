@@ -4,8 +4,11 @@ import { JwtPayload } from '../../src/types';
 import { getCurrentWeekRange, getDayOfWeek } from '../../src/utils';
 import { TestFactory } from '../factory';
 import { createTestActivityStreaks, createTestBook, createTestGoal, createTestReadingLogs, createTestUser, getDateXDaysAgo, getTestAuthToken } from '../test-utils/helper-test';
-import { getCurrentDateReadingLogs, getCurrentWeekReadingLogs, pastReadingLogs } from '../test-utils/test-data';
-
+import {
+  getCurrentDateReadingLogs,
+  getCurrentWeekReadingLogs,
+  pastReadingLogs
+} from '../test-utils/test-data';
 
 const reportsRoute = '/reports/activity-streaks';
 const currentRoute = '/reports/current-streaks';
@@ -166,10 +169,24 @@ describe('Testing the reading log route', () => {
       const yesterday = new Date(yesterdayStr);
 
       const readingStartDate = new Date(
-        Date.UTC(yesterday.getUTCFullYear(), yesterday.getUTCMonth(), yesterday.getUTCDate(), 10, 0, 0)
+        Date.UTC(
+          yesterday.getUTCFullYear(),
+          yesterday.getUTCMonth(),
+          yesterday.getUTCDate(),
+          10,
+          0,
+          0
+        )
       );
       const readingEndDate = new Date(
-        Date.UTC(yesterday.getUTCFullYear(), yesterday.getUTCMonth(), yesterday.getUTCDate(), 10, 30, 0)
+        Date.UTC(
+          yesterday.getUTCFullYear(),
+          yesterday.getUTCMonth(),
+          yesterday.getUTCDate(),
+          10,
+          30,
+          0
+        )
       );
 
       const readingLogs = [
@@ -322,42 +339,44 @@ describe('Testing the reading log route', () => {
     });
   });
 
-  describe('Get/reports/daily-reading-activities', () => {
-    it('should return empty array when the use has not reads today', async () => {
-      await createTestReadingLogs([]);
+  describe('GET/reports/daily-reading-activities', () => {
+    it('should return empty array when the use has not read today', async () => {
       const response = await factory.app
         .get(dailyActivityReport)
         .set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(HTTP_STATUS.OK);
-      expect(response.body).toMatchObject({
-        message: 'No data yet for today. Read a book',
-        data: []
-      });
-      expect(response.body.data).toHaveLength(0);
+      expect(response.body).toHaveLength(24);
+      const secondsRead = response.body.map((item: { value: string }) => Number(item.value) === 0);
+      expect(secondsRead).toBeTruthy();
     });
 
     it('should return data for a selected day and returns data for current date if no date was specified', async () => {
       const readingLogs = pastReadingLogs(user, book);
       await createTestReadingLogs(readingLogs);
-      const responseWithSelectedDate = await factory.app
+      const response = await factory.app
         .get(dailyActivityReport)
         .set('Authorization', `Bearer ${token}`)
         .query({ date: '2025-01-09' });
-      const responseWithNoSelectedDate = await factory.app
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(response.body).toHaveLength(24);
+      response.body.map((item: { label: string; value: string }) => {
+        expect(item).toHaveProperty('label');
+        expect(item).toHaveProperty('secondsRead');
+      });
+    });
+
+    it('should return data for current date if no date was specified', async () => {
+      const readingLogs = pastReadingLogs(user, book);
+      await createTestReadingLogs(readingLogs);
+      const response = await factory.app
         .get(dailyActivityReport)
         .set('Authorization', `Bearer ${token}`);
-      expect(responseWithSelectedDate.status).toBe(HTTP_STATUS.OK);
-      expect(responseWithSelectedDate.body.data).toHaveLength(24);
-      responseWithSelectedDate.body.data.map((item: { label: string; value: string }) => {
-        expect(item).toHaveProperty('label');
-        expect(item).toHaveProperty('value');
-      });
-      expect(responseWithNoSelectedDate.status).toBe(HTTP_STATUS.OK);
-      const nonZeroValues = responseWithNoSelectedDate.body.data.filter(
-        (item: { value: string }) => Number(item.value) > 0
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(response.body).toHaveLength(24);
+      const nonZeroValues = response.body.filter(
+        (item: { secondsRead: string }) => Number(item.secondsRead) > 0
       );
-
       expect(nonZeroValues).toHaveLength(3);
     });
 
@@ -372,11 +391,7 @@ describe('Testing the reading log route', () => {
       expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
       expect(response.body.errors).toMatchObject([
         {
-          message: 'Date must be in YYYY-MM-DD format.',
-          field: 'date'
-        },
-        {
-          message: 'Date is not a valid calendar date.',
+          message: 'Date must be a valid date in YYYY-MM-DD format.',
           field: 'date'
         }
       ]);

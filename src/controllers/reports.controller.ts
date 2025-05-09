@@ -1,10 +1,10 @@
 import { Response } from 'express';
 import { Between } from 'typeorm';
+import { endOfDay, parseISO, startOfDay } from 'date-fns';
 import { ReadingGoal, ReadingLogEntity } from '../entities';
 import { BadRequestError, HTTP_STATUS } from '../lib/responses';
 import { IExtendedRequest } from '../types';
-import { getCurrentWeekRange, getDayOfWeek, getSecondsBetweenDates, splitReadSecondsIntoHour } from '../utils';
-import { getCurrentWeekRange, getDayOfWeek,  } from '../utils';
+import { getCurrentWeekRange, getDayOfWeek, getSecondsBetweenDates } from '../utils';
 import handleGetRepository from '../utils/handleGetRepository';
 
 export const getActivityStreaks = async (req: IExtendedRequest, res: Response): Promise<void> => {
@@ -210,30 +210,47 @@ export const getWeeklyReadingActivities = async (req: IExtendedRequest, res: Res
 export const getDailyReadingActivityData = async (req: IExtendedRequest, res: Response) => {
   const userId = req.user.id;
   const { date } = req.query;
-  const todayDate = new Date().toISOString().split('T')[0];
-  const selectedDate = date ?? todayDate;
+  const selectedDate = parseISO((date as string) ?? new Date().toISOString().split('T')[0]);
+
+  const splitReadSecondsIntoHour = (readingLogs: ReadingLogEntity[]) => {
+    const hourlyReadings = Array.from({ length: 24 }, (_, hour) => ({
+      secondsRead: 0,
+      label: `${hour === 0 ? 12 : hour > 12 ? hour - 12 : hour}${hour < 12 ? 'am' : 'pm'}`
+    }));
+
+    for (const log of readingLogs) {
+      const startTime = new Date(log.startTime);
+      const endTime = new Date(log.endTime);
+
+      const totalTimeSpanInSeconds = (endTime.getTime() - startTime.getTime()) / 1000;
+      if (totalTimeSpanInSeconds <= 0) continue;
+
+      let currentTime = new Date(startTime);
+      while (currentTime < endTime) {
+        const currentHour = currentTime.getUTCHours();
+        const nextHourTime = new Date(currentTime);
+        nextHourTime.setUTCHours(currentHour + 1, 0, 0, 0);
+
+        const timeUntilNextHour = Math.min(endTime.getTime(), nextHourTime.getTime());
+        const secondsInThisHour = (timeUntilNextHour - currentTime.getTime()) / 1000;
+
+        hourlyReadings[currentHour].secondsRead += Math.round(secondsInThisHour);
+
+        currentTime = new Date(timeUntilNextHour);
+      }
+    }
+
+    return hourlyReadings;
+  };
 
   const readingLogRepository = handleGetRepository(ReadingLogEntity);
-  const readingLog = await readingLogRepository.find({
-    where: { user: { id: userId } },
-    order: { startTime: 'DESC' }
+  const selectedDateReadingLogs = await readingLogRepository.find({
+    where: {
+      user: { id: userId },
+      startTime: Between(startOfDay(selectedDate), endOfDay(selectedDate)),
+      endTime: Between(startOfDay(selectedDate), endOfDay(selectedDate))
+    }
   });
 
-  const selectedDateReadingLogs = readingLog.filter(
-    (item) =>
-      item.startTime.toISOString().split('T')[0] === selectedDate &&
-      item.endTime.toISOString().split('T')[0] === selectedDate
-  );
-
-  if (selectedDateReadingLogs.length === 0) {
-    const isToday = selectedDate === todayDate;
-    return res.status(HTTP_STATUS.OK).json({
-      message: isToday ? 'No data yet for today. Read a book' : 'No data for selected date',
-      data: []
-    });
-  }
-
-  const result = splitReadSecondsIntoHour(selectedDateReadingLogs);
-
-  res.status(HTTP_STATUS.OK).json({ message: 'data fetched successfully', data: result });
+  res.json(splitReadSecondsIntoHour(selectedDateReadingLogs));
 };
