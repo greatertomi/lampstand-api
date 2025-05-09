@@ -32,6 +32,28 @@ export const reportValidationRules = [
     })
 ];
 
+export const validateDailyReadingDate = [
+  query('date')
+    .optional()
+    .matches(/^\d{4}-\d{2}-\d{2}$/)
+    .withMessage('Date must be in YYYY-MM-DD format.')
+    .custom((value) => {
+      const date = new Date(value);
+      const [year, month, day] = value.split('-').map(Number);
+
+      if (
+        Number.isNaN(date.getTime()) ||
+        date.getUTCFullYear() !== year ||
+        date.getUTCMonth() + 1 !== month ||
+        date.getUTCDate() !== day
+      ) {
+        throw new Error('Date is not a valid calendar date.');
+      }
+
+      return true;
+    })
+];
+
 export const weeklyActivitiesValidationRules = [
   query('date')
     .optional()

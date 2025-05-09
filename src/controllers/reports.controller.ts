@@ -3,7 +3,8 @@ import { Between } from 'typeorm';
 import { ReadingGoal, ReadingLogEntity } from '../entities';
 import { BadRequestError, HTTP_STATUS } from '../lib/responses';
 import { IExtendedRequest } from '../types';
-import { getCurrentWeekRange, getDayOfWeek, getSecondsBetweenDates } from '../utils';
+import { getCurrentWeekRange, getDayOfWeek, getSecondsBetweenDates, splitReadSecondsIntoHour } from '../utils';
+import { getCurrentWeekRange, getDayOfWeek,  } from '../utils';
 import handleGetRepository from '../utils/handleGetRepository';
 
 export const getActivityStreaks = async (req: IExtendedRequest, res: Response): Promise<void> => {
@@ -204,4 +205,35 @@ export const getWeeklyReadingActivities = async (req: IExtendedRequest, res: Res
   }
 
   res.status(HTTP_STATUS.OK).json(weeklyData);
+};
+
+export const getDailyReadingActivityData = async (req: IExtendedRequest, res: Response) => {
+  const userId = req.user.id;
+  const { date } = req.query;
+  const todayDate = new Date().toISOString().split('T')[0];
+  const selectedDate = date ?? todayDate;
+
+  const readingLogRepository = handleGetRepository(ReadingLogEntity);
+  const readingLog = await readingLogRepository.find({
+    where: { user: { id: userId } },
+    order: { startTime: 'DESC' }
+  });
+
+  const selectedDateReadingLogs = readingLog.filter(
+    (item) =>
+      item.startTime.toISOString().split('T')[0] === selectedDate &&
+      item.endTime.toISOString().split('T')[0] === selectedDate
+  );
+
+  if (selectedDateReadingLogs.length === 0) {
+    const isToday = selectedDate === todayDate;
+    return res.status(HTTP_STATUS.OK).json({
+      message: isToday ? 'No data yet for today. Read a book' : 'No data for selected date',
+      data: []
+    });
+  }
+
+  const result = splitReadSecondsIntoHour(selectedDateReadingLogs);
+
+  res.status(HTTP_STATUS.OK).json({ message: 'data fetched successfully', data: result });
 };

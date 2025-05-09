@@ -1,10 +1,11 @@
 import { Router } from 'express';
-import { getActivityStreaks, getCurrentStreaks, getWeeklyReadingActivities } from '../controllers';
+import { getActivityStreaks, getCurrentStreaks, getDailyReadingActivityData } from '../controllers';
 import {
   asyncMiddleware,
   checkJwt,
   reportValidationRules,
   validate,
+  validateDailyReadingDate,
   weeklyActivitiesValidationRules
 } from '../middleware';
 
@@ -19,6 +20,13 @@ router.get(
 );
 
 router.get('/current-streaks', checkJwt, validate, asyncMiddleware(getCurrentStreaks));
+router.get(
+  '/daily-reading-activities',
+  checkJwt,
+  validateDailyReadingDate,
+  validate,
+  asyncMiddleware(getDailyReadingActivityData)
+);
 
 router.get(
   '/weekly-reading-activities',

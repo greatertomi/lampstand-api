@@ -10,6 +10,7 @@ import { getCurrentDateReadingLogs, getCurrentWeekReadingLogs, pastReadingLogs }
 const reportsRoute = '/reports/activity-streaks';
 const currentRoute = '/reports/current-streaks';
 const weeklyRoute = '/reports/weekly-reading-activities';
+const dailyActivityReport = '/reports/daily-reading-activities';
 
 describe('Testing the reading log route', () => {
   const factory: TestFactory = new TestFactory();
@@ -318,6 +319,67 @@ describe('Testing the reading log route', () => {
         expect(day.label).toBe(getDayOfWeek(dayDate).short);
         expect(dayDate >= weekStart && dayDate <= weekEnd).toBe(true);
       }
+    });
+  });
+
+  describe('Get/reports/daily-reading-activities', () => {
+    it('should return empty array when the use has not reads today', async () => {
+      await createTestReadingLogs([]);
+      const response = await factory.app
+        .get(dailyActivityReport)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(response.body).toMatchObject({
+        message: 'No data yet for today. Read a book',
+        data: []
+      });
+      expect(response.body.data).toHaveLength(0);
+    });
+
+    it('should return data for a selected day and returns data for current date if no date was specified', async () => {
+      const readingLogs = pastReadingLogs(user, book);
+      await createTestReadingLogs(readingLogs);
+      const responseWithSelectedDate = await factory.app
+        .get(dailyActivityReport)
+        .set('Authorization', `Bearer ${token}`)
+        .query({ date: '2025-01-09' });
+      const responseWithNoSelectedDate = await factory.app
+        .get(dailyActivityReport)
+        .set('Authorization', `Bearer ${token}`);
+      expect(responseWithSelectedDate.status).toBe(HTTP_STATUS.OK);
+      expect(responseWithSelectedDate.body.data).toHaveLength(24);
+      responseWithSelectedDate.body.data.map((item: { label: string; value: string }) => {
+        expect(item).toHaveProperty('label');
+        expect(item).toHaveProperty('value');
+      });
+      expect(responseWithNoSelectedDate.status).toBe(HTTP_STATUS.OK);
+      const nonZeroValues = responseWithNoSelectedDate.body.data.filter(
+        (item: { value: string }) => Number(item.value) > 0
+      );
+
+      expect(nonZeroValues).toHaveLength(3);
+    });
+
+    it('should return errors for invalid date format', async () => {
+      const invalidDate = '2025-01-0';
+      const readingLogs = pastReadingLogs(user, book);
+      await createTestReadingLogs(readingLogs);
+      const response = await factory.app
+        .get(dailyActivityReport)
+        .set('Authorization', `Bearer ${token}`)
+        .query({ date: invalidDate });
+      expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(response.body.errors).toMatchObject([
+        {
+          message: 'Date must be in YYYY-MM-DD format.',
+          field: 'date'
+        },
+        {
+          message: 'Date is not a valid calendar date.',
+          field: 'date'
+        }
+      ]);
     });
   });
 });
