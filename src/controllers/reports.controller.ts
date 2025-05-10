@@ -3,7 +3,7 @@ import { Between } from 'typeorm';
 import { ReadingGoal, ReadingLogEntity } from '../entities';
 import { BadRequestError, HTTP_STATUS } from '../lib/responses';
 import { IExtendedRequest } from '../types';
-import { getCurrentWeekRange, getDayOfWeek } from '../utils';
+import { getCurrentWeekRange, getDayOfWeek, getSecondsBetweenDates } from '../utils';
 import handleGetRepository from '../utils/handleGetRepository';
 
 export const getActivityStreaks = async (req: IExtendedRequest, res: Response): Promise<void> => {
@@ -58,7 +58,7 @@ export const getActivityStreaks = async (req: IExtendedRequest, res: Response): 
     streaks.push({
       date: dateStr,
       completed: (streakMap.get(dateStr) || 0) >= dailyGoal,
-      dayOfWeek: getDayOfWeek(currentDate)
+      dayOfWeek: getDayOfWeek(currentDate).long
     });
 
     currentDate.setDate(currentDate.getDate() + 1);
@@ -153,7 +153,7 @@ export const getWeeklyReadingActivities = async (req: IExtendedRequest, res: Res
 
   const readingLogs = handleGetRepository(ReadingLogEntity);
 
-  const readingDate = new Map<string, number>();
+  const readingDuration = new Map<string, number>();
 
   if (date) {
     const inputDate = new Date(date as string);
@@ -172,18 +172,29 @@ export const getWeeklyReadingActivities = async (req: IExtendedRequest, res: Res
   const currentDate = new Date(weekRange.start);
 
   for (const log of readingLog) {
-    const dateStr = log.startTime.toISOString().split('T')[0];
-    readingDate.set(dateStr, (readingDate.get(dateStr) || 0) + log.secondsRead);
+    let currentStart = new Date(log.startTime);
+    const endTime = new Date(log.endTime);
+
+    while (currentStart < endTime) {
+      const endOfDay = new Date(currentStart);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      const segmentEnd = endTime < endOfDay ? endTime : endOfDay;
+      const duration = getSecondsBetweenDates(currentStart, segmentEnd);
+      const dateStr = currentStart.toISOString().split('T')[0];
+      readingDuration.set(dateStr, (readingDuration.get(dateStr) || 0) + duration);
+
+      currentStart = new Date(segmentEnd);
+      currentStart.setDate(currentStart.getDate() + 1);
+      currentStart.setHours(0, 0, 0, 0);
+    }
   }
 
   while (currentDate <= weekRange.end) {
     const dateStr = currentDate.toISOString().split('T')[0];
     weeklyData.push({
-      secondsRead: readingDate.get(dateStr) || 0,
-      label:
-        getDayOfWeek(currentDate).slice(0, 3) === 'Thu'
-          ? 'Thur'
-          : getDayOfWeek(currentDate).slice(0, 3),
+      secondsRead: readingDuration.get(dateStr) || 0,
+      label: getDayOfWeek(currentDate).short,
       date: dateStr
     });
     currentDate.setDate(currentDate.getDate() + 1);

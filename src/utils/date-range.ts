@@ -44,7 +44,17 @@ export const getCurrentWeekRange = (date?: string | Date) => {
   return { start: startOfWeek, end: endOfWeek };
 };
 
-export const getDayOfWeek = (date: Date): string => {
-  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  return days[date.getUTCDay()];
+export const getDayOfWeek = (date: Date): { long: string; short: string } => {
+  const longDays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const shortDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
+
+  const dayIndex = date.getUTCDay();
+  return {
+    long: longDays[dayIndex],
+    short: shortDays[dayIndex]
+  };
+};
+
+export const getSecondsBetweenDates = (start: Date, end: Date): number => {
+  return Math.round((end.getTime() - start.getTime()) / 1000);
 };

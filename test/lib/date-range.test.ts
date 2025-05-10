@@ -1,4 +1,4 @@
-import { getDateRange, getDayOfWeek, getCurrentWeekRange } from '../../src/lib';
+import { getDateRange, getDayOfWeek, getCurrentWeekRange, getSecondsBetweenDates } from '../../src/lib';
 import { TimeSpan } from '../../src/types/timespan';
 
 describe('getDateRange', () => {
@@ -78,7 +78,7 @@ describe('Date Utility Functions', () => {
   });
 
   describe('getDayOfWeek', () => {
-    it('should return the correct day of the week for given dates', () => {
+    it('should return the correct long day of the week for given dates', () => {
       const days = [
         { date: '2025-03-16', expected: 'Sunday' },
         { date: '2025-03-17', expected: 'Monday' },
@@ -90,8 +90,36 @@ describe('Date Utility Functions', () => {
       ];
 
       for (const { date, expected } of days) {
-        expect(getDayOfWeek(new Date(`${date}T00:00:00.000Z`))).toBe(expected);
+        expect(getDayOfWeek(new Date(`${date}T00:00:00.000Z`)).long).toBe(expected);
       }
+    });
+
+    it('should return the correct short day of the week for given dates', () => {
+      const days = [
+        { date: '2025-03-23', expected: 'Sun' },
+        { date: '2025-03-24', expected: 'Mon' },
+        { date: '2025-03-25', expected: 'Tue' },
+        { date: '2025-03-26', expected: 'Wed' },
+        { date: '2025-03-27', expected: 'Thur' },
+        { date: '2025-03-28', expected: 'Fri' },
+        { date: '2025-03-29', expected: 'Sat' }
+      ];
+
+      for (const { date, expected } of days) {
+        expect(getDayOfWeek(new Date(`${date}T00:00:00.000Z`)).short).toBe(expected);
+      }
+    });
+  });
+  describe('getSecondsBetweenDates', () => {
+    it('should return 0 when dates are the same', () => {
+      const date = new Date('2025-05-22T12:00:00Z');
+      expect(getSecondsBetweenDates(date, date)).toBe(0);
+    });
+
+    it('should return secondsRead of the given dates', () => {
+      const start = new Date('2025-05-20T12:00:00Z');
+      const end = new Date('2025-05-20T12:30:00Z');
+      expect(getSecondsBetweenDates(start, end)).toBe(1800);
     });
   });
 });
