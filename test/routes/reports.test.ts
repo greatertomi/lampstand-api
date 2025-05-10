@@ -251,12 +251,12 @@ describe('Testing the reading log route', () => {
             date: '2025-01-09'
           },
           {
-            secondsRead: 3000,
+            secondsRead: 1800,
             label: 'Fri',
             date: '2025-01-10'
           },
           {
-            secondsRead: 0,
+            secondsRead: 1200,
             label: 'Sat',
             date: '2025-01-11'
           }
