@@ -28,6 +28,10 @@ export const getDateRange = (timespan: TimeSpan): { start: Date; end: Date } | n
 export const getCurrentWeekRange = (date?: string | Date) => {
   const inputDate = date ? new Date(date) : new Date();
 
+  if (Number.isNaN(inputDate.getTime())) {
+    return { start: null, end: null };
+  }
+
   const utcDate = new Date(
     Date.UTC(inputDate.getUTCFullYear(), inputDate.getUTCMonth(), inputDate.getUTCDate())
   );

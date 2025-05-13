@@ -1,4 +1,9 @@
-import { getDateRange, getDayOfWeek, getCurrentWeekRange, getSecondsBetweenDates } from '../../src/lib';
+import {
+  getCurrentWeekRange,
+  getDateRange,
+  getDayOfWeek,
+  getSecondsBetweenDates
+} from '../../src/lib';
 import { TimeSpan } from '../../src/types/timespan';
 
 describe('getDateRange', () => {
@@ -74,6 +79,14 @@ describe('Date Utility Functions', () => {
       expect(start.toISOString().split('T')[0]).toBe('2024-12-22');
 
       expect(end.toISOString().split('T')[0]).toBe('2024-12-28');
+    });
+
+    it('should return null', () => {
+      const date = 'not-a-date';
+      const { start, end } = getCurrentWeekRange(date);
+
+      expect(start).toBeNull();
+      expect(end).toBeNull();
     });
   });
 
