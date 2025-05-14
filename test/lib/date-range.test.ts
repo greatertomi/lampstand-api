@@ -1,6 +1,10 @@
-import { getDateRange, getDayOfWeek, getCurrentWeekRange } from '../../src/lib';
+import {
+  getCurrentWeekRange,
+  getDateRange,
+  getDayOfWeek,
+  getSecondsBetweenDates
+} from '../../src/lib';
 import { TimeSpan } from '../../src/types/timespan';
-
 
 describe('getDateRange', () => {
   const mockDate = new Date('2024-01-15T15:30:25.000Z');
@@ -67,10 +71,27 @@ describe('Date Utility Functions', () => {
 
       expect(end.toISOString().split('T')[0]).toBe('2025-03-22');
     });
+
+    it('should calculate the start and end of the week for a provided date', () => {
+      const date = '2024-12-25';
+      const { start, end } = getCurrentWeekRange(date);
+
+      expect(start.toISOString().split('T')[0]).toBe('2024-12-22');
+
+      expect(end.toISOString().split('T')[0]).toBe('2024-12-28');
+    });
+
+    it('should return null', () => {
+      const date = 'not-a-date';
+      const { start, end } = getCurrentWeekRange(date);
+
+      expect(start).toBeNull();
+      expect(end).toBeNull();
+    });
   });
 
   describe('getDayOfWeek', () => {
-    it('should return the correct day of the week for given dates', () => {
+    it('should return the correct long day of the week for given dates', () => {
       const days = [
         { date: '2025-03-16', expected: 'Sunday' },
         { date: '2025-03-17', expected: 'Monday' },
@@ -78,12 +99,40 @@ describe('Date Utility Functions', () => {
         { date: '2025-03-19', expected: 'Wednesday' },
         { date: '2025-03-20', expected: 'Thursday' },
         { date: '2025-03-21', expected: 'Friday' },
-        { date: '2025-03-22', expected: 'Saturday' },
+        { date: '2025-03-22', expected: 'Saturday' }
       ];
 
       for (const { date, expected } of days) {
-        expect(getDayOfWeek(new Date(`${date}T00:00:00.000Z`))).toBe(expected);
+        expect(getDayOfWeek(new Date(`${date}T00:00:00.000Z`)).long).toBe(expected);
       }
+    });
+
+    it('should return the correct short day of the week for given dates', () => {
+      const days = [
+        { date: '2025-03-23', expected: 'Sun' },
+        { date: '2025-03-24', expected: 'Mon' },
+        { date: '2025-03-25', expected: 'Tue' },
+        { date: '2025-03-26', expected: 'Wed' },
+        { date: '2025-03-27', expected: 'Thur' },
+        { date: '2025-03-28', expected: 'Fri' },
+        { date: '2025-03-29', expected: 'Sat' }
+      ];
+
+      for (const { date, expected } of days) {
+        expect(getDayOfWeek(new Date(`${date}T00:00:00.000Z`)).short).toBe(expected);
+      }
+    });
+  });
+  describe('getSecondsBetweenDates', () => {
+    it('should return 0 when dates are the same', () => {
+      const date = new Date('2025-05-22T12:00:00Z');
+      expect(getSecondsBetweenDates(date, date)).toBe(0);
+    });
+
+    it('should return secondsRead of the given dates', () => {
+      const start = new Date('2025-05-20T12:00:00Z');
+      const end = new Date('2025-05-20T12:30:00Z');
+      expect(getSecondsBetweenDates(start, end)).toBe(1800);
     });
   });
 });

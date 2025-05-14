@@ -25,12 +25,21 @@ export const getDateRange = (timespan: TimeSpan): { start: Date; end: Date } | n
   return { start, end };
 };
 
-export const getCurrentWeekRange = () => {
-  const now = new Date();
-  const dayOfWeek = now.getUTCDay();
+export const getCurrentWeekRange = (date?: string | Date) => {
+  const inputDate = date ? new Date(date) : new Date();
 
-  const startOfWeek = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-  startOfWeek.setUTCDate(startOfWeek.getUTCDate() - (dayOfWeek === 0 ? 6 : dayOfWeek));
+  if (Number.isNaN(inputDate.getTime())) {
+    return { start: null, end: null };
+  }
+
+  const utcDate = new Date(
+    Date.UTC(inputDate.getUTCFullYear(), inputDate.getUTCMonth(), inputDate.getUTCDate())
+  );
+
+  const dayOfWeek = utcDate.getUTCDay();
+  const startOfWeek = new Date(utcDate);
+  startOfWeek.setUTCDate(utcDate.getUTCDate() - dayOfWeek);
+  startOfWeek.setUTCHours(0, 0, 0, 0);
 
   const endOfWeek = new Date(startOfWeek);
   endOfWeek.setUTCDate(startOfWeek.getUTCDate() + 6);
@@ -39,7 +48,17 @@ export const getCurrentWeekRange = () => {
   return { start: startOfWeek, end: endOfWeek };
 };
 
-export const getDayOfWeek = (date: Date): string => {
-  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  return days[date.getUTCDay()];
+export const getDayOfWeek = (date: Date): { long: string; short: string } => {
+  const longDays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const shortDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat'];
+
+  const dayIndex = date.getUTCDay();
+  return {
+    long: longDays[dayIndex],
+    short: shortDays[dayIndex]
+  };
+};
+
+export const getSecondsBetweenDates = (start: Date, end: Date): number => {
+  return Math.round((end.getTime() - start.getTime()) / 1000);
 };
