@@ -33,5 +33,8 @@ export const reportValidationRules = [
 ];
 
 export const weeklyActivitiesValidationRules = [
-  query('date').optional().isDate().withMessage('Date must be a valid date in YYYY-MM-DD format.')
+  query('date')
+    .optional()
+    .matches(/^\d{4}-\d{2}-\d{2}$/)
+    .withMessage('Date must be a valid date in YYYY-MM-DD format.')
 ];
