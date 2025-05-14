@@ -1,12 +1,12 @@
 import { BookEntity, ReadingGoal, ReadingLogEntity } from '../../src/entities';
-import { JwtHelper, getCurrentWeekRange, getDayOfWeek } from '../../src/lib';
+import { JwtHelper, getCurrentWeekRange, getDayOfWeek, getSecondsBetweenDates } from '../../src/lib';
 import { HTTP_STATUS } from '../../src/lib/responses';
 import { JwtPayload } from '../../src/types';
 import handleGetRepository from '../../src/utils/handleGetRepository';
 import { TestFactory } from '../factory';
 import { testBook, testUser } from './test-data';
 
-type ReadingLogData = Pick<ReadingLogEntity, 'secondsRead' | 'startTime' | 'endTime'> & {
+type ReadingLogData = Pick<ReadingLogEntity,  | 'startTime' | 'endTime'> & {
   userId: string;
   bookId: string;
 };
@@ -60,7 +60,6 @@ export const createTestReadingLogs = async (readingLogs: ReadingLogData[]) => {
     book: { id: log.bookId },
     startTime: log.startTime,
     endTime: log.endTime,
-    secondsRead: log.secondsRead
   }));
   return readingLogRepository.save(logsToSave);
 };
@@ -74,7 +73,8 @@ export const createTestActivityStreaks = async (
 
   for (const log of readingLogs) {
     const dateStr = log.startTime.toISOString().split('T')[0];
-    streakMap.set(dateStr, (streakMap.get(dateStr) || 0) + log.secondsRead);
+    const duration = getSecondsBetweenDates(log.startTime, log.endTime);
+    streakMap.set(dateStr, (streakMap.get(dateStr) || 0) + duration);
   }
 
   const streaks = [];

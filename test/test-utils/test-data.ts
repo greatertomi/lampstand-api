@@ -25,42 +25,36 @@ export const getMockedReadingLogs = (user: JwtPayload, book: BookEntity) => {
     {
       userId: user.id,
       bookId: book.id,
-      secondsRead: 3600,
       startTime: now,
       endTime: now
     },
     {
       userId: user.id,
       bookId: book.id,
-      secondsRead: 1800,
       startTime: new Date(now.getTime() - 86_400_000),
       endTime: new Date(now.getTime() - 86_400_000)
     },
     {
       userId: user.id,
       bookId: book.id,
-      secondsRead: 1800,
       startTime: new Date(now.getTime() - 432_000_000),
       endTime: new Date(now.getTime() - 432_000_000)
     },
     {
       userId: user.id,
       bookId: book.id,
-      secondsRead: 1800,
       startTime: new Date(now.getTime() - 691_200_000),
       endTime: new Date(now.getTime() - 691_200_000)
     },
     {
       userId: user.id,
       bookId: book.id,
-      secondsRead: 1800,
       startTime: new Date(now.getTime() - 2_505_600_000),
       endTime: new Date(now.getTime() - 2_505_600_000)
     },
     {
       userId: user.id,
       bookId: book.id,
-      secondsRead: 2700,
       startTime: new Date(now.getTime() - 2_678_400_000),
       endTime: new Date(now.getTime() - 2_678_400_000)
     }
@@ -143,7 +137,6 @@ export const getCurrentWeekReadingLogs = (user: JwtPayload, book: BookEntity) =>
     logs.push({
       userId: user.id,
       bookId: book.id,
-      secondsRead: Math.floor(Math.random() * (3600 - 1800 + 1) + 1800),
       startTime: readingStartDate,
       endTime: readingEndDate
     });
@@ -157,49 +150,42 @@ export const pastReadingLogs = (user: JwtPayload, book: BookEntity) => {
     {
       userId: user.id,
       bookId: book.id,
-      secondsRead: 900,
       startTime: new Date('2025-01-04T06:15:00.000Z'),
       endTime: new Date('2025-01-04T06:30:00.000Z')
     },
     {
       userId: user.id,
       bookId: book.id,
-      secondsRead: 2700,
       startTime: new Date('2025-01-05T12:00:00.000Z'),
       endTime: new Date('2025-01-05T12:45:00.000Z')
     },
     {
       userId: user.id,
       bookId: book.id,
-      secondsRead: 3600,
       startTime: new Date('2025-01-06T18:20:00.000Z'),
       endTime: new Date('2025-01-06T19:20:00.000Z')
     },
     {
       userId: user.id,
       bookId: book.id,
-      secondsRead: 5400,
       startTime: new Date('2025-01-07T22:10:00.000Z'),
       endTime: new Date('2025-01-07T23:40:00.000Z')
     },
     {
       userId: user.id,
       bookId: book.id,
-      secondsRead: 750,
       startTime: new Date('2025-01-08T09:05:15.000Z'),
       endTime: new Date('2025-01-08T09:17:45.000Z')
     },
     {
       userId: user.id,
       bookId: book.id,
-      secondsRead: 4200,
       startTime: new Date('2025-01-09T14:50:00.000Z'),
       endTime: new Date('2025-01-09T16:00:00.000Z')
     },
     {
       userId: user.id,
       bookId: book.id,
-      secondsRead: 3000,
       startTime: new Date('2025-01-10T23:30:00.000Z'),
       endTime: new Date('2025-01-11T00:20:00.000Z')
     }
@@ -219,7 +205,6 @@ export const getCurrentDateReadingLogs = (user, book) => {
     logs.push({
       userId: user.id,
       bookId: book.id,
-      secondsRead: Math.floor(Math.random() * (3600 - 1800 + 1) + 1800),
       startTime: readingStartDate.toISOString(),
       endTime: readingEndDate.toISOString()
     });

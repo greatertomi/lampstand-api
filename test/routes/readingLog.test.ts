@@ -51,7 +51,6 @@ describe('Testing the reading log route', () => {
         bookId: book.id,
         startTime: expect.any(String),
         endTime: expect.any(String),
-        secondsRead: expect.any(Number)
       });
     });
 
@@ -183,13 +182,13 @@ describe('Testing the reading log route', () => {
             bookTitle: expect.any(String),
             startTime: expect.any(String),
             endTime: expect.any(String),
-            secondsRead: expect.any(Number)
           })
         ])
       });
       expect(response.body.data.length).toBe(6);
     });
     it('should get reading logs for today', async () => {
+      const today = new Date().toISOString().slice(0, 10);
       const readingLogs = getMockedReadingLogs(user, book);
       await createTestReadingLogs(readingLogs);
 
@@ -202,10 +201,18 @@ describe('Testing the reading log route', () => {
         message: 'Reading logs fetched successfully',
         data: expect.arrayContaining([
           expect.objectContaining({
-            secondsRead: 3600
+            id: expect.any(String),
+            bookId: book.id,
+            bookTitle: expect.any(String),
+            startTime: expect.any(String),
+            endTime: expect.any(String),
           })
         ])
       });
+      for (const log of response.body.data) {
+        expect(log.startTime.slice(0, 10)).toBe(today);
+        expect(log.endTime.slice(0, 10)).toBe(today);
+      }
       expect(response.body.data.length).toBe(1);
     });
     it('should get reading logs for last 7 days', async () => {
@@ -217,13 +224,18 @@ describe('Testing the reading log route', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(HTTP_STATUS.OK);
-      expect(response.body).toMatchObject({
-        message: 'Reading logs fetched successfully',
-        data: expect.arrayContaining([
-          expect.objectContaining({ secondsRead: 3600 }),
-          expect.objectContaining({ secondsRead: 1800 })
+      expect(response.body.message).toBe('Reading logs fetched successfully');
+      expect(response.body.data).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: expect.any(String),
+            bookId: book.id,
+            bookTitle: expect.any(String),
+            startTime: expect.any(String),
+            endTime: expect.any(String),
+          })
         ])
-      });
+      );
       expect(response.body.data.length).toBe(3);
     });
 
@@ -236,13 +248,18 @@ describe('Testing the reading log route', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(HTTP_STATUS.OK);
-      expect(response.body).toMatchObject({
-        message: 'Reading logs fetched successfully',
-        data: expect.arrayContaining([
-          expect.objectContaining({ secondsRead: 3600 }),
-          expect.objectContaining({ secondsRead: 1800 })
+      expect(response.body.message).toBe('Reading logs fetched successfully');
+      expect(response.body.data).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: expect.any(String),
+            bookId: book.id,
+            bookTitle: expect.any(String),
+            startTime: expect.any(String),
+            endTime: expect.any(String),
+          })
         ])
-      });
+      );
       expect(response.body.data.length).toBe(5);
     });
 

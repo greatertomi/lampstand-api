@@ -21,14 +21,12 @@ export const logReadingEvent = async (req: IExtendedRequest, res: Response) => {
 
   const start = new Date(startTime);
   const end = new Date(endTime);
-  const secondsRead = Math.round((end.getTime() - start.getTime()) / 1000);
 
   const newReadingLog = readingLogRepository.create({
     user: { id: req.user.id },
     book: { id: bookId },
     startTime: start,
-    endTime: end,
-    secondsRead
+    endTime: end
   });
 
   await readingLogRepository.save(newReadingLog);
@@ -39,8 +37,7 @@ export const logReadingEvent = async (req: IExtendedRequest, res: Response) => {
       id: newReadingLog.id,
       bookId: newReadingLog.book.id,
       startTime: newReadingLog.startTime,
-      endTime: newReadingLog.endTime,
-      secondsRead: newReadingLog.secondsRead
+      endTime: newReadingLog.endTime
     }
   });
 };
@@ -75,8 +72,7 @@ export const getUserReadingLogs = async (req: IExtendedRequest, res: Response): 
       bookId: log.book.id,
       bookTitle: log.book.title,
       startTime: log.startTime,
-      endTime: log.endTime,
-      secondsRead: log.secondsRead
+      endTime: log.endTime
     }))
   });
 };
