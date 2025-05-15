@@ -32,7 +32,7 @@ export const reportValidationRules = [
     })
 ];
 
-export const validateDailyReadingDate = [
+export const dailyActivitiesValidationRule = [
   query('date')
     .optional()
     .matches(/^\d{4}-\d{2}-\d{2}$/)

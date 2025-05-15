@@ -230,6 +230,69 @@ describe('Testing the reading log route', () => {
     });
   });
 
+  describe('GET/reports/daily-reading-activities', () => {
+    it('should return empty array when the use has not read today', async () => {
+      const response = await factory.app
+        .get(dailyActivityReport)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(response.body).toHaveLength(24);
+      const secondsRead = response.body.map((item: { value: string }) => Number(item.value) === 0);
+      expect(secondsRead).toBeTruthy();
+    });
+
+    it('should return data for a selected day', async () => {
+      const readingLogs = pastReadingLogs(user, book);
+      await createTestReadingLogs(readingLogs);
+      const response = await factory.app
+        .get(dailyActivityReport)
+        .set('Authorization', `Bearer ${token}`)
+        .query({ date: '2025-01-08' });
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(response.body).toHaveLength(24);
+      response.body.map((item: { label: string; value: string }) => {
+        expect(item).toHaveProperty('label');
+        expect(item).toHaveProperty('secondsRead');
+      });
+    });
+
+    it('should return data for current date if no date was specified', async () => {
+      const readingLogs = pastReadingLogs(user, book);
+      await createTestReadingLogs(readingLogs);
+      const response = await factory.app
+        .get(dailyActivityReport)
+        .set('Authorization', `Bearer ${token}`);
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(response.body).toHaveLength(24);
+      const nonZeroValues = response.body.filter(
+        (item: { secondsRead: string }) => Number(item.secondsRead) > 0
+      );
+      expect(nonZeroValues).toHaveLength(3);
+    });
+
+    it('should return errors for invalid date format', async () => {
+      const invalidDate = '2025-01-0';
+      const readingLogs = pastReadingLogs(user, book);
+      await createTestReadingLogs(readingLogs);
+      const response = await factory.app
+        .get(dailyActivityReport)
+        .set('Authorization', `Bearer ${token}`)
+        .query({ date: invalidDate });
+      expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(response.body.errors).toMatchObject([
+        {
+          message: 'Date must be in YYYY-MM-DD format.',
+          field: 'date'
+        },
+        {
+          message: 'Not a valid date',
+          field: 'date'
+        }
+      ]);
+    });
+  });
+
   describe('GET /reports/weekly-reading-activities', () => {
     it('should return the reading summary of the week if date is provided', async () => {
       const readingLogs = pastReadingLogs(user, book);
