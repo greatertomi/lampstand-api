@@ -1,6 +1,13 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { deleteBook, getUserBooks, saveBook, saveManyBooks, updateBook } from '../controllers';
+import {
+  deleteAllBooks,
+  deleteBook,
+  getUserBooks,
+  saveBook,
+  saveManyBooks,
+  updateBook
+} from '../controllers';
 import {
   asyncMiddleware,
   bookUploadMiddleware,
@@ -39,6 +46,7 @@ router.put(
 );
 
 router.delete('/delete/:id', checkJwt, asyncMiddleware(deleteBook));
+router.delete('/deleteAll', checkJwt, asyncMiddleware(deleteAllBooks));
 
 router.post(
   '/saveMultiple',

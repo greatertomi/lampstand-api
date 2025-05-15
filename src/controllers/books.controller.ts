@@ -1,6 +1,8 @@
 import { Response } from 'express';
+import { Repository } from 'typeorm';
 import { BookEntity, BookFormat } from '../entities';
 import { HTTP_STATUS, NotFoundError } from '../lib/responses';
+import { logger } from '../services';
 import { IExtendedRequest } from '../types';
 import { EpubProcessor, deleteCloudinaryAsset } from '../utils';
 import handleGetRepository from '../utils/handleGetRepository';
@@ -98,6 +100,31 @@ export const deleteBook = async (req: IExtendedRequest, res: Response) => {
 
   return res.status(HTTP_STATUS.OK).json({
     message: 'Book deleted successfully'
+  });
+};
+
+export const deleteAllBooks = async (req: IExtendedRequest, res: Response) => {
+  const ids: string[] = JSON.parse(req.body.ids);
+  const bookRepository: Repository<BookEntity> = handleGetRepository(BookEntity);
+
+  await Promise.all(
+    ids.map(async (id: string) => {
+      const book = await bookRepository.findOne({
+        where: { id, owner: { id: req.user.id } }
+      });
+
+      if (!book) {
+        logger.warn('Book not found or you do not have permission to delete it');
+        return;
+      }
+
+      await deleteCloudinaryAsset(book.url);
+      await bookRepository.delete(book.id);
+    })
+  );
+
+  return res.status(HTTP_STATUS.OK).json({
+    message: 'Books deleted successfully'
   });
 };
 
