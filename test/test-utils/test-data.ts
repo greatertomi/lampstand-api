@@ -16,7 +16,62 @@ export const testBook = {
   title: 'Test Book',
   author: 'Test Author',
   format: BookFormat.PDF,
-  cover: 'data:image/jpeg;base64,9j4j93'
+  cover: 'data:image/jpeg;base64,9j4j91'
+};
+
+export const createBackendbooks = (user: JwtPayload) => {
+  return [
+    {
+      id: '3fa85f64-5717-4562-b3fc-2b963f66afa6',
+      owner: user.id,
+      title: 'Test Book One',
+      author: 'Author One',
+      format: BookFormat.PDF,
+      cover: 'data:image/jpeg;base64,9j4j91',
+      size: 1000,
+      url: 'http://test-book.com'
+    },
+    {
+      id: '6c39f54e-bb82-4ac5-8a4f-3b2c3f88f2a4',
+      title: 'Test Book Two',
+      owner: user.id,
+      author: 'Author Two',
+      format: BookFormat.PDF,
+      cover: 'data:image/jpeg;base64,9j4j97',
+      size: 1100,
+      url: 'http://test2-book.com'
+    },
+    {
+      id: '857ec110-21de-4b9f-9641-18f5ebfc171f',
+      owner: user.id,
+      title: 'Test Book Three',
+      author: 'Author Three',
+      format: BookFormat.PDF,
+      cover: 'data:image/jpeg;base64,9j4j93',
+      size: 1200,
+      url: 'http://test1-book.com'
+    },
+    {
+      id: 'd7f38b44-4c1f-4fd6-bc1f-4c2f6d59eb35',
+      owner: user.id,
+      title: 'Test Book Four',
+      author: 'Author Four',
+      format: BookFormat.PDF,
+      cover: 'data:image/jpeg;base64,9j6j90',
+      size: 1003,
+      url: 'http://tester-book.com'
+    },
+    {
+      id: '2e4e5bb3-1e0c-41b7-8c88-f0f8a6f6a8ff',
+      owner: user.id,
+      title: 'Test Book Five',
+      author: 'Author Five',
+      format: BookFormat.PDF,
+      cover: 'data:image/jpeg;base64,9j9j93',
+      size: 1020,
+      url: 'http://tests-book.com'
+    }
+  ];
 };
 
 export const getMockedReadingLogs = (user: JwtPayload, book: BookEntity) => {

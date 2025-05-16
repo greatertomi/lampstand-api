@@ -51,6 +51,7 @@ router.delete(
   '/deleteMany',
   checkJwt,
   deleteManyBooksValidationRules,
+  validate,
   asyncMiddleware(deleteManyBooks)
 );
 

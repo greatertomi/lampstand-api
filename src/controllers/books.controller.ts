@@ -104,7 +104,7 @@ export const deleteBook = async (req: IExtendedRequest, res: Response) => {
 };
 
 export const deleteManyBooks = async (req: IExtendedRequest, res: Response) => {
-  const ids: string[] = JSON.parse(req.body.ids);
+  const ids: string[] = req.body.ids;
   const bookRepository: Repository<BookEntity> = handleGetRepository(BookEntity);
 
   const booksToDelete: BookEntity[] = await bookRepository.find({
@@ -115,7 +115,7 @@ export const deleteManyBooks = async (req: IExtendedRequest, res: Response) => {
   });
 
   if (booksToDelete.length === 0) {
-    return logger.warn('Books not found or you do not have permission to delete them');
+    logger.info('Book not found or you do not have permission to delete it');
   }
 
   const bookToDeleteIds = booksToDelete.map((book: BookEntity) => book.id);

@@ -399,6 +399,58 @@ describe('Testing the books route', () => {
     });
   });
 
+  describe('[DELETE] /deleteMany', () => {
+    const deleteManyRoute = '/books/deleteMany';
+
+    it('should return a 401', async () => {
+      const response = await factory.app.delete(`${deleteManyRoute}`);
+
+      expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
+      expect(response.body).toMatchObject({ errors: [{ message: unAuthenticatedMessage }] });
+    });
+
+    it('should return errors when ids are not provided', async () => {
+      const { user: randomUser } = await createTestUser(factory);
+      const token = await getTestAuthToken(randomUser);
+
+      const response = await factory.app
+        .delete(`${deleteManyRoute}`)
+        .set('Authorization', `Bearer ${token}`);
+
+      expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(response.body.errors).toMatchObject([
+        {
+          message: 'Invalid value',
+          field: 'ids'
+        },
+        {
+          message: 'Ids must be an array with at least one element',
+          field: 'ids'
+        }
+      ]);
+    });
+
+    it('should return errors when ids is empty', async () => {
+      const { user: randomUser } = await createTestUser(factory);
+      const token = await getTestAuthToken(randomUser);
+
+      const response = await factory.app
+        .delete(`${deleteManyRoute}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          ids: []
+        });
+
+      expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(response.body.errors).toMatchObject([
+        {
+          message: 'Ids must be an array with at least one element',
+          field: 'ids'
+        }
+      ]);
+    });
+  });
+
   describe('[PUT] /books/update/:id', () => {
     it('should update a book successfully', async () => {
       const { user } = await createTestUser(factory);

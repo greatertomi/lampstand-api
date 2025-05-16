@@ -64,6 +64,21 @@ export const createTestReadingLogs = async (readingLogs: ReadingLogData[]) => {
   return readingLogRepository.save(logsToSave);
 };
 
+export const createTestBackendBooks = async (books) => {
+  const bookEntityRepository = handleGetRepository(BookEntity);
+  const booksToSave = books.map((book) => ({
+    id: book.id,
+    title: book.title,
+    author: book.author,
+    format: book.format,
+    cover: book.cover,
+    size: book.size,
+    url: book.url,
+    owner: { id: book.owner.id }
+  }));
+  return bookEntityRepository.save(booksToSave);
+};
+
 export const createTestActivityStreaks = async (
   readingLogs: ReadingLogData[],
   userGoal: number

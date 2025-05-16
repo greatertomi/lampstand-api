@@ -120,8 +120,9 @@ export const saveMultipleBooksValidationRules = [
 ];
 
 export const deleteManyBooksValidationRules = [
-  body('id').isArray({ min: 1 }).withMessage('Ids must be an array with at least one element'),
-  body('id.*')
+  body('ids').exists({ checkNull: true, checkFalsy: true }),
+  body('ids').isArray({ min: 1 }).withMessage('Ids must be an array with at least one element'),
+  body('ids.*')
     .isString()
     .withMessage('Each id must be a string')
     .bail()
