@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import multer from 'multer';
 import {
-  deleteAllBooks,
   deleteBook,
+  deleteManyBooks,
   getUserBooks,
   saveBook,
   saveManyBooks,
@@ -12,6 +12,7 @@ import {
   asyncMiddleware,
   bookUploadMiddleware,
   checkJwt,
+  deleteManyBooksValidationRules,
   multipleBooksUploadMiddleware,
   saveBookValidationRules,
   saveMultipleBooksValidationRules,
@@ -46,7 +47,12 @@ router.put(
 );
 
 router.delete('/delete/:id', checkJwt, asyncMiddleware(deleteBook));
-router.delete('/deleteAll', checkJwt, asyncMiddleware(deleteAllBooks));
+router.delete(
+  '/deleteMany',
+  checkJwt,
+  deleteManyBooksValidationRules,
+  asyncMiddleware(deleteManyBooks)
+);
 
 router.post(
   '/saveMultiple',

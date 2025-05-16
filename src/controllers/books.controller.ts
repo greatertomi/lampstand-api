@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { BookEntity, BookFormat } from '../entities';
 import { HTTP_STATUS, NotFoundError } from '../lib/responses';
 import { logger } from '../services';
@@ -103,28 +103,33 @@ export const deleteBook = async (req: IExtendedRequest, res: Response) => {
   });
 };
 
-export const deleteAllBooks = async (req: IExtendedRequest, res: Response) => {
+export const deleteManyBooks = async (req: IExtendedRequest, res: Response) => {
   const ids: string[] = JSON.parse(req.body.ids);
   const bookRepository: Repository<BookEntity> = handleGetRepository(BookEntity);
 
-  await Promise.all(
-    ids.map(async (id: string) => {
-      const book = await bookRepository.findOne({
-        where: { id, owner: { id: req.user.id } }
-      });
+  const booksToDelete: BookEntity[] = await bookRepository.find({
+    where: {
+      id: In(ids),
+      owner: { id: req.user.id }
+    }
+  });
 
-      if (!book) {
-        logger.warn('Book not found or you do not have permission to delete it');
-        return;
-      }
+  if (booksToDelete.length === 0) {
+    return logger.warn('Books not found or you do not have permission to delete them');
+  }
 
-      await deleteCloudinaryAsset(book.url);
-      await bookRepository.delete(book.id);
-    })
-  );
+  const bookToDeleteIds = booksToDelete.map((book: BookEntity) => book.id);
+  const notFoundIdsCount = ids.filter((id) => !bookToDeleteIds.includes(id));
+
+  await Promise.all(booksToDelete.map((book: BookEntity) => deleteCloudinaryAsset(book.url)));
+  await bookRepository.delete(bookToDeleteIds);
 
   return res.status(HTTP_STATUS.OK).json({
-    message: 'Books deleted successfully'
+    message: 'Books deleted successfully',
+    data: {
+      deletedCount: bookToDeleteIds.length,
+      notFoundCount: notFoundIdsCount.length
+    }
   });
 };
 
