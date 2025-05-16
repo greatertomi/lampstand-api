@@ -176,7 +176,6 @@ describe('Testing the reading log route', () => {
           userId: user.id,
           bookId: book.id,
           date: yesterdayStr,
-          secondsRead: Math.floor(Math.random() * (3600 - 1800 + 1) + 1800),
           startTime: readingStartDate,
           endTime: readingEndDate
         }
