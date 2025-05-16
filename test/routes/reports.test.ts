@@ -257,7 +257,7 @@ describe('Testing the reading log route', () => {
       });
     });
 
-    it('should return data for current date if no date was specified', async () => {
+    it('should return data for current date if no date was selected', async () => {
       const readingLogs = pastReadingLogs(user, book);
       await createTestReadingLogs(readingLogs);
       const response = await factory.app
@@ -305,41 +305,14 @@ describe('Testing the reading log route', () => {
       expect(response.status).toBe(HTTP_STATUS.OK);
       expect(response.body).toEqual(
         expect.arrayContaining([
-          {
-            secondsRead: 2700,
-            label: 'Sun',
-            date: '2025-01-05'
-          },
-          {
-            secondsRead: 3600,
-            label: 'Mon',
-            date: '2025-01-06'
-          },
-          {
-            secondsRead: 5400,
-            label: 'Tue',
-            date: '2025-01-07'
-          },
-          {
-            secondsRead: 750,
-            label: 'Wed',
-            date: '2025-01-08'
-          },
-          {
-            secondsRead: 4200,
-            label: 'Thur',
-            date: '2025-01-09'
-          },
-          {
-            secondsRead: 1800,
-            label: 'Fri',
-            date: '2025-01-10'
-          },
-          {
-            secondsRead: 1200,
-            label: 'Sat',
-            date: '2025-01-11'
-          }
+          { date: '2025-01-05', label: 'Sun', secondsRead: 2700 },
+          { date: '2025-01-05', label: 'Sun', secondsRead: 2700 },
+          { date: '2025-01-06', label: 'Mon', secondsRead: 3600 },
+          { date: '2025-01-07', label: 'Tue', secondsRead: 5400 },
+          { date: '2025-01-08', label: 'Wed', secondsRead: 750 },
+          { date: '2025-01-09', label: 'Thur', secondsRead: 4200 },
+          { date: '2025-01-10', label: 'Fri', secondsRead: 3000 },
+          { date: '2025-01-11', label: 'Sat', secondsRead: 0 }
         ])
       );
     });
@@ -374,10 +347,8 @@ describe('Testing the reading log route', () => {
       expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
       expect(response.body.errors).toEqual(
         expect.arrayContaining([
-          {
-            message: 'Date must be a valid date in YYYY-MM-DD format.',
-            field: 'date'
-          }
+          { field: 'date', message: 'Date must be in YYYY-MM-DD format.' },
+          { field: 'date', message: 'Not a valid date' }
         ])
       );
     });

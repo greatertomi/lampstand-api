@@ -5,12 +5,11 @@ import {
   getDailyReadingActivityData
 } from '../controllers';
 import {
+  activitiesValidationRule,
   asyncMiddleware,
   checkJwt,
-  dailyActivitiesValidationRule,
   reportValidationRules,
-  validate,
-  weeklyActivitiesValidationRules
+  validate
 } from '../middleware';
 
 const router = Router();
@@ -27,7 +26,7 @@ router.get('/current-streaks', checkJwt, validate, asyncMiddleware(getCurrentStr
 router.get(
   '/daily-reading-activities',
   checkJwt,
-  dailyActivitiesValidationRule,
+  activitiesValidationRule,
   validate,
   asyncMiddleware(getDailyReadingActivityData)
 );
@@ -35,7 +34,7 @@ router.get(
 router.get(
   '/weekly-reading-activities',
   checkJwt,
-  weeklyActivitiesValidationRules,
+  activitiesValidationRule,
   validate,
   asyncMiddleware(getWeeklyReadingActivities)
 );
