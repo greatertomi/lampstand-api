@@ -18,7 +18,4 @@ export class ReadingLogEntity {
 
   @Column('timestamp')
   endTime: Date;
-
-  @Column('int')
-  secondsRead: number;
 }

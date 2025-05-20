@@ -26,14 +26,13 @@ export class ReadingLogSeeder implements Seeder {
       const user = usersWithBooks[Math.floor(Math.random() * usersWithBooks.length)];
       const book = user.books[Math.floor(Math.random() * user.books.length)];
       const startTime = faker.date.recent({ days: 90 });
-      const secondsRead = faker.number.int({ min: 900, max: 5400 });
-      const endTime = new Date(startTime.getTime() + secondsRead * 1000);
+      const duration = faker.number.int({ min: 900, max: 5400 });
+      const endTime = new Date(startTime.getTime() + duration * 1000);
       return readingLogRepository.create({
         user,
         book,
         startTime,
-        endTime,
-        secondsRead
+        endTime
       });
     });
 

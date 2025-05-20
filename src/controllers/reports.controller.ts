@@ -47,7 +47,8 @@ export const getActivityStreaks = async (req: IExtendedRequest, res: Response): 
 
   for (const log of userLogs) {
     const dateStr = log.startTime.toISOString().split('T')[0];
-    streakMap.set(dateStr, (streakMap.get(dateStr) || 0) + log.secondsRead);
+    const duration = getSecondsBetweenDates(log.startTime, log.endTime);
+    streakMap.set(dateStr, (streakMap.get(dateStr) || 0) + duration);
   }
 
   const streaks = [];
@@ -95,7 +96,8 @@ export const getCurrentStreaks = async (req: IExtendedRequest, res: Response) =>
   const readingByDate = new Map<string, number>();
   for (const log of readingLog) {
     const startDate = log.startTime.toISOString().split('T')[0];
-    readingByDate.set(startDate, (readingByDate.get(startDate) || 0) + log.secondsRead);
+    const duration = getSecondsBetweenDates(log.startTime, log.endTime);
+    readingByDate.set(startDate, (readingByDate.get(startDate) || 0) + duration);
   }
 
   for (const [date, secondsRead] of readingByDate.entries()) {
