@@ -124,7 +124,7 @@ export const deleteManyBooks = async (req: IExtendedRequest, res: Response) => {
   await Promise.all(booksToDelete.map((book: BookEntity) => deleteCloudinaryAsset(book.url)));
   await bookRepository.delete(bookToDeleteIds);
 
-  return res.status(HTTP_STATUS.OK).json({
+  return res.json({
     message: 'Books deleted successfully',
     data: {
       deletedCount: bookToDeleteIds.length,
@@ -171,7 +171,7 @@ export const saveManyBooks = async (req: IExtendedRequest, res: Response) => {
 
   const savedBooks = await bookRepository.save(newBooks);
 
-  res.status(HTTP_STATUS.OK).json({
+  res.json({
     message: 'Books saved successfully',
     data: savedBooks.map((book) => ({
       id: book.id,

@@ -120,6 +120,7 @@ export const saveMultipleBooksValidationRules = [
 ];
 
 export const deleteManyBooksValidationRules = [
+  // Todo: don't use deprecated method. Check for duplicate ids
   body('ids').exists({ checkNull: true, checkFalsy: true }),
   body('ids').isArray({ min: 1 }).withMessage('Ids must be an array with at least one element'),
   body('ids.*')
