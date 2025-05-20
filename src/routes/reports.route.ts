@@ -2,7 +2,8 @@ import { Router } from 'express';
 import {
   getActivityStreaks,
   getCurrentStreaks,
-  getDailyReadingActivityData
+  getDailyReadingActivityData,
+  getWeeklyReadingActivities
 } from '../controllers';
 import {
   activitiesValidationRule,
