@@ -1,5 +1,6 @@
 import { Response } from 'express';
 import { Between } from 'typeorm';
+import { endOfDay, parseISO, startOfDay } from 'date-fns';
 import { ReadingGoal, ReadingLogEntity } from '../entities';
 import { BadRequestError, HTTP_STATUS } from '../lib/responses';
 import { IExtendedRequest } from '../types';
@@ -178,10 +179,10 @@ export const getWeeklyReadingActivities = async (req: IExtendedRequest, res: Res
     const endTime = new Date(log.endTime);
 
     while (currentStart < endTime) {
-      const endOfDay = new Date(currentStart);
-      endOfDay.setHours(23, 59, 59, 999);
+      const endOfTheDay = new Date(currentStart);
+      endOfTheDay.setHours(23, 59, 59, 999);
 
-      const segmentEnd = endTime < endOfDay ? endTime : endOfDay;
+      const segmentEnd = endTime < endOfTheDay ? endTime : endOfTheDay;
       const duration = getSecondsBetweenDates(currentStart, segmentEnd);
       const dateStr = currentStart.toISOString().split('T')[0];
       readingDuration.set(dateStr, (readingDuration.get(dateStr) || 0) + duration);
@@ -204,4 +205,52 @@ export const getWeeklyReadingActivities = async (req: IExtendedRequest, res: Res
   }
 
   res.status(HTTP_STATUS.OK).json(weeklyData);
+};
+
+export const getDailyReadingActivityData = async (req: IExtendedRequest, res: Response) => {
+  const userId = req.user.id;
+  const { date } = req.query;
+  const selectedDate = parseISO((date as string) ?? new Date().toISOString().split('T')[0]);
+
+  const splitReadSecondsIntoHour = (readingLogs: ReadingLogEntity[]) => {
+    const hourlyReadings = Array.from({ length: 24 }, (_, hour) => ({
+      secondsRead: 0,
+      label: `${hour === 0 ? 12 : hour > 12 ? hour - 12 : hour}${hour < 12 ? 'am' : 'pm'}`
+    }));
+
+    for (const log of readingLogs) {
+      const startTime = new Date(log.startTime);
+      const endTime = new Date(log.endTime);
+
+      const totalTimeSpanInSeconds = (endTime.getTime() - startTime.getTime()) / 1000;
+      if (totalTimeSpanInSeconds <= 0) continue;
+
+      let currentTime = new Date(startTime);
+      while (currentTime < endTime) {
+        const currentHour = currentTime.getUTCHours();
+        const nextHourTime = new Date(currentTime);
+        nextHourTime.setUTCHours(currentHour + 1, 0, 0, 0);
+
+        const timeUntilNextHour = Math.min(endTime.getTime(), nextHourTime.getTime());
+        const secondsInThisHour = (timeUntilNextHour - currentTime.getTime()) / 1000;
+
+        hourlyReadings[currentHour].secondsRead += Math.round(secondsInThisHour);
+
+        currentTime = new Date(timeUntilNextHour);
+      }
+    }
+
+    return hourlyReadings;
+  };
+
+  const readingLogRepository = handleGetRepository(ReadingLogEntity);
+  const selectedDateReadingLogs = await readingLogRepository.find({
+    where: {
+      user: { id: userId },
+      startTime: Between(startOfDay(selectedDate), endOfDay(selectedDate)),
+      endTime: Between(startOfDay(selectedDate), endOfDay(selectedDate))
+    }
+  });
+
+  res.json(splitReadSecondsIntoHour(selectedDateReadingLogs));
 };

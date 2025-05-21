@@ -188,6 +188,13 @@ export const pastReadingLogs = (user: JwtPayload, book: BookEntity) => {
       bookId: book.id,
       startTime: new Date('2025-01-10T23:30:00.000Z'),
       endTime: new Date('2025-01-11T00:20:00.000Z')
+    },
+    {
+      userId: user.id,
+      bookId: book.id,
+      secondsRead: 7800,
+      startTime: new Date(`${new Date().toISOString().split('T')[0]}T14:50:00.000Z`),
+      endTime: new Date(`${new Date().toISOString().split('T')[0]}T17:00:00.000Z`)
     }
   ];
 };

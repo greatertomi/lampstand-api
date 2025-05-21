@@ -32,9 +32,11 @@ export const reportValidationRules = [
     })
 ];
 
-export const weeklyActivitiesValidationRules = [
+export const activitiesValidationRule = [
   query('date')
     .optional()
     .matches(/^\d{4}-\d{2}-\d{2}$/)
-    .withMessage('Date must be a valid date in YYYY-MM-DD format.')
+    .withMessage('Date must be in YYYY-MM-DD format.')
+    .isISO8601()
+    .withMessage('Not a valid date')
 ];
