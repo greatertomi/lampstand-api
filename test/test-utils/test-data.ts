@@ -16,7 +16,7 @@ export const testBook = {
   title: 'Test Book',
   author: 'Test Author',
   format: BookFormat.PDF,
-  cover: 'data:image/jpeg;base64,9j4j93'
+  cover: 'data:image/jpeg;base64,9j4j91'
 };
 
 export const getMockedReadingLogs = (user: JwtPayload, book: BookEntity) => {

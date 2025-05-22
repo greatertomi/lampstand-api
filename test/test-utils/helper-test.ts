@@ -1,10 +1,11 @@
-import { BookEntity, ReadingGoal, ReadingLogEntity } from '../../src/entities';
+import { faker } from '@faker-js/faker';
+import { BookEntity, BookFormat, ReadingGoal, ReadingLogEntity } from '../../src/entities';
 import { JwtHelper, getCurrentWeekRange, getDayOfWeek, getSecondsBetweenDates } from '../../src/lib';
 import { HTTP_STATUS } from '../../src/lib/responses';
 import { JwtPayload } from '../../src/types';
 import handleGetRepository from '../../src/utils/handleGetRepository';
 import { TestFactory } from '../factory';
-import { testBook, testUser } from './test-data';
+import { testUser } from './test-data';
 
 type ReadingLogData = Pick<ReadingLogEntity,  | 'startTime' | 'endTime'> & {
   userId: string;
@@ -33,13 +34,12 @@ export const getTestAuthToken = async (user: JwtPayload) => {
 export const createTestBook = async (userId: string, url?: string): Promise<BookEntity> => {
   const bookRepository = handleGetRepository(BookEntity);
   return bookRepository.save({
-    id: testBook.id,
-    title: testBook.title,
-    author: testBook.author,
-    format: testBook.format,
-    cover: testBook.cover,
-    size: 1000,
-    url: url || 'http://test-book.com',
+    id: faker.string.uuid(),
+    title: faker.lorem.words({ min: 3, max: 8 }),
+    author: faker.person.fullName(),
+    format: BookFormat.EPUB,
+    size: faker.number.int({ min: 500, max: 5000 }),
+    url: url || faker.internet.url(),
     owner: { id: userId }
   });
 };

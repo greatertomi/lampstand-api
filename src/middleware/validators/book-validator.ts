@@ -118,3 +118,22 @@ export const saveMultipleBooksValidationRules = [
     return true;
   })
 ];
+
+export const deleteManyBooksValidationRules = [
+  body('ids')
+    .exists({ values: 'null' })
+    .withMessage('ids field is required')
+    .bail()
+    .isArray({ min: 1 })
+    .withMessage('Ids must be an array with at least one element')
+    .bail()
+    .custom((ids: string[]) => new Set(ids).size === ids.length)
+    .withMessage('Duplicate IDs are not allowed'),
+
+  body('ids.*')
+    .isString()
+    .withMessage('Each id must be a string')
+    .bail()
+    .isUUID()
+    .withMessage('Each ID must be a valid UUID')
+];

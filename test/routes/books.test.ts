@@ -1,8 +1,8 @@
 /* eslint-disable sonarjs/no-duplicate-string */
-import cloudinary from '../../src/config/cloudinary';
 import { BookEntity, BookFormat } from '../../src/entities';
 import { HTTP_STATUS } from '../../src/lib/responses';
-import { getPublicIdFromUrl } from '../../src/utils';
+import * as utils from '../../src/utils';
+import { deleteCloudinaryAsset } from '../../src/utils';
 import { TestFactory } from '../factory';
 import { createTestBook, createTestUser, getTestAuthToken } from '../test-utils/helper-test';
 import {
@@ -78,6 +78,14 @@ jest.mock('../../src/config/cloudinary', () => ({
     })
   }
 }));
+
+jest.mock('../../src/utils', () => {
+  const originalModule = jest.requireActual('../../src/utils');
+  return {
+    ...originalModule,
+    deleteCloudinaryAsset: jest.fn().mockImplementation(originalModule.deleteCloudinaryAsset)
+  };
+});
 
 const unAuthenticatedMessage = 'Authorization header not provided';
 
@@ -236,7 +244,7 @@ describe('Testing the books route', () => {
       expect(response.status).toBe(HTTP_STATUS.OK);
       expect(response.body).toMatchObject({
         message: 'Books retrieved successfully',
-        data: [testBook]
+        data: expect.any(Array)
       });
 
       expect(response.body.data.length).toBe(1);
@@ -320,16 +328,14 @@ describe('Testing the books route', () => {
         .delete(`${deleteBookRoute}/${book.id}`)
         .set('Authorization', `Bearer ${token}`);
 
+      expect(deleteCloudinaryAsset).toHaveBeenCalledTimes(1);
+
       expect(response.status).toBe(HTTP_STATUS.OK);
       expect(response.body).toMatchObject({
         message: 'Book deleted successfully'
       });
 
-      const cloudinaryPublicId = getPublicIdFromUrl(book.url);
-      expect(cloudinary.uploader.destroy).toHaveBeenCalledWith(cloudinaryPublicId, {
-        resource_type: 'raw',
-        invalidate: true
-      });
+      expect(deleteCloudinaryAsset).toHaveBeenCalledTimes(1);
 
       const bookRepository = factory._connection.getRepository(BookEntity);
       const deletedBook = await bookRepository.findOne({ where: { id: book.id } });
@@ -387,15 +393,157 @@ describe('Testing the books route', () => {
         .set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(500);
-      const cloudinaryPublicId = getPublicIdFromUrl(book.url);
-      expect(cloudinary.uploader.destroy).toHaveBeenCalledWith(cloudinaryPublicId, {
-        resource_type: 'raw',
-        invalidate: true
-      });
+      expect(deleteCloudinaryAsset).toHaveBeenCalledTimes(1);
 
       const bookRepository = factory._connection.getRepository(BookEntity);
       const existingBook = await bookRepository.findOne({ where: { id: book.id } });
       expect(existingBook).not.toBeNull();
+    });
+  });
+
+  describe('[DELETE] /deleteMany', () => {
+    const deleteManyRoute = '/books/deleteMany';
+
+    it('should return a 401 if the user is not authenticated', async () => {
+      const response = await factory.app.delete(`${deleteManyRoute}`);
+
+      expect(response.status).toBe(HTTP_STATUS.UNAUTHORIZED);
+      expect(response.body).toMatchObject({ errors: [{ message: unAuthenticatedMessage }] });
+    });
+
+    it('Should return appropriate validation errors for invalid id inputs', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+
+      const testCases = [
+        {
+          input: 'no array passed',
+          expectedError: 'Ids must be an array with at least one element',
+          field: 'ids'
+        },
+        {
+          input: ['1a14e43c-859a-4933-bc51-0dc422f152ae', '1a14e43c-859a-4933-bc51-0dc422f152ae'],
+          expectedError: 'Duplicate IDs are not allowed',
+          field: 'ids'
+        },
+        {
+          input: [],
+          expectedError: 'Ids must be an array with at least one element',
+          field: 'ids'
+        },
+        {
+          input: [1234],
+          expectedError: 'Each id must be a string',
+          field: 'ids[0]'
+        },
+        {
+          input: ['1a14e43c-859a-not-valid-bc51-0dc422f152ae'],
+          expectedError: 'Each ID must be a valid UUID',
+          field: 'ids[0]'
+        }
+      ];
+
+      for (const testCase of testCases) {
+        const res = await factory.app
+          .delete(`${deleteManyRoute}`)
+          .set('Authorization', `Bearer ${token}`)
+          .send({ ids: testCase.input });
+
+        expect(res.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+        expect(res.body.errors).toMatchObject(
+          expect.arrayContaining([
+            expect.objectContaining({
+              message: testCase.expectedError,
+              field: testCase.field
+            })
+          ])
+        );
+      }
+    });
+
+    it('should delete multiple books successfully', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+
+      const book1 = await createTestBook(
+        user.id,
+        'https://res.cloudinary.com/test-account/raw/upload/v1234567890/lampstand/development/books/test-book1.epub'
+      );
+      const book2 = await createTestBook(
+        user.id,
+        'https://res.cloudinary.com/test-account/raw/upload/v1234567890/lampstand/development/books/test-book2.epub'
+      );
+
+      const response = await factory.app
+        .delete(`${deleteManyRoute}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          ids: [book1.id, book2.id]
+        });
+
+      expect(utils.deleteCloudinaryAsset).toHaveBeenCalledTimes(2);
+
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(response.body).toMatchObject({
+        message: 'Books deleted successfully',
+        data: {
+          deletedCount: 2,
+          notFoundCount: 0
+        }
+      });
+    });
+
+    it('should delete 2 books successfully and not find 1 book', async () => {
+      const { user } = await createTestUser(factory);
+      const token = await getTestAuthToken(user);
+
+      const book1 = await createTestBook(
+        user.id,
+        'https://res.cloudinary.com/test-account/raw/upload/v1234567890/lampstand/development/books/test-book1.epub'
+      );
+      const book2 = await createTestBook(
+        user.id,
+        'https://res.cloudinary.com/test-account/raw/upload/v1234567890/lampstand/development/books/test-book2.epub'
+      );
+
+      const book3 = await createTestBook(
+        user.id,
+        'https://res.cloudinary.com/test-account/raw/upload/v1234567890/lampstand/development/books/test-book3.epub'
+      );
+
+      const response1 = await factory.app
+        .delete(`${deleteManyRoute}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          ids: [book1.id]
+        });
+
+      expect(utils.deleteCloudinaryAsset).toHaveBeenCalledTimes(1);
+      expect(response1.status).toBe(HTTP_STATUS.OK);
+      expect(response1.body).toMatchObject({
+        message: 'Books deleted successfully',
+        data: {
+          deletedCount: 1,
+          notFoundCount: 0
+        }
+      });
+
+      const response2 = await factory.app
+        .delete(`${deleteManyRoute}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({
+          ids: [book1.id, book2.id, book3.id]
+        });
+
+      expect(utils.deleteCloudinaryAsset).toHaveBeenCalledTimes(3);
+      expect(response2.status).toBe(HTTP_STATUS.OK);
+      expect(response2.body).toMatchObject({
+        message: 'Books deleted successfully',
+        data: {
+          deletedCount: 2,
+          notFoundCount: 1
+        }
+      });
     });
   });
 
