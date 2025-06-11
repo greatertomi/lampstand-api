@@ -13,8 +13,8 @@ const databaseConfig: DataSourceOptions = {
   database: envConfig.POSTGRES_DB,
   synchronize: isSyncDatabase,
   logging: false,
-  entities: isSyncDatabase ? ['src/entities/**/*.ts'] : ['dist/entities/**/*.js'],
-  migrations: isSyncDatabase ? ['src/migrations/**/*.ts'] : ['dist/migrations/**/*.js'],
+  entities: isSyncDatabase === true ? ['src/entities/**/*.ts'] : ['dist/entities/**/*.js'],
+  migrations: isSyncDatabase === true ? ['src/migrations/**/*.ts'] : ['dist/migrations/**/*.js'],
   subscribers: [],
   ...(envConfig.NODE_ENV === 'production' && { ssl: { rejectUnauthorized: false } })
 };
