@@ -6,9 +6,4 @@ build:
   docker:
     web: Dockerfile
     target: production
-run:
-  web: yarn start
-release:
-  command:
-    - yarn build
-    - npx typeorm -d dist/database/data-source.js migration:run
+
