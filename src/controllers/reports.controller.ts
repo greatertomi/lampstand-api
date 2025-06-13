@@ -294,8 +294,9 @@ export const getReadingSummaryData = async (req: IExtendedRequest, res: Response
   const averageSecondsPerDay = daysInRange > 0 ? Math.round(totalSeconds / daysInRange) : 0;
 
   const response = {
-    total_hours_reading: totalSeconds,
-    average_hours_spent: averageSecondsPerDay
+    totalHoursReading: totalSeconds,
+    averageHoursSpent: averageSecondsPerDay,
+    daysInRange
   };
 
   res.status(HTTP_STATUS.OK).json(response);

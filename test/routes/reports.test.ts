@@ -396,8 +396,9 @@ describe('Testing the reading log route', () => {
         .query({ startDate: '2025-01-04', endDate: '2025-01-11' });
       expect(response.status).toBe(HTTP_STATUS.OK);
       expect(response.body).toMatchObject({
-        total_hours_reading: 20_550,
-        average_hours_spent: 2569
+        totalHoursReading: 20_550,
+        averageHoursSpent: 2569,
+        daysInRange: 8
       });
     });
 
@@ -410,8 +411,9 @@ describe('Testing the reading log route', () => {
         .query({ date: testDate });
       expect(response.status).toBe(HTTP_STATUS.OK);
       expect(response.body).toMatchObject({
-        total_hours_reading: 4200,
-        average_hours_spent: 4200
+        totalHoursReading: 4200,
+        averageHoursSpent: 4200,
+        daysInRange: 1
       });
     });
 
