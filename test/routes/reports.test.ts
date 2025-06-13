@@ -476,8 +476,9 @@ describe('Testing the reading log route', () => {
 
     expect(response.status).toBe(HTTP_STATUS.OK);
     expect(response.body).toMatchObject({
-      total_hours_reading: 0,
-      average_hours_spent: 0
+      totalHoursReading: 0,
+      averageHoursSpent: 0,
+      daysInRange: 2
     });
   });
 });
