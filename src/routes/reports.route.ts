@@ -17,7 +17,13 @@ import {
 
 const router = Router();
 
-router.get('/activity-streaks', checkJwt, reportValidationRules, validate, asyncMiddleware(getActivityStreaks));
+router.get(
+  '/activity-streaks',
+  checkJwt,
+  reportValidationRules,
+  validate,
+  asyncMiddleware(getActivityStreaks)
+);
 
 router.get('/current-streaks', checkJwt, validate, asyncMiddleware(getCurrentStreaks));
 router.get(
@@ -36,6 +42,12 @@ router.get(
   asyncMiddleware(getWeeklyReadingActivities)
 );
 
-router.get('/reading-summary', checkJwt, summaryValidationRules, validate, asyncMiddleware(getReadingSummaryData));
+router.get(
+  '/reading-summary',
+  checkJwt,
+  summaryValidationRules,
+  validate,
+  asyncMiddleware(getReadingSummaryData)
+);
 
 export default router;

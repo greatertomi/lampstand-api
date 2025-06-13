@@ -32,7 +32,9 @@ export const getCurrentWeekRange = (date?: string | Date) => {
     return { start: null, end: null };
   }
 
-  const utcDate = new Date(Date.UTC(inputDate.getUTCFullYear(), inputDate.getUTCMonth(), inputDate.getUTCDate()));
+  const utcDate = new Date(
+    Date.UTC(inputDate.getUTCFullYear(), inputDate.getUTCMonth(), inputDate.getUTCDate())
+  );
 
   const dayOfWeek = utcDate.getUTCDay();
   const startOfWeek = new Date(utcDate);

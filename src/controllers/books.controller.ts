@@ -151,7 +151,8 @@ export const saveManyBooks = async (req: IExtendedRequest, res: Response) => {
       const coverImage = await processor.getBookImage(processedData.manifest);
 
       const fileFormat: BookFormat =
-        (uploadedFile.format as BookFormat) || (processor.getFileExtension(uploadedFile.secure_url) as BookFormat);
+        (uploadedFile.format as BookFormat) ||
+        (processor.getFileExtension(uploadedFile.secure_url) as BookFormat);
 
       await processor.cleanup();
 
