@@ -18,9 +18,7 @@ export const getActivityStreaks = async (req: IExtendedRequest, res: Response): 
   } else if (startDate && endDate) {
     dateRange = {
       start: new Date(new Date(startDate as string).toISOString()),
-      end: new Date(
-        new Date(endDate as string).toISOString().replace('T00:00:00.000Z', 'T23:59:59.999Z')
-      )
+      end: new Date(new Date(endDate as string).toISOString().replace('T00:00:00.000Z', 'T23:59:59.999Z'))
     };
   } else {
     throw new BadRequestError('Either currentWeek or startDate and endDate must be provided.');
@@ -106,9 +104,7 @@ export const getCurrentStreaks = async (req: IExtendedRequest, res: Response) =>
       readingByDate.delete(date);
     }
   }
-  const readingDates = [...readingByDate.keys()].sort(
-    (a, b) => new Date(b).getTime() - new Date(a).getTime()
-  );
+  const readingDates = [...readingByDate.keys()].sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
   const today = new Date().toISOString().split('T')[0];
   const yesterday = new Date();
@@ -253,4 +249,50 @@ export const getDailyReadingActivityData = async (req: IExtendedRequest, res: Re
   });
 
   res.json(splitReadSecondsIntoHour(selectedDateReadingLogs));
+};
+
+export const getReadingSummaryData = async (req: IExtendedRequest, res: Response) => {
+  const userId = req.user?.id;
+  const { date, startDate, endDate } = req.query;
+
+  let dateRange: { start: Date; end: Date };
+  if (date) {
+    const parsedDate = new Date(date as string);
+    dateRange = {
+      start: new Date(parsedDate.setHours(0, 0, 0, 0)),
+      end: new Date(parsedDate.setHours(23, 59, 59, 999))
+    };
+  } else if (startDate && endDate) {
+    const parsedStartDate = new Date(startDate as string);
+    const parsedEndDate = new Date(endDate as string);
+    dateRange = {
+      start: new Date(parsedStartDate.setHours(0, 0, 0, 0)),
+      end: new Date(parsedEndDate.setHours(23, 59, 59, 999))
+    };
+  }
+
+  const readingLogsEntity = handleGetRepository(ReadingLogEntity);
+  const readingLogs = await readingLogsEntity.find({
+    where: { startTime: Between(dateRange.start, dateRange.end), user: { id: userId } }
+  });
+
+  let totalSeconds = 0;
+
+  for (const log of readingLogs) {
+    const start = log.startTime < dateRange.start ? dateRange.start : log.startTime;
+    const end = log.endTime > dateRange.end ? dateRange.end : log.endTime;
+
+    totalSeconds += getSecondsBetweenDates(start, end);
+  }
+
+  const timeDiff = dateRange.end.getTime() - dateRange.start.getTime();
+  const daysInRange = Math.ceil(timeDiff / (1000 * 3600 * 24));
+  const averageSecondsPerDay = daysInRange > 0 ? Math.round(totalSeconds / daysInRange) : 0;
+
+  const response = {
+    total_hours_reading: totalSeconds,
+    average_hours_spent: averageSecondsPerDay
+  };
+
+  res.status(HTTP_STATUS.OK).json(response);
 };

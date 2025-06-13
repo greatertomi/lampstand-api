@@ -12,16 +12,14 @@ import {
   getDateXDaysAgo,
   getTestAuthToken
 } from '../test-utils/helper-test';
-import {
-  getCurrentDateReadingLogs,
-  getCurrentWeekReadingLogs,
-  pastReadingLogs
-} from '../test-utils/test-data';
+import { getCurrentDateReadingLogs, getCurrentWeekReadingLogs, pastReadingLogs } from '../test-utils/test-data';
 
 const reportsRoute = '/reports/activity-streaks';
 const currentRoute = '/reports/current-streaks';
 const weeklyRoute = '/reports/weekly-reading-activities';
 const dailyActivityReport = '/reports/daily-reading-activities';
+const summaryRoute = '/reports/reading-summary';
+const testDate = '2025-01-09';
 
 describe('Testing the reading log route', () => {
   const factory: TestFactory = new TestFactory();
@@ -177,24 +175,10 @@ describe('Testing the reading log route', () => {
       const yesterday = new Date(yesterdayStr);
 
       const readingStartDate = new Date(
-        Date.UTC(
-          yesterday.getUTCFullYear(),
-          yesterday.getUTCMonth(),
-          yesterday.getUTCDate(),
-          10,
-          0,
-          0
-        )
+        Date.UTC(yesterday.getUTCFullYear(), yesterday.getUTCMonth(), yesterday.getUTCDate(), 10, 0, 0)
       );
       const readingEndDate = new Date(
-        Date.UTC(
-          yesterday.getUTCFullYear(),
-          yesterday.getUTCMonth(),
-          yesterday.getUTCDate(),
-          10,
-          30,
-          0
-        )
+        Date.UTC(yesterday.getUTCFullYear(), yesterday.getUTCMonth(), yesterday.getUTCDate(), 10, 30, 0)
       );
 
       const readingLogs = [
@@ -327,7 +311,6 @@ describe('Testing the reading log route', () => {
     });
 
     it('should return 0 secondsRead for all days of the week if no reading occurred during that week', async () => {
-      const testDate = '2025-06-02';
       const { start: weekStart, end: weekEnd } = getCurrentWeekRange(new Date(testDate));
 
       const response = await factory.app
@@ -348,9 +331,7 @@ describe('Testing the reading log route', () => {
 
   describe('GET/reports/daily-reading-activities', () => {
     it('should return empty array when the use has not read today', async () => {
-      const response = await factory.app
-        .get(dailyActivityReport)
-        .set('Authorization', `Bearer ${token}`);
+      const response = await factory.app.get(dailyActivityReport).set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(HTTP_STATUS.OK);
       expect(response.body).toHaveLength(24);
@@ -364,7 +345,7 @@ describe('Testing the reading log route', () => {
       const response = await factory.app
         .get(dailyActivityReport)
         .set('Authorization', `Bearer ${token}`)
-        .query({ date: '2025-01-09' });
+        .query({ date: testDate });
       expect(response.status).toBe(HTTP_STATUS.OK);
       expect(response.body).toHaveLength(24);
       response.body.map((item: { label: string; value: string }) => {
@@ -376,14 +357,10 @@ describe('Testing the reading log route', () => {
     it('should return data for current date if no date was specified', async () => {
       const readingLogs = pastReadingLogs(user, book);
       await createTestReadingLogs(readingLogs);
-      const response = await factory.app
-        .get(dailyActivityReport)
-        .set('Authorization', `Bearer ${token}`);
+      const response = await factory.app.get(dailyActivityReport).set('Authorization', `Bearer ${token}`);
       expect(response.status).toBe(HTTP_STATUS.OK);
       expect(response.body).toHaveLength(24);
-      const nonZeroValues = response.body.filter(
-        (item: { secondsRead: string }) => Number(item.secondsRead) > 0
-      );
+      const nonZeroValues = response.body.filter((item: { secondsRead: string }) => Number(item.secondsRead) > 0);
       expect(nonZeroValues).toHaveLength(3);
     });
 
@@ -406,6 +383,99 @@ describe('Testing the reading log route', () => {
           field: 'date'
         }
       ]);
+    });
+  });
+
+  describe('GET/reports/reading-summary', () => {
+    it('should return the reading summary when startDate and endDate are provided', async () => {
+      const readingLogs = pastReadingLogs(user, book);
+      await createTestReadingLogs(readingLogs);
+      const response = await factory.app
+        .get(summaryRoute)
+        .set('Authorization', `Bearer ${token} `)
+        .query({ startDate: '2025-01-04', endDate: '2025-01-11' });
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(response.body).toMatchObject({
+        total_hours_reading: 20_550,
+        average_hours_spent: 2569
+      });
+    });
+
+    it('should return the reading summary when date is provided', async () => {
+      const readingLogs = pastReadingLogs(user, book);
+      await createTestReadingLogs(readingLogs);
+      const response = await factory.app
+        .get(summaryRoute)
+        .set('Authorization', `Bearer ${token}`)
+        .query({ date: testDate });
+      expect(response.status).toBe(HTTP_STATUS.OK);
+      expect(response.body).toMatchObject({
+        total_hours_reading: 4200,
+        average_hours_spent: 4200
+      });
+    });
+
+    it('should return an error if no query is provided', async () => {
+      const readingLogs = pastReadingLogs(user, book);
+      await createTestReadingLogs(readingLogs);
+      const response = await factory.app.get(summaryRoute).set('Authorization', `Bearer ${token}`);
+      expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(response.body.errors).toContainEqual({
+        message: 'At least a valid date or both startDate and endDate must be provided',
+        field: ''
+      });
+    });
+
+    it('should return an error if date is provided with startDate', async () => {
+      const readingLogs = pastReadingLogs(user, book);
+      await createTestReadingLogs(readingLogs);
+      const response = await factory.app.get(summaryRoute).set('Authorization', `Bearer ${token}`).query({
+        startDate: '2025-06-01',
+        date: testDate
+      });
+      expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+      expect(response.body.errors).toEqual(
+        expect.arrayContaining([
+          {
+            message: 'Cannot use startDate with date.',
+            field: 'startDate'
+          },
+          {
+            message: 'Cannot use startDate without endDate.',
+            field: 'startDate'
+          }
+        ])
+      );
+    });
+  });
+
+  it('should return an error if startDate is after endDate', async () => {
+    const response = await factory.app
+      .get(summaryRoute)
+      .set('Authorization', `Bearer ${token}`)
+      .query({ startDate: '2025-01-10', endDate: '2025-01-05' });
+
+    expect(response.status).toBe(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+    expect(response.body.errors).toEqual(
+      expect.arrayContaining([
+        {
+          message: 'endDate must be after startDate.',
+          field: 'endDate'
+        }
+      ])
+    );
+  });
+
+  it('should return 0s if no logs are found in range', async () => {
+    const response = await factory.app
+      .get(summaryRoute)
+      .set('Authorization', `Bearer ${token}`)
+      .query({ startDate: '2025-02-01', endDate: '2025-02-02' });
+
+    expect(response.status).toBe(HTTP_STATUS.OK);
+    expect(response.body).toMatchObject({
+      total_hours_reading: 0,
+      average_hours_spent: 0
     });
   });
 });
