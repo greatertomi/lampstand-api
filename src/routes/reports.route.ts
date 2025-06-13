@@ -3,8 +3,8 @@ import {
   getActivityStreaks,
   getCurrentStreaks,
   getDailyReadingActivityData,
-  getWeeklyReadingActivities,
-  getReadingSummaryData
+  getReadingSummaryData,
+  getWeeklyReadingActivities
 } from '../controllers';
 import {
   activitiesValidationRule,
@@ -17,13 +17,7 @@ import {
 
 const router = Router();
 
-router.get(
-  '/activity-streaks',
-  checkJwt,
-  reportValidationRules,
-  validate,
-  asyncMiddleware(getActivityStreaks)
-);
+router.get('/activity-streaks', checkJwt, reportValidationRules, validate, asyncMiddleware(getActivityStreaks));
 
 router.get('/current-streaks', checkJwt, validate, asyncMiddleware(getCurrentStreaks));
 router.get(
