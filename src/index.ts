@@ -14,12 +14,7 @@ const { PORT } = envConfig;
 
 export const main = async () => {
   try {
-    try {
-      await AppDataSource.initialize();
-      logger.info('Just to test if it is working');
-    } catch (error) {
-      logger.error('Failed to initialize AppDataSource:', error);
-    }
+    await AppDataSource.initialize();
     const app = express();
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
