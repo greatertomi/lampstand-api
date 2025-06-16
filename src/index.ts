@@ -16,7 +16,7 @@ export const main = async () => {
   try {
     try {
       await AppDataSource.initialize();
-      logger.info('Just to test if it is working');
+      logger.info('Database connection established successfully 🚀');
     } catch (error) {
       logger.error('Failed to initialize AppDataSource:', error);
     }

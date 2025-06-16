@@ -6,5 +6,4 @@ build:
   docker:
     web: Dockerfile
     target: production
-run:
-  web: yarn start
+
