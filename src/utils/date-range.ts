@@ -1,3 +1,4 @@
+import { endOfDay, startOfDay } from 'date-fns';
 import { logger } from '../services';
 import { TimeSpan } from '../types/timespan';
 
@@ -61,4 +62,27 @@ export const getDayOfWeek = (date: Date): { long: string; short: string } => {
 
 export const getSecondsBetweenDates = (start: Date, end: Date): number => {
   return Math.round((end.getTime() - start.getTime()) / 1000);
+};
+
+export const parseDateRange = (
+  date?: Date | string,
+  startDate?: Date | string,
+  endDate?: Date | string
+) => {
+  let dateRange: { start: Date; end: Date };
+  if (date) {
+    const parsedDate = new Date(date);
+    dateRange = {
+      start: startOfDay(parsedDate),
+      end: endOfDay(parsedDate)
+    };
+  } else if (startDate && endDate) {
+    const parsedStartDate = new Date(startDate);
+    const parsedEndDate = new Date(endDate);
+    dateRange = {
+      start: startOfDay(parsedStartDate),
+      end: endOfDay(parsedEndDate)
+    };
+  }
+  return dateRange;
 };

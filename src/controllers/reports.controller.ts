@@ -1,10 +1,15 @@
 import { Response } from 'express';
-import { Between } from 'typeorm';
+import { Between, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import { endOfDay, parseISO, startOfDay } from 'date-fns';
 import { ReadingGoal, ReadingLogEntity } from '../entities';
 import { BadRequestError, HTTP_STATUS } from '../lib/responses';
 import { IExtendedRequest } from '../types';
-import { getCurrentWeekRange, getDayOfWeek, getSecondsBetweenDates } from '../utils';
+import {
+  getCurrentWeekRange,
+  getDayOfWeek,
+  getSecondsBetweenDates,
+  parseDateRange
+} from '../utils';
 import handleGetRepository from '../utils/handleGetRepository';
 
 export const getActivityStreaks = async (req: IExtendedRequest, res: Response): Promise<void> => {
@@ -259,25 +264,19 @@ export const getReadingSummaryData = async (req: IExtendedRequest, res: Response
   const userId = req.user?.id;
   const { date, startDate, endDate } = req.query;
 
-  let dateRange: { start: Date; end: Date };
-  if (date) {
-    const parsedDate = new Date(date as string);
-    dateRange = {
-      start: new Date(parsedDate.setHours(0, 0, 0, 0)),
-      end: new Date(parsedDate.setHours(23, 59, 59, 999))
-    };
-  } else if (startDate && endDate) {
-    const parsedStartDate = new Date(startDate as string);
-    const parsedEndDate = new Date(endDate as string);
-    dateRange = {
-      start: new Date(parsedStartDate.setHours(0, 0, 0, 0)),
-      end: new Date(parsedEndDate.setHours(23, 59, 59, 999))
-    };
-  }
+  const dateStr = date as string;
+  const startDateStr = startDate as string;
+  const endDateStr = endDate as string;
+
+  const dateRange = parseDateRange(dateStr, startDateStr, endDateStr);
 
   const readingLogsEntity = handleGetRepository(ReadingLogEntity);
   const readingLogs = await readingLogsEntity.find({
-    where: { startTime: Between(dateRange.start, dateRange.end), user: { id: userId } }
+    where: {
+      user: { id: userId },
+      startTime: LessThanOrEqual(dateRange.end),
+      endTime: MoreThanOrEqual(dateRange.start)
+    }
   });
 
   let totalSeconds = 0;
@@ -294,8 +293,8 @@ export const getReadingSummaryData = async (req: IExtendedRequest, res: Response
   const averageSecondsPerDay = daysInRange > 0 ? Math.round(totalSeconds / daysInRange) : 0;
 
   const response = {
-    totalHoursReading: totalSeconds,
-    averageHoursSpent: averageSecondsPerDay,
+    totalReadingSeconds: totalSeconds,
+    averageReadingSecondsPerDay: averageSecondsPerDay,
     daysInRange
   };
 

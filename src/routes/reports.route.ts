@@ -10,8 +10,8 @@ import {
   activitiesValidationRule,
   asyncMiddleware,
   checkJwt,
+  readingSummaryValidationRules,
   reportValidationRules,
-  summaryValidationRules,
   validate
 } from '../middleware';
 
@@ -45,7 +45,7 @@ router.get(
 router.get(
   '/reading-summary',
   checkJwt,
-  summaryValidationRules,
+  readingSummaryValidationRules,
   validate,
   asyncMiddleware(getReadingSummaryData)
 );

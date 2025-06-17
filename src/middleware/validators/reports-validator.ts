@@ -41,61 +41,47 @@ export const activitiesValidationRule = [
     .withMessage('Not a valid date')
 ];
 
-export const summaryValidationRules = [
+export const readingSummaryValidationRules = [
   query().custom((_, { req }) => {
     const { date, startDate, endDate } = req.query;
-    if (!date && !startDate && !endDate) {
-      throw new Error('At least a valid date or both startDate and endDate must be provided');
+
+    const hasDate = !!date;
+    const hasStartDate = !!startDate;
+    const hasEndDate = !!endDate;
+
+    const isDateOnly = hasDate && !hasStartDate && !hasEndDate;
+    const isDateRangeOnly = !hasDate && hasStartDate && hasEndDate;
+
+    if (isDateOnly || isDateRangeOnly) {
+      return true;
     }
-    return true;
+
+    if (hasDate) {
+      throw new Error('When using date, startDate and endDate must not be provided.');
+    }
+    if (hasStartDate || hasEndDate) {
+      throw new Error('Both startDate and endDate must be provided, and date must not be.');
+    }
+    throw new Error('Either date or both startDate and endDate must be provided.');
   }),
 
   query('date')
     .optional()
-    .matches(/^\d{4}-\d{2}-\d{2}$/)
-    .withMessage('Date must be in YYYY-MM-DD format.')
-    .isISO8601()
-    .withMessage('Not a valid date'),
+    .isISO8601({ strict: true, strictSeparator: true })
+    .withMessage('Date must be in YYYY-MM-DD format.'),
 
   query('startDate')
     .optional()
-    .matches(/^\d{4}-\d{2}-\d{2}$/)
-    .withMessage('startDate must be in YYYY-MM-DD format.')
-    .isISO8601()
-    .withMessage('Invalid date format.')
-    .custom((_, { req }) => {
-      if (req.query.date) {
-        throw new Error('Cannot use startDate with date.');
-      }
-      return true;
-    })
-    .custom((_, { req }) => {
-      if (req.query.startDate && !req.query.endDate) {
-        throw new Error('Cannot use startDate without endDate.');
-      }
-      return true;
-    }),
+    .isISO8601({ strict: true, strictSeparator: true })
+    .withMessage('startDate must be in YYYY-MM-DD format.'),
 
   query('endDate')
     .optional()
-    .matches(/^\d{4}-\d{2}-\d{2}$/)
-    .withMessage('endDate must be a valid date in YYYY-MM-DD format.')
-    .isISO8601()
-    .withMessage('Invalid date format.')
-    .custom((_, { req }) => {
-      if (req.query.date) {
-        throw new Error('Cannot use endDate with Date.');
-      }
-      return true;
-    })
-    .custom((_, { req }) => {
-      if (!req.query.startDate && req.query.endDate) {
-        throw new Error('Cannot use endDate without startDate.');
-      }
-      return true;
-    })
-    .custom((_, { req }) => {
-      if (req.query.endDate <= req.query.startDate) {
+    .isISO8601({ strict: true, strictSeparator: true })
+    .withMessage('endDate must be in YYYY-MM-DD format.')
+    .custom((value, { req }) => {
+      const { startDate } = req.query;
+      if (startDate && value && new Date(value as string) <= new Date(startDate as string)) {
         throw new Error('endDate must be after startDate.');
       }
       return true;

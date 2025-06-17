@@ -2,9 +2,12 @@ import {
   getCurrentWeekRange,
   getDateRange,
   getDayOfWeek,
-  getSecondsBetweenDates
+  getSecondsBetweenDates,
+  parseDateRange
 } from '../../src/lib';
 import { TimeSpan } from '../../src/types/timespan';
+import { endOfDay, startOfDay } from 'date-fns';
+
 
 describe('getDateRange', () => {
   const mockDate = new Date('2024-01-15T15:30:25.000Z');
@@ -133,6 +136,31 @@ describe('Date Utility Functions', () => {
       const start = new Date('2025-05-20T12:00:00Z');
       const end = new Date('2025-05-20T12:30:00Z');
       expect(getSecondsBetweenDates(start, end)).toBe(1800);
+    });
+  });
+
+  describe('parseDateRange', () => {
+    it('should return a single-day range when "date" is provided', () => {
+      const inputDate = new Date('2025-01-05');
+      const expectedStart = startOfDay(inputDate);
+      const expectedEnd = endOfDay(inputDate);
+      const result = parseDateRange(inputDate);
+
+      expect(result).toBeDefined();
+      expect(result.start).toEqual(expectedStart);
+      expect(result.end).toEqual(expectedEnd);
+    });
+
+    it('should return a custom range when both "startDate" and "endDate" are provided', () => {
+      const result = parseDateRange(undefined, '2025-01-01', '2025-01-10');
+
+      expect(result).toBeDefined();
+
+      const expectedStart = startOfDay(new Date('2025-01-01'));
+      const expectedEnd = endOfDay(new Date('2025-01-10'));
+
+      expect(result. start).toEqual(expectedStart);
+      expect(result.end).toEqual(expectedEnd);
     });
   });
 });
