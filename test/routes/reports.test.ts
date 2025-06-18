@@ -204,7 +204,19 @@ describe('Testing the reading log route', () => {
           bookId: book.id,
           date: yesterdayStr,
           startTime: readingStartDate,
-          endTime: readingEndDate
+          endTime: readingEndDate,
+          startLocation: {
+            cfi: 'epubcfi(/6/20)',
+            pages: { totalPages: 500, currentPage: 70 },
+            href: '/chapter-10.xhtml',
+            percentage: 0
+          },
+          endLocation: {
+            cfi: 'epubcfi(/6/38)',
+            pages: { totalPages: 500, currentPage: 92 },
+            href: '/chapter-12.xhtml',
+            percentage: 0.26
+          }
         }
       ];
       await createTestReadingLogs(readingLogs);

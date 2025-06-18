@@ -26,37 +26,109 @@ export const getMockedReadingLogs = (user: JwtPayload, book: BookEntity) => {
       userId: user.id,
       bookId: book.id,
       startTime: now,
-      endTime: now
+      endTime: now,
+      startLocation: {
+        cfi: 'epubcfi(/6/44)',
+        pages: { totalPages: 300, currentPage: 70 },
+        href: '/chapter-21.xhtml',
+        percentage: 0.23
+      },
+      endLocation: {
+        cfi: 'epubcfi(/6/48)',
+        pages: { totalPages: 300, currentPage: 78 },
+        href: '/chapter-25.xhtml',
+        percentage: 0.26
+      }
     },
     {
       userId: user.id,
       bookId: book.id,
       startTime: new Date(now.getTime() - 86_400_000),
-      endTime: new Date(now.getTime() - 86_400_000)
+      endTime: new Date(now.getTime() - 86_400_000),
+      startLocation: {
+        cfi: 'epubcfi(/6/41)',
+        pages: { totalPages: 300, currentPage: 70 },
+        href: '/chapter-9.xhtml',
+        percentage: 0.23
+      },
+      endLocation: {
+        cfi: 'epubcfi(/6/49)',
+        pages: { totalPages: 300, currentPage: 78 },
+        href: '/chapter-13.xhtml',
+        percentage: 0.26
+      }
     },
     {
       userId: user.id,
       bookId: book.id,
       startTime: new Date(now.getTime() - 432_000_000),
-      endTime: new Date(now.getTime() - 432_000_000)
+      endTime: new Date(now.getTime() - 432_000_000),
+      startLocation: {
+        cfi: 'epubcfi(/6/42)',
+        pages: { totalPages: 300, currentPage: 70 },
+        href: '/chapter-31.xhtml',
+        percentage: 0.23
+      },
+      endLocation: {
+        cfi: 'epubcfi(/6/50)',
+        pages: { totalPages: 300, currentPage: 78 },
+        href: '/chapter-32.xhtml',
+        percentage: 0.26
+      }
     },
     {
       userId: user.id,
       bookId: book.id,
       startTime: new Date(now.getTime() - 691_200_000),
-      endTime: new Date(now.getTime() - 691_200_000)
+      endTime: new Date(now.getTime() - 691_200_000),
+      startLocation: {
+        cfi: 'epubcfi(/6/43)',
+        pages: { totalPages: 300, currentPage: 70 },
+        href: '/chapter-41.xhtml',
+        percentage: 0.23
+      },
+      endLocation: {
+        cfi: 'epubcfi(/6/61)',
+        pages: { totalPages: 300, currentPage: 78 },
+        href: '/chapter-43.xhtml',
+        percentage: 0.26
+      }
     },
     {
       userId: user.id,
       bookId: book.id,
       startTime: new Date(now.getTime() - 2_505_600_000),
-      endTime: new Date(now.getTime() - 2_505_600_000)
+      endTime: new Date(now.getTime() - 2_505_600_000),
+      startLocation: {
+        cfi: 'epubcfi(/6/45)',
+        pages: { totalPages: 300, currentPage: 70 },
+        href: '/chapter-2.xhtml',
+        percentage: 0.23
+      },
+      endLocation: {
+        cfi: 'epubcfi(/6/52)',
+        pages: { totalPages: 300, currentPage: 78 },
+        href: '/chapter-4.xhtml',
+        percentage: 0.26
+      }
     },
     {
       userId: user.id,
       bookId: book.id,
       startTime: new Date(now.getTime() - 2_678_400_000),
-      endTime: new Date(now.getTime() - 2_678_400_000)
+      endTime: new Date(now.getTime() - 2_678_400_000),
+      startLocation: {
+        cfi: 'epubcfi(/6/46)',
+        pages: { totalPages: 300, currentPage: 70 },
+        href: '/chapter-18.xhtml',
+        percentage: 0.23
+      },
+      endLocation: {
+        cfi: 'epubcfi(/6/53)',
+        pages: { totalPages: 300, currentPage: 78 },
+        href: '/chapter-19.xhtml',
+        percentage: 0.26
+      }
     }
   ];
 };
@@ -138,7 +210,19 @@ export const getCurrentWeekReadingLogs = (user: JwtPayload, book: BookEntity) =>
       userId: user.id,
       bookId: book.id,
       startTime: readingStartDate,
-      endTime: readingEndDate
+      endTime: readingEndDate,
+      startLocation: {
+        cfi: 'epubcfi(/6/51)',
+        pages: { totalPages: 300, currentPage: 70 },
+        href: '/chapter-38.xhtml',
+        percentage: 0.34
+      },
+      endLocation: {
+        cfi: 'epubcfi(/6/55)',
+        pages: { totalPages: 300, currentPage: 78 },
+        href: '/chapter-39.xhtml',
+        percentage: 0.35
+      }
     });
   }
 
@@ -151,50 +235,145 @@ export const pastReadingLogs = (user: JwtPayload, book: BookEntity) => {
       userId: user.id,
       bookId: book.id,
       startTime: new Date('2025-01-04T06:15:00.000Z'),
-      endTime: new Date('2025-01-04T06:30:00.000Z')
+      endTime: new Date('2025-01-04T06:30:00.000Z'),
+      startLocation: {
+        cfi: 'epubcfi(/6/12)',
+        pages: { totalPages: 300, currentPage: 42 },
+        href: '/chapter-3.xhtml',
+        percentage: 0.14
+      },
+      endLocation: {
+        cfi: 'epubcfi(/6/14)',
+        pages: { totalPages: 300, currentPage: 44 },
+        href: '/chapter-3.xhtml',
+        percentage: 0.15
+      }
     },
     {
       userId: user.id,
       bookId: book.id,
       startTime: new Date('2025-01-05T12:00:00.000Z'),
-      endTime: new Date('2025-01-05T12:45:00.000Z')
+      endTime: new Date('2025-01-05T12:45:00.000Z'),
+      startLocation: {
+        cfi: 'epubcfi(/6/20)',
+        pages: { totalPages: 300, currentPage: 50 },
+        href: '/chapter-5.xhtml',
+        percentage: 0.17
+      },
+      endLocation: {
+        cfi: 'epubcfi(/6/22)',
+        pages: { totalPages: 300, currentPage: 52 },
+        href: '/chapter-5.xhtml',
+        percentage: 0.18
+      }
     },
     {
       userId: user.id,
       bookId: book.id,
       startTime: new Date('2025-01-06T18:20:00.000Z'),
-      endTime: new Date('2025-01-06T19:20:00.000Z')
+      endTime: new Date('2025-01-06T19:20:00.000Z'),
+      startLocation: {
+        cfi: 'epubcfi(/6/30)',
+        pages: { totalPages: 300, currentPage: 60 },
+        href: '/chapter-7.xhtml',
+        percentage: 0.22
+      },
+      endLocation: {
+        cfi: 'epubcfi(/6/35)',
+        pages: { totalPages: 300, currentPage: 65 },
+        href: '/chapter-7.xhtml',
+        percentage: 0.26
+      }
     },
     {
       userId: user.id,
       bookId: book.id,
       startTime: new Date('2025-01-07T22:10:00.000Z'),
-      endTime: new Date('2025-01-07T23:40:00.000Z')
+      endTime: new Date('2025-01-07T23:40:00.000Z'),
+      startLocation: {
+        cfi: 'epubcfi(/6/47)',
+        pages: { totalPages: 300, currentPage: 70 },
+        href: '/chapter-34.xhtml',
+        percentage: 0.23
+      },
+      endLocation: {
+        cfi: 'epubcfi(/6/54)',
+        pages: { totalPages: 300, currentPage: 78 },
+        href: '/chapter-35.xhtml',
+        percentage: 0.26
+      }
     },
     {
       userId: user.id,
       bookId: book.id,
       startTime: new Date('2025-01-08T09:05:15.000Z'),
-      endTime: new Date('2025-01-08T09:17:45.000Z')
+      endTime: new Date('2025-01-08T09:17:45.000Z'),
+      startLocation: {
+        cfi: 'epubcfi(/6/50)',
+        pages: { totalPages: 300, currentPage: 80 },
+        href: '/chapter-10.xhtml',
+        percentage: 0.27
+      },
+      endLocation: {
+        cfi: 'epubcfi(/6/51)',
+        pages: { totalPages: 300, currentPage: 81 },
+        href: '/chapter-15.xhtml',
+        percentage: 0.27
+      }
     },
     {
       userId: user.id,
       bookId: book.id,
       startTime: new Date('2025-01-09T14:50:00.000Z'),
-      endTime: new Date('2025-01-09T16:00:00.000Z')
+      endTime: new Date('2025-01-09T16:00:00.000Z'),
+      startLocation: {
+        cfi: 'epubcfi(/6/61)',
+        pages: { totalPages: 300, currentPage: 90 },
+        href: '/chapter-12.xhtml',
+        percentage: 0.31
+      },
+      endLocation: {
+        cfi: 'epubcfi(/6/62)',
+        pages: { totalPages: 300, currentPage: 95 },
+        href: '/chapter-12.xhtml',
+        percentage: 0.32
+      }
     },
     {
       userId: user.id,
       bookId: book.id,
       startTime: new Date('2025-01-10T23:30:00.000Z'),
-      endTime: new Date('2025-01-11T00:20:00.000Z')
+      endTime: new Date('2025-01-11T00:20:00.000Z'),
+      startLocation: {
+        cfi: 'epubcfi(/6/60)',
+        pages: { totalPages: 300, currentPage: 90 },
+        href: '/chapter-16.xhtml',
+        percentage: 0.31
+      },
+      endLocation: {
+        cfi: 'epubcfi(/6/65)',
+        pages: { totalPages: 300, currentPage: 95 },
+        href: '/chapter-16.xhtml',
+        percentage: 0.32
+      }
     },
     {
       userId: user.id,
       bookId: book.id,
-      secondsRead: 7800,
       startTime: new Date(`${new Date().toISOString().split('T')[0]}T14:50:00.000Z`),
-      endTime: new Date(`${new Date().toISOString().split('T')[0]}T17:00:00.000Z`)
+      endTime: new Date(`${new Date().toISOString().split('T')[0]}T17:00:00.000Z`),
+      startLocation: {
+        cfi: 'epubcfi(/6/60)',
+        pages: { totalPages: 400, currentPage: 80 },
+        href: '/chapter-14.xhtml',
+        percentage: 0.41
+      },
+      endLocation: {
+        cfi: 'epubcfi(/6/65)',
+        pages: { totalPages: 450, currentPage: 95 },
+        href: '/chapter-14.xhtml',
+        percentage: 0.52
+      }
     }
   ];
 };
@@ -213,7 +392,19 @@ export const getCurrentDateReadingLogs = (user, book) => {
       userId: user.id,
       bookId: book.id,
       startTime: readingStartDate.toISOString(),
-      endTime: readingEndDate.toISOString()
+      endTime: readingEndDate.toISOString(),
+      startLocation: {
+        cfi: 'epubcfi(/6/40)',
+        pages: { totalPages: 300, currentPage: 70 },
+        href: '/chapter-28.xhtml',
+        percentage: 0.23
+      },
+      endLocation: {
+        cfi: 'epubcfi(/6/55)',
+        pages: { totalPages: 300, currentPage: 78 },
+        href: '/chapter-29.xhtml',
+        percentage: 0.26
+      }
     });
   }
 

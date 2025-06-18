@@ -8,7 +8,7 @@ import { TimeSpan } from '../types/timespan';
 import handleGetRepository from '../utils/handleGetRepository';
 
 export const logReadingEvent = async (req: IExtendedRequest, res: Response) => {
-  const { bookId, startTime, endTime } = req.body;
+  const { bookId, startTime, endTime, startLocation, endLocation } = req.body;
 
   const readingLogRepository = handleGetRepository(ReadingLogEntity);
   const bookRepository = handleGetRepository(BookEntity);
@@ -26,7 +26,9 @@ export const logReadingEvent = async (req: IExtendedRequest, res: Response) => {
     user: { id: req.user.id },
     book: { id: bookId },
     startTime: start,
-    endTime: end
+    endTime: end,
+    startLocation,
+    endLocation
   });
 
   await readingLogRepository.save(newReadingLog);
@@ -37,7 +39,9 @@ export const logReadingEvent = async (req: IExtendedRequest, res: Response) => {
       id: newReadingLog.id,
       bookId: newReadingLog.book.id,
       startTime: newReadingLog.startTime,
-      endTime: newReadingLog.endTime
+      endTime: newReadingLog.endTime,
+      startLocation: newReadingLog.startLocation,
+      endLocation: newReadingLog.endLocation
     }
   });
 };
@@ -72,7 +76,9 @@ export const getUserReadingLogs = async (req: IExtendedRequest, res: Response): 
       bookId: log.book.id,
       bookTitle: log.book.title,
       startTime: log.startTime,
-      endTime: log.endTime
+      endTime: log.endTime,
+      startLocation: log.startLocation,
+      endLocation: log.endLocation
     }))
   });
 };
