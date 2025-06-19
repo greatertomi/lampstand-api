@@ -15,7 +15,7 @@ export type PreInstalledBook = {
 
 export const getPreinstalledBooks = async (_: IExtendedRequest, res: Response) => {
   const result = await cloudinary.search
-    .expression('folder:preinstalledbooks')
+    .expression('folder:preinstalledBooks')
     .with_field('context')
     .max_results(100)
     .execute();
