@@ -3,6 +3,7 @@ import auth from './auth.route';
 import books from './books.route';
 import readingGoals from './goals.route';
 import oauth from './oauth.route';
+import preinstalledBooks from './preinstalledBooks.route';
 import readingLogs from './readingLog.route';
 import reports from './reports.route';
 import users from './user.route';
@@ -16,5 +17,6 @@ router.use('/goals', readingGoals);
 router.use('/readingLogs', readingLogs);
 router.use('/oauth', oauth);
 router.use('/reports', reports);
+router.use('/preinstalledBooks', preinstalledBooks);
 
 export default router;

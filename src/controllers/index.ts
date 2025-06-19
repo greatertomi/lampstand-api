@@ -5,3 +5,4 @@ export * from './goals.controller';
 export * from './oauth.controller';
 export * from './readingLog.controller';
 export * from './reports.controller';
+export * from './preinstalledBooks.controller';
