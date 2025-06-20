@@ -15,7 +15,6 @@ type EnvConfig = {
   MAILGUN_API_KEY: string;
   MAILGUN_API_URL: string;
   MAILGUN_DOMAIN: string;
-  SYNC_DATABASE: boolean;
   LOG_LEVEL: string;
   GOOGLE_CLIENT_ID: string;
   GOOGLE_CLIENT_SECRET: string;
@@ -39,7 +38,6 @@ const getConfig = (): ENV => ({
   MAILGUN_API_KEY: process.env.MAILGUN_API_KEY,
   MAILGUN_API_URL: process.env.MAILGUN_API_URL,
   MAILGUN_DOMAIN: process.env.MAILGUN_DOMAIN,
-  SYNC_DATABASE: process.env.SYNC_DATABASE === 'true',
   LOG_LEVEL: process.env.LOG_LEVEL,
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
   CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,

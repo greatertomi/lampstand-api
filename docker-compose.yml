@@ -14,10 +14,9 @@ services:
     ports:
       - ${PORT}:${PORT}
     volumes:
-      - ./src:/app/src
-      - ./nodemon.json:/app/nodemon.json
+      - ./data:/var/lib/postgresql/data
       - ./logs:/app/logs
-    command: npm run dev
+    command: yarn run start
   postgres:
     container_name: 'lampstand-postgres'
     image: 'postgres:13'
