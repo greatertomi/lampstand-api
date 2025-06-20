@@ -3,12 +3,14 @@ import {
   getActivityStreaks,
   getCurrentStreaks,
   getDailyReadingActivityData,
+  getReadingSummaryData,
   getWeeklyReadingActivities
 } from '../controllers';
 import {
   activitiesValidationRule,
   asyncMiddleware,
   checkJwt,
+  readingSummaryValidationRules,
   reportValidationRules,
   validate
 } from '../middleware';
@@ -38,6 +40,14 @@ router.get(
   activitiesValidationRule,
   validate,
   asyncMiddleware(getWeeklyReadingActivities)
+);
+
+router.get(
+  '/reading-summary',
+  checkJwt,
+  readingSummaryValidationRules,
+  validate,
+  asyncMiddleware(getReadingSummaryData)
 );
 
 export default router;

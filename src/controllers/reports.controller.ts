@@ -1,10 +1,15 @@
 import { Response } from 'express';
-import { Between } from 'typeorm';
+import { Between, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import { endOfDay, parseISO, startOfDay } from 'date-fns';
 import { ReadingGoal, ReadingLogEntity } from '../entities';
 import { BadRequestError, HTTP_STATUS } from '../lib/responses';
 import { IExtendedRequest } from '../types';
-import { getCurrentWeekRange, getDayOfWeek, getSecondsBetweenDates } from '../utils';
+import {
+  getCurrentWeekRange,
+  getDayOfWeek,
+  getSecondsBetweenDates,
+  parseDateRange
+} from '../utils';
 import handleGetRepository from '../utils/handleGetRepository';
 
 export const getActivityStreaks = async (req: IExtendedRequest, res: Response): Promise<void> => {
@@ -253,4 +258,45 @@ export const getDailyReadingActivityData = async (req: IExtendedRequest, res: Re
   });
 
   res.json(splitReadSecondsIntoHour(selectedDateReadingLogs));
+};
+
+export const getReadingSummaryData = async (req: IExtendedRequest, res: Response) => {
+  const userId = req.user?.id;
+  const { date, startDate, endDate } = req.query;
+
+  const dateStr = date as string;
+  const startDateStr = startDate as string;
+  const endDateStr = endDate as string;
+
+  const dateRange = parseDateRange(dateStr, startDateStr, endDateStr);
+
+  const readingLogsEntity = handleGetRepository(ReadingLogEntity);
+  const readingLogs = await readingLogsEntity.find({
+    where: {
+      user: { id: userId },
+      startTime: LessThanOrEqual(dateRange.end),
+      endTime: MoreThanOrEqual(dateRange.start)
+    }
+  });
+
+  let totalSeconds = 0;
+
+  for (const log of readingLogs) {
+    const start = log.startTime < dateRange.start ? dateRange.start : log.startTime;
+    const end = log.endTime > dateRange.end ? dateRange.end : log.endTime;
+
+    totalSeconds += getSecondsBetweenDates(start, end);
+  }
+
+  const timeDiff = dateRange.end.getTime() - dateRange.start.getTime();
+  const daysInRange = Math.ceil(timeDiff / (1000 * 3600 * 24));
+  const averageSecondsPerDay = daysInRange > 0 ? Math.round(totalSeconds / daysInRange) : 0;
+
+  const response = {
+    totalReadingSeconds: totalSeconds,
+    averageReadingSecondsPerDay: averageSecondsPerDay,
+    daysInRange
+  };
+
+  res.status(HTTP_STATUS.OK).json(response);
 };
