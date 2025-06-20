@@ -1,7 +1,6 @@
 import winston from 'winston';
-import envConfig from '../config/envConfig';
 import * as Sentry from '@sentry/node';
-
+import envConfig from '../config/envConfig';
 
 const colorsConfig = {
   error: 'red',
