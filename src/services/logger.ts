@@ -1,5 +1,7 @@
 import winston from 'winston';
 import envConfig from '../config/envConfig';
+import * as Sentry from '@sentry/node';
+
 
 const colorsConfig = {
   error: 'red',
@@ -48,4 +50,13 @@ export const logger = winston.createLogger({
       )
     })
   ]
+});
+
+logger.on('data', (log) => {
+  if (log.level === 'error') {
+    const error = log instanceof Error ? log : new Error(log.message);
+    Sentry.captureException(error, {
+      extra: log
+    });
+  }
 });

@@ -27,6 +27,8 @@
   },
   "dependencies": {
     "@faker-js/faker": "^8.4.1 ",
+    "@sentry/node": "^9.30.0",
+    "@sentry/types": "^9.30.0",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.2.0",
     "cors": "^2.8.5",

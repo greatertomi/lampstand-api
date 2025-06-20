@@ -9,8 +9,14 @@ import routes from './routes';
 import homepageRouter from './routes/homepage.route';
 import { logger } from './services';
 import './services/google-passport';
+import * as Sentry from '@sentry/node';
+
 
 const { PORT } = envConfig;
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+});
 
 export const main = async () => {
   try {
