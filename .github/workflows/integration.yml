@@ -58,4 +58,5 @@ jobs:
           REDIRECT_URL: ${{ secrets.REDIRECT_URL }},
           ANDROID_CLIENT_ID: ${{ secrets.ANDROID_CLIENT_ID }},
           IOS_CLIENT_ID: ${{ secrets.IOS_CLIENT_ID }}
+          SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
         run: yarn test
