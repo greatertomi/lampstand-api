@@ -36,7 +36,20 @@ describe('Testing the reading log route', () => {
       const readingLogData = {
         bookId: book.id,
         startTime: new Date(Date.now() - 3_600_000).toISOString(),
-        endTime: new Date().toISOString()
+        endTime: new Date().toISOString(),
+        startLocation: {
+          cfi: 'epubcfi(/6/40)',
+          pages: { totalPages: 300, currentPage: 70 },
+          href: '/chapter-9.xhtml',
+          percentage: 0.23
+        },
+        endLocation: {
+          cfi: 'epubcfi(/6/48)',
+          pages: { totalPages: 300, currentPage: 78 },
+          href: '/chapter-9.xhtml',
+          percentage: 0.26
+        }
+
       };
 
       const response = await factory.app
@@ -51,6 +64,18 @@ describe('Testing the reading log route', () => {
         bookId: book.id,
         startTime: expect.any(String),
         endTime: expect.any(String),
+        startLocation: {
+          cfi: expect.any(String),
+          pages: { totalPages: expect.any(Number), currentPage: expect.any(Number) },
+          href: expect.any(String),
+          percentage: expect.any(Number)
+        },
+        endLocation: {
+          cfi: expect.any(String),
+          pages: { totalPages: expect.any(Number), currentPage: expect.any(Number) },
+          href: expect.any(String),
+          percentage: expect.any(Number)
+        }
       });
     });
 
@@ -87,7 +112,19 @@ describe('Testing the reading log route', () => {
       const invalidReadingLogData = {
         bookId: book.id,
         startTime: new Date().toISOString(),
-        endTime: new Date(Date.now() - 3_600_000).toISOString()
+        endTime: new Date(Date.now() - 3_600_000).toISOString(),
+        startLocation: {
+          cfi: 'epubcfi(/6/30)',
+          pages: { totalPages: 300, currentPage: 70 },
+          href: '/chapter-1.xhtml',
+          percentage: 0.16
+        },
+        endLocation: {
+          cfi: 'epubcfi(/6/38)',
+          pages: { totalPages: 300, currentPage: 78 },
+          href: '/chapter-3.xhtml',
+          percentage: 0.21
+        }
       };
 
       const response = await factory.app
@@ -110,7 +147,19 @@ describe('Testing the reading log route', () => {
       const readingLogData = {
         bookId: '00000000-0000-0000-0000-000000000000',
         startTime: new Date(Date.now() - 3_600_000).toISOString(),
-        endTime: new Date().toISOString()
+        endTime: new Date().toISOString(),
+        startLocation: {
+          cfi: 'epubcfi(/6/20)',
+          pages: { totalPages: 300, currentPage: 70 },
+          href: '/chapter-16.xhtml',
+          percentage: 0.53
+        },
+        endLocation: {
+          cfi: 'epubcfi(/6/23)',
+          pages: { totalPages: 300, currentPage: 78 },
+          href: '/chapter-19.xhtml',
+          percentage: 0.66
+        }
       };
 
       const response = await factory.app
@@ -141,7 +190,19 @@ describe('Testing the reading log route', () => {
       const readingLogData = {
         bookId: book.id,
         startTime: new Date(Date.now() - 3_600_000).toISOString(),
-        endTime: new Date().toISOString()
+        endTime: new Date().toISOString(),
+        startLocation: {
+          cfi: 'epubcfi(/6/70)',
+          pages: { totalPages: 320, currentPage: 25 },
+          href: '/chapter-6.xhtml',
+          percentage: 0.21
+        },
+        endLocation: {
+          cfi: 'epubcfi(/6/88)',
+          pages: { totalPages: 320, currentPage: 43 },
+          href: '/chapter-7.xhtml',
+          percentage: 0.26
+        }
       };
 
       jest
@@ -182,6 +243,18 @@ describe('Testing the reading log route', () => {
             bookTitle: expect.any(String),
             startTime: expect.any(String),
             endTime: expect.any(String),
+            startLocation: {
+              cfi: expect.any(String),
+              pages: { totalPages: expect.any(Number), currentPage: expect.any(Number) },
+              href: expect.any(String),
+              percentage: expect.any(Number)
+            },
+            endLocation: {
+              cfi: expect.any(String),
+              pages: { totalPages: expect.any(Number), currentPage: expect.any(Number) },
+              href: expect.any(String),
+              percentage: expect.any(Number)
+            }
           })
         ])
       });
@@ -206,6 +279,18 @@ describe('Testing the reading log route', () => {
             bookTitle: expect.any(String),
             startTime: expect.any(String),
             endTime: expect.any(String),
+            startLocation: {
+              cfi: expect.any(String),
+              pages: { totalPages: expect.any(Number), currentPage: expect.any(Number) },
+              href: expect.any(String),
+              percentage: expect.any(Number)
+            },
+            endLocation: {
+              cfi: expect.any(String),
+              pages: { totalPages: expect.any(Number), currentPage: expect.any(Number) },
+              href: expect.any(String),
+              percentage: expect.any(Number)
+            }
           })
         ])
       });
@@ -233,6 +318,18 @@ describe('Testing the reading log route', () => {
             bookTitle: expect.any(String),
             startTime: expect.any(String),
             endTime: expect.any(String),
+            startLocation: {
+              cfi: expect.any(String),
+              pages: { totalPages: expect.any(Number), currentPage: expect.any(Number) },
+              href: expect.any(String),
+              percentage: expect.any(Number)
+            },
+            endLocation: {
+              cfi: expect.any(String),
+              pages: { totalPages: expect.any(Number), currentPage: expect.any(Number) },
+              href: expect.any(String),
+              percentage: expect.any(Number)
+            }
           })
         ])
       );
@@ -257,6 +354,18 @@ describe('Testing the reading log route', () => {
             bookTitle: expect.any(String),
             startTime: expect.any(String),
             endTime: expect.any(String),
+            startLocation: {
+              cfi: expect.any(String),
+              pages: { totalPages: expect.any(Number), currentPage: expect.any(Number) },
+              href: expect.any(String),
+              percentage: expect.any(Number)
+            },
+            endLocation: {
+              cfi: expect.any(String),
+              pages: { totalPages: expect.any(Number), currentPage: expect.any(Number) },
+              href: expect.any(String),
+              percentage: expect.any(Number)
+            }
           })
         ])
       );

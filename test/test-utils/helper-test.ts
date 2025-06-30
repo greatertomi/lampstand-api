@@ -1,5 +1,6 @@
 import { faker } from '@faker-js/faker';
 import { BookEntity, BookFormat, ReadingGoal, ReadingLogEntity } from '../../src/entities';
+import { ReadingLocation } from '../../src/entities/types';
 import { JwtHelper, getCurrentWeekRange, getDayOfWeek, getSecondsBetweenDates } from '../../src/lib';
 import { HTTP_STATUS } from '../../src/lib/responses';
 import { JwtPayload } from '../../src/types';
@@ -7,9 +8,12 @@ import handleGetRepository from '../../src/utils/handleGetRepository';
 import { TestFactory } from '../factory';
 import { testUser } from './test-data';
 
-type ReadingLogData = Pick<ReadingLogEntity,  | 'startTime' | 'endTime'> & {
+
+type ReadingLogData = Pick<ReadingLogEntity, 'startTime' | 'endTime'> & {
   userId: string;
   bookId: string;
+  startLocation: ReadingLocation
+  endLocation: ReadingLocation
 };
 
 export const createTestUser = async (factory: TestFactory) => {
@@ -60,6 +64,25 @@ export const createTestReadingLogs = async (readingLogs: ReadingLogData[]) => {
     book: { id: log.bookId },
     startTime: log.startTime,
     endTime: log.endTime,
+    startLocation: {
+      cfi: log.startLocation.cfi,
+      pages: {
+        totalPages: log.startLocation.pages?.totalPages,
+        currentPage: log.startLocation.pages?.currentPage,
+      },
+      href: log.startLocation.href,
+      percentage: log.startLocation.percentage
+    },
+    endLocation: {
+      cfi: log.endLocation.cfi,
+      pages: {
+        totalPages: log.endLocation.pages?.totalPages,
+        currentPage: log.endLocation.pages?.currentPage,
+      },
+      href: log.endLocation.href,
+      percentage: log.endLocation.percentage
+    }
+
   }));
   return readingLogRepository.save(logsToSave);
 };
