@@ -8,6 +8,7 @@ import { errorHandler, responseLogger } from './middleware';
 import routes from './routes';
 import homepageRouter from './routes/homepage.route';
 import { logger } from './services';
+import { initializeAllReminders } from './services/cron-jobs';
 import './services/google-passport';
 
 const { PORT } = envConfig;
@@ -16,6 +17,7 @@ export const main = async () => {
   try {
     try {
       await AppDataSource.initialize();
+      await initializeAllReminders();
       logger.info('Database connection established successfully 🚀');
     } catch (error) {
       logger.error('Failed to initialize AppDataSource:', error);

@@ -14,7 +14,8 @@ export const userValidationRules = () => [
   body('confirmPassword')
     .custom((value, { req }) => value === req.body.password)
     .withMessage('Confirm password must match the password'),
-  body('agreedToTerms').isBoolean().withMessage('Agreed to terms should be a boolean')
+  body('agreedToTerms').isBoolean().withMessage('Agreed to terms should be a boolean'),
+  body('expoPushToken').notEmpty().isString().withMessage('Expo Push Token must be a string')
 ];
 
 export const loginValidationRules = () => [

@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { Expo } from 'expo-server-sdk';
 import { LoginType, PasswordResetTokenEntity, UserEntity } from '../entities';
 import { TokenStatus } from '../entities/types';
 import { BcryptHelper, JwtHelper } from '../lib';
@@ -12,7 +13,7 @@ import { addLoginHistories } from './utils';
 const userNotFound = 'User not found';
 
 export const signup = async (req: Request, res: Response) => {
-  const { fullName, email, password, agreedToTerms } = req.body;
+  const { fullName, email, password, agreedToTerms, expoPushToken } = req.body;
   const userRepository = handleGetRepository(UserEntity);
 
   const user = await userRepository.findOne({
@@ -23,13 +24,18 @@ export const signup = async (req: Request, res: Response) => {
     throw new BadRequestError('Email address already in use');
   }
 
+  if (!Expo.isExpoPushToken(expoPushToken)) {
+    throw new BadRequestError('Invalid Push Token');
+  }
+
   const hashedPassword = await BcryptHelper.hash(password);
 
   const newUser = userRepository.create({
     fullName,
     email,
     password: hashedPassword,
-    agreedToTerms
+    agreedToTerms,
+    expoPushToken
   });
 
   await userRepository.save(newUser);
@@ -72,7 +78,7 @@ export const verifyEmail = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  const { email, password, expoPushToken } = req.body;
 
   const userRepository = handleGetRepository(UserEntity);
 
@@ -83,6 +89,10 @@ export const login = async (req: Request, res: Response) => {
   const isPasswordValid = user ? await BcryptHelper.compare(password, user.password) : false;
   if (!user || !isPasswordValid) {
     throw new NotFoundError('Invalid login credentials');
+  }
+
+  if (expoPushToken && user.expoPushToken !== expoPushToken) {
+    await userRepository.update(user.id, { expoPushToken });
   }
 
   const responseData: JwtPayload = {

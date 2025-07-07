@@ -73,7 +73,7 @@ describe('Testing the auth route', () => {
         });
 
         expect(res.status).toEqual(HTTP_STATUS.UNPROCESSABLE_ENTITY);
-        expect(Object.keys(res.body.errors).length).toBe(6);
+        expect(Object.keys(res.body.errors).length).toBe(8);
         expect(res.body.errors).toEqual(expect.arrayContaining([]));
         expect(addLoginHistory).not.toHaveBeenCalled();
         expect(sendVerificationEmail).not.toHaveBeenCalled();

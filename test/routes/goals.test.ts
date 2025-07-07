@@ -24,7 +24,8 @@ describe('Testing the goals route', () => {
 
       const newGoal = {
         goalInSeconds: 1800,
-        reminderTime: '19:00:00'
+        reminderTime: '19:00:00',
+        timezone: 'Africa/Lagos'
       };
 
       const res = await factory.app
@@ -39,6 +40,7 @@ describe('Testing the goals route', () => {
           id: expect.any(String),
           goalInSeconds: newGoal.goalInSeconds,
           reminderTime: '19:00:00',
+          timezone: newGoal.timezone,
           createdAt: expect.any(String),
           updatedAt: expect.any(String)
         })
@@ -51,7 +53,8 @@ describe('Testing the goals route', () => {
 
       const newGoal = {
         goalInSeconds: 1800,
-        reminderTime: '19:00:00'
+        reminderTime: '19:00:00',
+        timezone: 'Africa/Lagos'
       };
 
       await factory.app
@@ -62,7 +65,8 @@ describe('Testing the goals route', () => {
 
       const updateGoal = {
         goalInSeconds: 3000,
-        reminderTime: '02:00:00'
+        reminderTime: '02:00:00',
+        timezone: 'Asia/Tokyo'
       };
 
       const res = await factory.app
@@ -77,6 +81,7 @@ describe('Testing the goals route', () => {
           id: expect.any(String),
           goalInSeconds: updateGoal.goalInSeconds,
           reminderTime: '02:00:00',
+          timezone: updateGoal.timezone,
           createdAt: expect.any(String),
           updatedAt: expect.any(String)
         })
@@ -86,8 +91,9 @@ describe('Testing the goals route', () => {
     it('should return 401 if the user is not authenticated', async () => {
       const newGoal = {
         goalInSeconds: 1800,
-        reminderTime: '19:00'
-      };
+        reminderTime: '19:00',
+       timezone: 'Africa/Lagos'
+    };
 
       const res = await factory.app
         .post(readingGoalRoute)
@@ -103,11 +109,11 @@ describe('Testing the goals route', () => {
       });
     });
 
-    it('should return 400 if goalInSeconds or reminderTime is missing', async () => {
+    it('should return 400 if goalInSeconds, reminderTime or timezone is missing', async () => {
       const { user } = await createTestUser(factory);
       const token = await getTestAuthToken(user);
 
-      const invalidGoal = { reminderTime: '19:00:00' };
+      const invalidGoal = { reminderTime: '19:00:00', timezone: 'Asia/Tokyo' };
 
       const res1 = await factory.app
         .post(readingGoalRoute)
@@ -124,7 +130,7 @@ describe('Testing the goals route', () => {
         ]
       });
 
-      const invalidGoal2 = { goalInSeconds: 1800 };
+      const invalidGoal2 = { goalInSeconds: 1800, timezone: 'Asia/Tokyo' };
       const res2 = await factory.app
         .post(readingGoalRoute)
         .set('Authorization', `Bearer ${token}`)
@@ -140,6 +146,22 @@ describe('Testing the goals route', () => {
           {
             field: 'reminderTime',
             message: 'reminderTime must be in HH:MM:SS format'
+          }
+        ]
+      });
+
+      const invalidGoal3 = { goalInSeconds: 1800,  reminderTime: '19:00:00' };
+      const res3 = await factory.app
+        .post(readingGoalRoute)
+        .set('Authorization', `Bearer ${token}`)
+        .send(invalidGoal3)
+        .expect(HTTP_STATUS.UNPROCESSABLE_ENTITY);
+
+      expect(res3.body).toEqual({
+        errors: [
+          {
+            field: 'timezone',
+            message: 'Timezone is required'
           }
         ]
       });
@@ -174,6 +196,7 @@ describe('Testing the goals route', () => {
           id: expect.any(String),
           goalInSeconds: newGoal.goalInSeconds,
           reminderTime: '08:00:00',
+          timezone: 'Africa/Lagos',
           createdAt: expect.any(String),
           updatedAt: expect.any(String)
         })
@@ -206,7 +229,8 @@ describe('Testing the goals route', () => {
         .set('Authorization', `Bearer ${token}`)
         .send({
           goalInSeconds: 1800,
-          reminderTime: '19:00:00'
+          reminderTime: '19:00:00',
+          timezone: 'Africa/Lagos'
         });
 
       expect(response.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);

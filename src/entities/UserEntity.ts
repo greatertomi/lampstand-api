@@ -61,4 +61,7 @@ export class UserEntity {
 
   @OneToMany(() => PasswordResetTokenEntity, (token) => token.user, { onDelete: 'CASCADE' })
   passwordResetTokens: PasswordResetTokenEntity[];
+
+  @Column()
+  expoPushToken: string;
 }

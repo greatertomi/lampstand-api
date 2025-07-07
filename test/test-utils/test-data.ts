@@ -8,7 +8,8 @@ export const testUser = {
   email: 'davidbrown@gmail.com',
   password: 'Str0ngP@ssw0rd!',
   confirmPassword: 'Str0ngP@ssw0rd!',
-  agreedToTerms: true
+  agreedToTerms: true,
+  expoPushToken: 'ExponentPushToken[-PZghcBEGjdmjTln0NOsDo]'
 };
 
 export const testBook = {
