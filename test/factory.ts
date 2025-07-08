@@ -7,6 +7,7 @@ import { TestDataSource, testDatabaseConfig } from '../src/database';
 import { errorHandler } from '../src/middleware';
 import routes from '../src/routes';
 import { logger } from '../src/services';
+import { userScheduledJobs } from '../src/services/cron-jobs';
 
 export class TestFactory {
   private _app: express.Application;
@@ -22,6 +23,9 @@ export class TestFactory {
   }
 
   public async close(): Promise<void> {
+    for (const job of userScheduledJobs.values()) {
+      job.cancel();
+    }    userScheduledJobs.clear();
     this._server.close();
     await this._connection.destroy();
   }
@@ -39,6 +43,12 @@ export class TestFactory {
       this._app = express();
       this._app.use(express.json());
       this._app.use(express.urlencoded({ extended: true }));
+      jest.mock('../src/services/cron-jobs', () => ({
+        initializeAllReminders: jest.fn().mockResolvedValue(null),
+        scheduleReminderForUser: jest.fn(),
+        userScheduledJobs: new Map(),
+        cancelExistingJob: jest.fn()
+      }));
       this._app.use('/', routes);
       this._app.use(errorHandler);
       this._server = createServer(this._app).listen(3010);

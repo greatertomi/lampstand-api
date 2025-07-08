@@ -4,7 +4,7 @@ import { sendPushNotification } from '../utils';
 import handleGetRepository from '../utils/handleGetRepository';
 import { logger } from './logger';
 
-const userScheduledJobs = new Map<string, schedule.Job>();
+export const userScheduledJobs = new Map<string, schedule.Job>();
 
 const cancelExistingJob = (userId: string) => {
   const existingJob = userScheduledJobs.get(userId);
