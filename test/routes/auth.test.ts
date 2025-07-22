@@ -384,13 +384,13 @@ describe('Testing the auth route', () => {
         expect.arrayContaining([
           {
             field: 'password',
-            message: 'Password must be at least 6 characters long'
+            message: 'Password must be at least 8 characters long'
           },
           {
             field: 'confirmPassword',
             message: 'Password and confirm password must be the same'
           },
-          { field: 'password', message: 'Password must be at least 6 characters long' },
+          { field: 'password', message: 'Password must be at least 8 characters long' },
         ])
       );
       // expect(res.body.errors).toHaveProperty('password');

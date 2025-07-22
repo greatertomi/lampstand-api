@@ -1,5 +1,5 @@
 import { body } from 'express-validator';
 
 export const passwordValidationRules = () => [
-  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
+  body('password').isLength({ min: 8 }).withMessage('Password must be at least 8 characters long')
 ];
