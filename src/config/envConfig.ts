@@ -21,7 +21,7 @@ type EnvConfig = {
   GOOGLE_CALLBACK_URL: string;
   REDIRECT_URL: string;
   ANDROID_CLIENT_ID: string;
-  IOS_CLIENT_ID:string;
+  IOS_CLIENT_ID: string;
 };
 
 type ENV = Partial<EnvConfig> & {

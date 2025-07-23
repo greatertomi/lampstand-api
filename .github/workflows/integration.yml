@@ -55,5 +55,7 @@ jobs:
           GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
           GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
           GOOGLE_CALLBACK_URL: ${{ secrets.GOOGLE_CALLBACK_URL }}
-          REDIRECT_URL: ${{ secrets.REDIRECT_URL }}
+          REDIRECT_URL: ${{ secrets.REDIRECT_URL }},
+          ANDROID_CLIENT_ID: ${{ secrets.ANDROID_CLIENT_ID }},
+          IOS_CLIENT_ID: ${{ secrets.IOS_CLIENT_ID }}
         run: yarn test

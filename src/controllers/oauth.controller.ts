@@ -18,7 +18,6 @@ export interface AuthenticatedRequest extends Request {
   user: OAuthUser;
 }
 
-
 const oauthRoute = 'api/v1/google';
 
 const generateOAuthResponse = async (user: UserEntity, res: Response, status: number) => {
