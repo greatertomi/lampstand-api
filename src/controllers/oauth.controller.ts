@@ -18,13 +18,6 @@ export interface AuthenticatedRequest extends Request {
   user: OAuthUser;
 }
 
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-const ANDROID_CLIENT_ID = process.env.ANDROID_CLIENT_ID;
-const IOS_CLIENT_ID = process.env.IOS_CLIENT_ID;
-
-const client = new OAuth2Client({
-  clientId: process.env.GOOGLE_CLIENT_ID
-});
 
 const oauthRoute = 'api/v1/google';
 
@@ -83,6 +76,14 @@ export const handleGoogleOauthCallback = async (req: AuthenticatedRequest, res: 
 };
 
 export const handleMobileGoogleOauthCallback = async (req: AuthenticatedRequest, res: Response) => {
+  const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
+  const ANDROID_CLIENT_ID = process.env.ANDROID_CLIENT_ID;
+  const IOS_CLIENT_ID = process.env.IOS_CLIENT_ID;
+
+  const client = new OAuth2Client({
+    clientId: process.env.GOOGLE_CLIENT_ID
+  });
+
   const { token } = req.body;
 
   if (!token || typeof token !== 'string') {
