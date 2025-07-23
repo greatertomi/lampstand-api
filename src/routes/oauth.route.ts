@@ -1,6 +1,6 @@
 import { Request, Response, Router } from 'express';
 import passport from 'passport';
-import { handleGoogleOauthCallback } from '../controllers';
+import { handleGoogleOauthCallback, handleMobileGoogleOauthCallback } from '../controllers';
 import { HTTP_STATUS } from '../lib/responses';
 import { asyncMiddleware } from '../middleware';
 
@@ -20,5 +20,7 @@ router.get(
 router.get('/google/failure', (_: Request, res: Response) => {
   res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: 'Google OAuth failed' });
 });
+
+router.post('/mobile/google', asyncMiddleware(handleMobileGoogleOauthCallback));
 
 export default router;
