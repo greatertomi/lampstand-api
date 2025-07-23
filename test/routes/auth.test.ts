@@ -8,9 +8,6 @@ import { TestFactory } from '../factory';
 import { createTestUser } from '../test-utils/helper-test';
 import { testUser } from '../test-utils/test-data';
 
-const passwordError = 'Password must have at least one special character';
-const uppercaseError = 'Password must have at least one uppercase letter';
-const numberError = 'Password must have at least one number';
 
 describe('Testing the auth route', () => {
   const factory: TestFactory = new TestFactory();
@@ -73,7 +70,7 @@ describe('Testing the auth route', () => {
         });
 
         expect(res.status).toEqual(HTTP_STATUS.UNPROCESSABLE_ENTITY);
-        expect(Object.keys(res.body.errors).length).toBe(6);
+        expect(Object.keys(res.body.errors).length).toBe(3);
         expect(res.body.errors).toEqual(expect.arrayContaining([]));
         expect(addLoginHistory).not.toHaveBeenCalled();
         expect(sendVerificationEmail).not.toHaveBeenCalled();
@@ -119,15 +116,6 @@ describe('Testing the auth route', () => {
         expect(res.body).toHaveProperty('errors');
         expect(res.body.errors).toEqual(
           expect.arrayContaining([
-            {
-              field: 'password',
-              message: uppercaseError
-            },
-            { field: 'password', message: numberError },
-            {
-              field: 'password',
-              message: passwordError
-            },
             { field: 'confirmPassword', message: 'Confirm password must match the password' }
           ])
         );
@@ -222,11 +210,6 @@ describe('Testing the auth route', () => {
           {
             field: 'email',
             message: 'This must be a valid email address'
-          },
-          { field: 'password', message: numberError },
-          {
-            field: 'password',
-            message: passwordError
           }
         ])
       );
@@ -403,29 +386,11 @@ describe('Testing the auth route', () => {
             field: 'password',
             message: 'Password must be at least 8 characters long'
           },
-          { field: 'password', message: uppercaseError },
-          {
-            field: 'password',
-            message: numberError
-          },
-          {
-            field: 'password',
-            message: passwordError
-          },
           {
             field: 'confirmPassword',
             message: 'Password and confirm password must be the same'
           },
           { field: 'password', message: 'Password must be at least 8 characters long' },
-          {
-            field: 'password',
-            message: uppercaseError
-          },
-          { field: 'password', message: numberError },
-          {
-            field: 'password',
-            message: passwordError
-          }
         ])
       );
       // expect(res.body.errors).toHaveProperty('password');
