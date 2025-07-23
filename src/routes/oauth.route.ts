@@ -21,6 +21,6 @@ router.get('/google/failure', (_: Request, res: Response) => {
   res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ message: 'Google OAuth failed' });
 });
 
-router.post('/google-token', asyncMiddleware(handleMobileGoogleOauthCallback));
+router.post('/mobile/google', asyncMiddleware(handleMobileGoogleOauthCallback));
 
 export default router;
