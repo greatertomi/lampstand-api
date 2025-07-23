@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { OAuth2Client } from 'google-auth-library';
+import envConfig from '../config/envConfig';
 import { LoginType, UserEntity } from '../entities';
 import { JwtHelper } from '../lib';
 import { HTTP_STATUS } from '../lib/responses';
@@ -75,12 +76,12 @@ export const handleGoogleOauthCallback = async (req: AuthenticatedRequest, res: 
 };
 
 export const handleMobileGoogleOauthCallback = async (req: AuthenticatedRequest, res: Response) => {
-  const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-  const ANDROID_CLIENT_ID = process.env.ANDROID_CLIENT_ID;
-  const IOS_CLIENT_ID = process.env.IOS_CLIENT_ID;
+  const GOOGLE_CLIENT_ID = envConfig.GOOGLE_CLIENT_ID;
+  const ANDROID_CLIENT_ID = envConfig.ANDROID_CLIENT_ID;
+  const IOS_CLIENT_ID = envConfig.IOS_CLIENT_ID;
 
   const client = new OAuth2Client({
-    clientId: process.env.GOOGLE_CLIENT_ID
+    clientId: GOOGLE_CLIENT_ID
   });
 
   const { token } = req.body;
