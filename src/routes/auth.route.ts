@@ -6,10 +6,18 @@ import {
   signup,
   updatePassword,
   verifyEmail,
-  verifyResetToken,
+  verifyResetToken
 } from '../controllers';
-import { asyncMiddleware, forgotPasswordValidationRules, loginValidationRules, resendVerificationEmailValidationRules, updatePasswordValidationRules, userValidationRules, validate, verifyResetTokenValidationRules } from '../middleware';
-
+import {
+  asyncMiddleware,
+  forgotPasswordValidationRules,
+  loginValidationRules,
+  resendVerificationEmailValidationRules,
+  updatePasswordValidationRules,
+  userValidationRules,
+  validate,
+  verifyResetTokenValidationRules
+} from '../middleware';
 
 const router = Router();
 

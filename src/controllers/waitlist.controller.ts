@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
-import handleGetRepository from '../utils/handleGetRepository';
 import { WaitlistEntity } from '../entities';
 import { BadRequestError, HTTP_STATUS, NotFoundError } from '../lib/responses';
+import handleGetRepository from '../utils/handleGetRepository';
 
-export const saveWaitlistEmail = async ( req: Request, res: Response ) => {
+export const saveWaitlistEmail = async (req: Request, res: Response) => {
   const { email } = req.body;
 
   const waitlistRepo = handleGetRepository(WaitlistEntity);
@@ -14,7 +14,7 @@ export const saveWaitlistEmail = async ( req: Request, res: Response ) => {
     throw new BadRequestError('User has already signed up for the waitlist');
   }
 
-  const newUser =  waitlistRepo.create({ email, isVerified:false });
+  const newUser = waitlistRepo.create({ email, isVerified: false });
   await waitlistRepo.save(newUser);
 
   return res
@@ -22,7 +22,7 @@ export const saveWaitlistEmail = async ( req: Request, res: Response ) => {
     .send({ message: 'Waitlist Email saved successfully', data: { email } });
 };
 
-export const checkWaitlistEmail = async ( req: Request, res: Response ) => {
+export const checkWaitlistEmail = async (req: Request, res: Response) => {
   const { email } = req.query;
 
   if (!email || typeof email !== 'string') {
@@ -32,15 +32,11 @@ export const checkWaitlistEmail = async ( req: Request, res: Response ) => {
   const waitlistRepo = handleGetRepository(WaitlistEntity);
   const existingUser = await waitlistRepo.findOne({ where: { email } });
 
-  return res
-    .status(HTTP_STATUS.OK)
-    .send({
-      exists: !!existingUser,
-      message: existingUser
-        ? 'Email exists in waitlist'
-        : 'Email not found in waitlist',
-      data: existingUser || null
-    });
+  return res.status(HTTP_STATUS.OK).send({
+    exists: !!existingUser,
+    message: existingUser ? 'Email exists in waitlist' : 'Email not found in waitlist',
+    data: existingUser || null
+  });
 };
 
 export const verifyWaitlistEmail = async (req: Request, res: Response) => {

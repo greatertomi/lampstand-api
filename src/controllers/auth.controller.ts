@@ -9,7 +9,6 @@ import { generateUniqueToken } from '../utils';
 import handleGetRepository from '../utils/handleGetRepository';
 import { addLoginHistories } from './utils';
 
-
 const userNotFound = 'User not found';
 
 export const signup = async (req: Request, res: Response) => {
@@ -44,7 +43,7 @@ export const signup = async (req: Request, res: Response) => {
   const responseData: JwtPayload = {
     id: newUser.id,
     fullName: newUser.fullName,
-    email: newUser.email,
+    email: newUser.email
   };
   const token = JwtHelper.generateToken(responseData);
   if (!isEmailVerified) {

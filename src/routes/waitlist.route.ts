@@ -1,6 +1,6 @@
 import express from 'express';
-import { asyncMiddleware } from '../middleware';
 import { checkWaitlistEmail, saveWaitlistEmail, verifyWaitlistEmail } from '../controllers';
+import { asyncMiddleware } from '../middleware';
 
 const router = express.Router();
 
