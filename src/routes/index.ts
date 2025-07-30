@@ -7,6 +7,7 @@ import preinstalledBooks from './preinstalledBooks.route';
 import readingLogs from './readingLog.route';
 import reports from './reports.route';
 import users from './user.route';
+import waitlist from './waitlist.route';
 
 const router = Router();
 
@@ -18,5 +19,6 @@ router.use('/readingLogs', readingLogs);
 router.use('/oauth', oauth);
 router.use('/reports', reports);
 router.use('/preinstalledBooks', preinstalledBooks);
+router.use('/waitlist', waitlist);
 
 export default router;

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { LoginType, PasswordResetTokenEntity, UserEntity } from '../entities';
+import { LoginType, PasswordResetTokenEntity, UserEntity, WaitlistEntity } from '../entities';
 import { TokenStatus } from '../entities/types';
 import { BcryptHelper, JwtHelper } from '../lib';
 import { BadRequestError, HTTP_STATUS, NotFoundError, UnAuthorizeError } from '../lib/responses';
@@ -8,6 +8,7 @@ import { JwtPayload } from '../types';
 import { generateUniqueToken } from '../utils';
 import handleGetRepository from '../utils/handleGetRepository';
 import { addLoginHistories } from './utils';
+
 
 const userNotFound = 'User not found';
 
@@ -23,13 +24,19 @@ export const signup = async (req: Request, res: Response) => {
     throw new BadRequestError('Email address already in use');
   }
 
+  const waitlistRepository = handleGetRepository(WaitlistEntity);
+  const existingWaitlistUser = await waitlistRepository.findOne({ where: { email } });
+
+  const isEmailVerified = existingWaitlistUser?.isVerified || false;
+
   const hashedPassword = await BcryptHelper.hash(password);
 
   const newUser = userRepository.create({
     fullName,
     email,
     password: hashedPassword,
-    agreedToTerms
+    agreedToTerms,
+    isEmailVerified
   });
 
   await userRepository.save(newUser);
@@ -37,10 +44,12 @@ export const signup = async (req: Request, res: Response) => {
   const responseData: JwtPayload = {
     id: newUser.id,
     fullName: newUser.fullName,
-    email: newUser.email
+    email: newUser.email,
   };
   const token = JwtHelper.generateToken(responseData);
-  await sendVerificationEmail(responseData);
+  if (!isEmailVerified) {
+    await sendVerificationEmail(responseData);
+  }
   await addLoginHistories(newUser.id, LoginType.PASSWORD);
 
   const response = {
