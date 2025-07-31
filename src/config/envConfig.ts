@@ -51,8 +51,7 @@ const getConfig = (): ENV => ({
   REDIRECT_URL: process.env.REDIRECT_URL,
   ANDROID_CLIENT_ID: process.env.ANDROID_CLIENT_ID,
   IOS_CLIENT_ID: process.env.IOS_CLIENT_ID,
-  SENTRY_DSN: process.env.SENTRY_DSN,
-
+  SENTRY_DSN: process.env.SENTRY_DSN
 });
 
 const getSanitizedConfig = (config: ENV): EnvConfig => {
