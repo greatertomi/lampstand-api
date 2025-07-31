@@ -1,26 +1,21 @@
-import * as Sentry from '@sentry/node';
-import envConfig from './config/envConfig';
-
-Sentry.init({
-  dsn: envConfig.SENTRY_DSN,
-  integrations: [Sentry.httpIntegration()],
-  // eslint-disable-next-line unicorn/no-zero-fractions
-  tracesSampleRate: 1.0,
-  beforeSend: (event) => envConfig.NODE_ENV === 'production' ? event : null
-
-});
-
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import passport from 'passport';
+import * as Sentry from '@sentry/node';
+import envConfig from './config/envConfig';
 import { AppDataSource } from './database';
 import { errorHandler, responseLogger } from './middleware';
 import routes from './routes';
 import homepageRouter from './routes/homepage.route';
 import { logger } from './services';
 import './services/google-passport';
+
 const { PORT } = envConfig;
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN
+});
 
 export const main = async () => {
   try {
@@ -38,7 +33,6 @@ export const main = async () => {
 
     app.use(passport.initialize());
 
-    Sentry.setupExpressErrorHandler(app);
     app.use(responseLogger);
     app.use('/', homepageRouter);
     app.use('/api/v1', routes);
