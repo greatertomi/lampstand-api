@@ -22,6 +22,7 @@ type EnvConfig = {
   REDIRECT_URL: string;
   ANDROID_CLIENT_ID: string;
   IOS_CLIENT_ID: string;
+  SENTRY_DSN: string;
 };
 
 type ENV = Partial<EnvConfig> & {
@@ -49,7 +50,8 @@ const getConfig = (): ENV => ({
   GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL,
   REDIRECT_URL: process.env.REDIRECT_URL,
   ANDROID_CLIENT_ID: process.env.ANDROID_CLIENT_ID,
-  IOS_CLIENT_ID: process.env.IOS_CLIENT_ID
+  IOS_CLIENT_ID: process.env.IOS_CLIENT_ID,
+  SENTRY_DSN: process.env.SENTRY_DSN
 });
 
 const getSanitizedConfig = (config: ENV): EnvConfig => {

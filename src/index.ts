@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import passport from 'passport';
+import * as Sentry from '@sentry/node';
 import envConfig from './config/envConfig';
 import { AppDataSource } from './database';
 import { errorHandler, responseLogger } from './middleware';
@@ -11,6 +12,10 @@ import { logger } from './services';
 import './services/google-passport';
 
 const { PORT } = envConfig;
+
+Sentry.init({
+  dsn: process.env.SENTRY_DSN
+});
 
 export const main = async () => {
   try {

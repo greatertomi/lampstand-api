@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import * as Sentry from '@sentry/node';
 import { LoginType, PasswordResetTokenEntity, UserEntity, WaitlistEntity } from '../entities';
 import { TokenStatus } from '../entities/types';
 import { BcryptHelper, JwtHelper } from '../lib';
@@ -101,6 +102,7 @@ export const login = async (req: Request, res: Response) => {
   const token = JwtHelper.generateToken(responseData);
 
   await addLoginHistories(user.id, LoginType.PASSWORD);
+  Sentry.setUser({ id: user.id });
 
   res.status(HTTP_STATUS.OK).json({
     message: 'Login successful',
