@@ -24,7 +24,7 @@ export const signup = async (req: Request, res: Response) => {
   }
 
   const waitlistRepository = handleGetRepository(WaitlistEntity);
-  const existingWaitlistUser = await waitlistRepository.findOne({ where: { email } });
+  const existingWaitlistUser = await waitlistRepository.findOneBy({ email });
 
   const isEmailVerified = existingWaitlistUser?.isVerified || false;
 
