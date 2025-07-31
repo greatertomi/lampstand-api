@@ -8,7 +8,7 @@ export const saveWaitlistEmail = async (req: Request, res: Response) => {
 
   const waitlistRepo = handleGetRepository(WaitlistEntity);
 
-  const existingUser = await waitlistRepo.findOne({ where: { email } });
+  const existingUser = await waitlistRepo.findOneBy({ email });
 
   if (existingUser) {
     throw new BadRequestError('User has already signed up for the waitlist');
@@ -23,14 +23,10 @@ export const saveWaitlistEmail = async (req: Request, res: Response) => {
 };
 
 export const checkWaitlistEmail = async (req: Request, res: Response) => {
-  const { email } = req.query;
-
-  if (!email || typeof email !== 'string') {
-    throw new Error('Email is required and must be a string');
-  }
+  const email = req.query.email as string;
 
   const waitlistRepo = handleGetRepository(WaitlistEntity);
-  const existingUser = await waitlistRepo.findOne({ where: { email } });
+  const existingUser = await waitlistRepo.findOneBy({ email });
 
   return res.status(HTTP_STATUS.OK).send({
     exists: !!existingUser,
@@ -42,12 +38,8 @@ export const checkWaitlistEmail = async (req: Request, res: Response) => {
 export const verifyWaitlistEmail = async (req: Request, res: Response) => {
   const { email } = req.body;
 
-  if (!email) {
-    throw new BadRequestError('Email is required');
-  }
-
   const waitlistRepo = handleGetRepository(WaitlistEntity);
-  const user = await waitlistRepo.findOne({ where: { email } });
+  const user = await waitlistRepo.findOneBy({ email });
 
   if (!user) {
     throw new NotFoundError('Email not found in waitlist');

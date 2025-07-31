@@ -57,7 +57,8 @@ export const handleGoogleOauthCallback = async (req: AuthenticatedRequest, res: 
       email: oauthUser.email,
       agreedToTerms: true,
       isOAuthUser: true,
-      profilePicture: oauthUser.profilePicture
+      profilePicture: oauthUser.profilePicture,
+      isEmailVerified: true
     });
     await userRepository.save(newUser);
 
@@ -111,7 +112,8 @@ export const handleMobileGoogleOauthCallback = async (req: AuthenticatedRequest,
         email: payload.email,
         profilePicture: payload.picture,
         agreedToTerms: true,
-        isOAuthUser: true
+        isOAuthUser: true,
+        isEmailVerified: true
       });
       await userRepository.save(user);
     }
