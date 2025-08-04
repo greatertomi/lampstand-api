@@ -53,7 +53,8 @@ export const createTestGoal = async (userId: string): Promise<ReadingGoal> => {
   return readingGoalRepository.save({
     goalInSeconds: 1800,
     reminderTime: '08:00',
-    user: { id: userId }
+    user: { id: userId },
+    timezone: 'Africa/Lagos'
   });
 };
 
