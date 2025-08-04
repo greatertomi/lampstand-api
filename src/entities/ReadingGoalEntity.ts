@@ -24,6 +24,9 @@ export class ReadingGoal {
   @Column('time')
   reminderTime: string;
 
+  @Column()
+  timezone: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

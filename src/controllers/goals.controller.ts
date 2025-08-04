@@ -7,7 +7,7 @@ import handleGetRepository from '../utils/handleGetRepository';
 export const createReadingGoal = async (req: IExtendedRequest, res: Response): Promise<void> => {
   const userId = req.user?.id;
 
-  const { goalInSeconds, reminderTime } = req.body;
+  const { goalInSeconds, reminderTime, timezone } = req.body;
   const readingGoalRepository = handleGetRepository(ReadingGoal);
 
   const existingGoal = await readingGoalRepository.findOne({
@@ -18,7 +18,8 @@ export const createReadingGoal = async (req: IExtendedRequest, res: Response): P
     {
       user: { id: userId },
       goalInSeconds,
-      reminderTime
+      reminderTime,
+      timezone
     },
     {
       conflictPaths: ['user'],
