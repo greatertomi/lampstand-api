@@ -23,8 +23,7 @@ type EnvConfig = {
   ANDROID_CLIENT_ID: string;
   IOS_CLIENT_ID: string;
   SENTRY_DSN: string;
-  SUPPORT_COMPLAINT_EMAIL: string;
-  SUPPORT_FEEDBACK_EMAIL: string;
+  SUPPORT_EMAIL: string;
 };
 
 type ENV = Partial<EnvConfig> & {
@@ -54,8 +53,7 @@ const getConfig = (): ENV => ({
   ANDROID_CLIENT_ID: process.env.ANDROID_CLIENT_ID,
   IOS_CLIENT_ID: process.env.IOS_CLIENT_ID,
   SENTRY_DSN: process.env.SENTRY_DSN,
-  SUPPORT_COMPLAINT_EMAIL: process.env.SUPPORT_COMPLAINT_EMAIL,
-  SUPPORT_FEEDBACK_EMAIL: process.env.SUPPORT_FEEDBACK_EMAIL
+  SUPPORT_EMAIL: process.env.SUPPORT_EMAIL
 });
 
 const getSanitizedConfig = (config: ENV): EnvConfig => {

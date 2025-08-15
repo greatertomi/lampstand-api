@@ -4,8 +4,7 @@ import { JwtPayload } from '../types';
 import { logger } from './logger';
 
 const SENDER_EMAIL = process.env.SENDER_EMAIL;
-const SUPPORT_COMPLAINT_EMAIL = process.env.SUPPORT_COMPLAINT_EMAIL;
-const SUPPORT_FEEDBACK_EMAIL = process.env.SUPPORT_FEEDBACK_EMAIL;
+const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL;
 
 export const sendVerificationEmail = async (user: JwtPayload) => {
   const verificationToken = JwtHelper.generateToken(user);
@@ -109,7 +108,7 @@ export const sendPasswordResetEmail = async (email: string, token: number) => {
 export const sendUserComplaintEmail = async (email: string, title: string, description: string) => {
   const mailData = {
     from: SENDER_EMAIL,
-    to: SUPPORT_COMPLAINT_EMAIL,
+    to: SUPPORT_EMAIL,
     subject: `[Lampstand Support] ${title}`,
     html: `
     <!DOCTYPE html>
@@ -231,7 +230,7 @@ export const sendUserFeedbackEmail = async (
 
   const mailData = {
     from: SENDER_EMAIL,
-    to: SUPPORT_FEEDBACK_EMAIL,
+    to: SUPPORT_EMAIL,
     subject: `[Lampstand Feedback] ${title}`,
     html: `
       <!DOCTYPE html>
