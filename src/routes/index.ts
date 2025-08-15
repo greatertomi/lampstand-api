@@ -6,6 +6,7 @@ import oauth from './oauth.route';
 import preinstalledBooks from './preinstalledBooks.route';
 import readingLogs from './readingLog.route';
 import reports from './reports.route';
+import support from './support.route';
 import users from './user.route';
 import waitlist from './waitlist.route';
 
@@ -20,5 +21,6 @@ router.use('/oauth', oauth);
 router.use('/reports', reports);
 router.use('/preinstalledBooks', preinstalledBooks);
 router.use('/waitlist', waitlist);
+router.use('/support', support);
 
 export default router;

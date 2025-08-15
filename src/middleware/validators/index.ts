@@ -6,3 +6,4 @@ export * from './book-validator';
 export * from './readingLog-validator';
 export * from './reports-validator';
 export * from './waitlist-validator';
+export * from './support-validator';

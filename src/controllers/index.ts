@@ -7,3 +7,4 @@ export * from './readingLog.controller';
 export * from './reports.controller';
 export * from './preinstalledBooks.controller';
 export * from './waitlist.controller';
+export * from './support.controller';
