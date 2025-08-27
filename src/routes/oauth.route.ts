@@ -1,6 +1,10 @@
 import { Request, Response, Router } from 'express';
 import passport from 'passport';
-import { handleGoogleOauthCallback, handleMobileGoogleOauthCallback } from '../controllers';
+import {
+  handleGoogleOauthCallback,
+  handleMobileAppleOauthCallback,
+  handleMobileGoogleOauthCallback
+} from '../controllers';
 import { HTTP_STATUS } from '../lib/responses';
 import { asyncMiddleware } from '../middleware';
 
@@ -22,5 +26,7 @@ router.get('/google/failure', (_: Request, res: Response) => {
 });
 
 router.post('/mobile/google', asyncMiddleware(handleMobileGoogleOauthCallback));
+
+router.post('/mobile/apple', asyncMiddleware(handleMobileAppleOauthCallback));
 
 export default router;

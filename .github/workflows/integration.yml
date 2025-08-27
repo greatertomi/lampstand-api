@@ -59,5 +59,6 @@ jobs:
           ANDROID_CLIENT_ID: ${{ secrets.ANDROID_CLIENT_ID }},
           IOS_CLIENT_ID: ${{ secrets.IOS_CLIENT_ID }}
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
-          SUPPORT_EMAIL: $${secrets.SUPPORT_EMAIL}
+          SUPPORT_EMAIL: ${{ secrets.SUPPORT_EMAIL }}
+          APPLE_BUNDLE_ID: ${{ secrets.APPLE_BUNDLE_ID }}
         run: yarn test
