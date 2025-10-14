@@ -11,6 +11,7 @@ import { LoginHistoryEntity } from './LoginHistoryEntity';
 import { PasswordResetTokenEntity } from './PasswordResetTokenEntity';
 import { ReadingGoal } from './ReadingGoalEntity';
 import { ReadingLogEntity } from './ReadingLogEntity';
+import { UserPushTokenEntity } from './UserPushTokenEntity';
 
 @Entity({ name: 'users' })
 export class UserEntity {
@@ -61,4 +62,7 @@ export class UserEntity {
 
   @OneToMany(() => PasswordResetTokenEntity, (token) => token.user, { onDelete: 'CASCADE' })
   passwordResetTokens: PasswordResetTokenEntity[];
+
+  @OneToMany(() => UserPushTokenEntity, (token) => token.user, { onDelete: 'CASCADE' })
+  pushTokens: UserPushTokenEntity[];
 }

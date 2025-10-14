@@ -8,7 +8,6 @@ import { TestFactory } from '../factory';
 import { createTestUser } from '../test-utils/helper-test';
 import { testUser } from '../test-utils/test-data';
 
-
 describe('Testing the auth route', () => {
   const factory: TestFactory = new TestFactory();
   const createRoute = '/auth/signup';
@@ -390,7 +389,7 @@ describe('Testing the auth route', () => {
             field: 'confirmPassword',
             message: 'Password and confirm password must be the same'
           },
-          { field: 'password', message: 'Password must be at least 8 characters long' },
+          { field: 'password', message: 'Password must be at least 8 characters long' }
         ])
       );
       // expect(res.body.errors).toHaveProperty('password');

@@ -8,3 +8,4 @@ export * from './reports.controller';
 export * from './preinstalledBooks.controller';
 export * from './waitlist.controller';
 export * from './support.controller';
+export * from './notifications.controller';
