@@ -2,6 +2,7 @@ import { Router } from 'express';
 import auth from './auth.route';
 import books from './books.route';
 import readingGoals from './goals.route';
+import notifications from './notifications.route';
 import oauth from './oauth.route';
 import preinstalledBooks from './preinstalledBooks.route';
 import readingLogs from './readingLog.route';
@@ -22,5 +23,6 @@ router.use('/reports', reports);
 router.use('/preinstalledBooks', preinstalledBooks);
 router.use('/waitlist', waitlist);
 router.use('/support', support);
+router.use('/notifications', notifications);
 
 export default router;

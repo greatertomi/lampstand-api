@@ -5,3 +5,4 @@ export * from './ReadingLogEntity';
 export * from './LoginHistoryEntity';
 export * from './ReadingGoalEntity';
 export * from './WaitlistEntity';
+export * from './UserPushTokenEntity';
