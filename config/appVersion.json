@@ -1,0 +1,12 @@
+{
+  "ios": {
+    "latestVersion": "1.3.0",
+    "minSupportedVersion": "1.2.0",
+    "storeUrl": "https://apps.apple.com/app/your-app-id"
+  },
+  "android": {
+    "latestVersion": "1.3.0",
+    "minSupportedVersion": "1.2.0",
+    "storeUrl": "https://play.google.com/store/apps/details?id=your.app.id"
+  }
+}
