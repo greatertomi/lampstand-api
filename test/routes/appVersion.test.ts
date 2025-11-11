@@ -15,57 +15,51 @@ describe('Testing the app-version route', () => {
   });
 
   describe('GET /app-version', () => {
-    it('should return iOS version data when platform is ios', async () => {
-      const res = await factory.app
-        .get(appVersionRoute)
-        .query({ platform: 'ios' })
-        .expect(HTTP_STATUS.OK);
+    const validPlatformTestCases = [
+      { platform: 'ios', storeUrlPart: 'apps.apple.com' },
+      { platform: 'android', storeUrlPart: 'play.google.com' }
+    ];
 
-      expect(res.body).toHaveProperty('success', true);
-      expect(res.body.data).toHaveProperty('latestVersion');
-      expect(res.body.data).toHaveProperty('minSupportedVersion');
-      expect(res.body.data).toHaveProperty('storeUrl');
-      expect(res.body.data.storeUrl).toContain('apps.apple.com');
-    });
+    const invalidPlatformTestCases = [
+      { platform: undefined, description: 'platform parameter is missing' },
+      { platform: 'windows', description: 'platform parameter is invalid' },
+      { platform: '', description: 'platform parameter is empty string' }
+    ];
 
-    it('should return Android version data when platform is android', async () => {
-      const res = await factory.app
-        .get(appVersionRoute)
-        .query({ platform: 'android' })
-        .expect(HTTP_STATUS.OK);
+    it.each(validPlatformTestCases)(
+      'should return version data for platform: $platform',
+      async ({ platform, storeUrlPart }) => {
+        const res = await factory.app
+          .get(appVersionRoute)
+          .query({ platform })
+          .expect(HTTP_STATUS.OK);
 
-      expect(res.body).toHaveProperty('success', true);
-      expect(res.body.data).toHaveProperty('latestVersion');
-      expect(res.body.data).toHaveProperty('minSupportedVersion');
-      expect(res.body.data).toHaveProperty('storeUrl');
-      expect(res.body.data.storeUrl).toContain('play.google.com');
-    });
+        expect(res.body).toMatchObject({
+          success: true,
+          data: {
+            latestVersion: expect.any(String),
+            minSupportedVersion: expect.any(String),
+            storeUrl: expect.stringContaining(storeUrlPart)
+          }
+        });
+      }
+    );
 
-    it('should return 400 error when platform parameter is missing', async () => {
-      const res = await factory.app.get(appVersionRoute).expect(HTTP_STATUS.BAD_REQUEST);
+    it.each(invalidPlatformTestCases)(
+      'should return 400 error when $description',
+      async ({ platform }) => {
+        const request = factory.app.get(appVersionRoute);
+        
+        // Only add query parameter if platform is defined (not undefined)
+        if (platform !== undefined) {
+          request.query({ platform });
+        }
 
-      expect(res.body).toHaveProperty('errors');
-      expect(res.body.errors[0]).toHaveProperty('message', invalidPlatformMessage);
-    });
+        const res = await request.expect(HTTP_STATUS.BAD_REQUEST);
 
-    it('should return 400 error when platform parameter is invalid', async () => {
-      const res = await factory.app
-        .get(appVersionRoute)
-        .query({ platform: 'windows' })
-        .expect(HTTP_STATUS.BAD_REQUEST);
-
-      expect(res.body).toHaveProperty('errors');
-      expect(res.body.errors[0]).toHaveProperty('message', invalidPlatformMessage);
-    });
-
-    it('should return 400 error when platform parameter is empty string', async () => {
-      const res = await factory.app
-        .get(appVersionRoute)
-        .query({ platform: '' })
-        .expect(HTTP_STATUS.BAD_REQUEST);
-
-      expect(res.body).toHaveProperty('errors');
-      expect(res.body.errors[0]).toHaveProperty('message', invalidPlatformMessage);
-    });
+        expect(res.body).toHaveProperty('errors');
+        expect(res.body.errors[0]).toHaveProperty('message', invalidPlatformMessage);
+      }
+    );
   });
 });
