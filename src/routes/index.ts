@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import appVersion from './appVersion.route';
 import auth from './auth.route';
 import books from './books.route';
 import readingGoals from './goals.route';
@@ -13,6 +14,7 @@ import waitlist from './waitlist.route';
 
 const router = Router();
 
+router.use('/app-version', appVersion);
 router.use('/auth', auth);
 router.use('/books', books);
 router.use('/users', users);
