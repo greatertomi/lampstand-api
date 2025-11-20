@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { WaitlistEntity } from '../entities';
 import { BadRequestError, HTTP_STATUS, NotFoundError } from '../lib/responses';
+import { sendAndroidTesterInviteEmail } from '../services';
 import handleGetRepository from '../utils/handleGetRepository';
 
 export const saveWaitlistEmail = async (req: Request, res: Response) => {
@@ -16,6 +17,8 @@ export const saveWaitlistEmail = async (req: Request, res: Response) => {
 
   const newUser = waitlistRepo.create({ email, isVerified: false });
   await waitlistRepo.save(newUser);
+
+  await sendAndroidTesterInviteEmail(email);
 
   return res
     .status(HTTP_STATUS.CREATED)

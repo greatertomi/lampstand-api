@@ -25,6 +25,7 @@ type EnvConfig = {
   SENTRY_DSN: string;
   SUPPORT_EMAIL: string;
   APPLE_BUNDLE_ID: string;
+  TESTER_URL: string;
 };
 
 type ENV = Partial<EnvConfig> & {
@@ -55,7 +56,8 @@ const getConfig = (): ENV => ({
   IOS_CLIENT_ID: process.env.IOS_CLIENT_ID,
   SENTRY_DSN: process.env.SENTRY_DSN,
   SUPPORT_EMAIL: process.env.SUPPORT_EMAIL,
-  APPLE_BUNDLE_ID: process.env.APPLE_BUNDLE_ID
+  APPLE_BUNDLE_ID: process.env.APPLE_BUNDLE_ID,
+  TESTER_URL: process.env.TESTER_URL
 });
 
 const getSanitizedConfig = (config: ENV): EnvConfig => {
