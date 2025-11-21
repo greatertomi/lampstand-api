@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
+import envConfig from '../config/envConfig';
 import { WaitlistEntity } from '../entities';
 import { BadRequestError, HTTP_STATUS, NotFoundError } from '../lib/responses';
 import { sendAndroidTesterInviteEmail } from '../services';
 import handleGetRepository from '../utils/handleGetRepository';
-import envConfig from '../config/envConfig';
 
 const { WHATSAPP_GROUP_INVITE_LINK } = envConfig;
 
@@ -25,12 +25,10 @@ export const saveWaitlistEmail = async (req: Request, res: Response) => {
 
   await sendAndroidTesterInviteEmail(email);
 
-  return res
-    .status(HTTP_STATUS.CREATED)
-    .send({
-      message: 'Waitlist Email saved successfully',
-      data: { email, phoneNumber, whatsappInviteLink: WHATSAPP_GROUP_INVITE_LINK }
-    });
+  return res.status(HTTP_STATUS.CREATED).send({
+    message: 'Waitlist Email saved successfully',
+    data: { email, phoneNumber, whatsappInviteLink: WHATSAPP_GROUP_INVITE_LINK }
+  });
 };
 
 export const checkWaitlistEmail = async (req: Request, res: Response) => {
