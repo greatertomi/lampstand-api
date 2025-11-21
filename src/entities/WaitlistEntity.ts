@@ -8,6 +8,9 @@ export class WaitlistEntity {
   @Column({ unique: true })
   email: string;
 
+  @Column({ unique: true })
+  phoneNumber: string;
+
   @Column()
   isVerified: boolean;
 

@@ -5,24 +5,28 @@ import { sendAndroidTesterInviteEmail } from '../services';
 import handleGetRepository from '../utils/handleGetRepository';
 
 export const saveWaitlistEmail = async (req: Request, res: Response) => {
-  const { email } = req.body;
+  const { email, phoneNumber } = req.body;
 
   const waitlistRepo = handleGetRepository(WaitlistEntity);
 
-  const existingUser = await waitlistRepo.findOneBy({ email });
+  const existingUser = await waitlistRepo.findOne({
+    where: [{ email }, { phoneNumber }],
+  });
 
   if (existingUser) {
     throw new BadRequestError('User has already signed up for the waitlist');
   }
 
-  const newUser = waitlistRepo.create({ email, isVerified: false });
+  const newUser = waitlistRepo.create({ email, phoneNumber, isVerified: false });
   await waitlistRepo.save(newUser);
 
   await sendAndroidTesterInviteEmail(email);
 
+  const whatsappInviteLink = process.env.WHATSAPP_GROUP_INVITE_LINK;
+
   return res
     .status(HTTP_STATUS.CREATED)
-    .send({ message: 'Waitlist Email saved successfully', data: { email } });
+    .send({ message: 'Waitlist Email saved successfully', data: { email, phoneNumber, whatsappInviteLink } });
 };
 
 export const checkWaitlistEmail = async (req: Request, res: Response) => {
