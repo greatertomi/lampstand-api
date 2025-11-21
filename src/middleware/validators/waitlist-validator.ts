@@ -8,13 +8,11 @@ export const waitlistValidationRules = [
     .withMessage('Email is required'),
 
   body('phoneNumber')
-  .isMobilePhone('any')
-  .withMessage('Phone number should be valid')
-  .notEmpty()
-  .withMessage('Phone number is required'),
-
+    .isMobilePhone('any')
+    .withMessage('Phone number should be valid')
+    .notEmpty()
+    .withMessage('Phone number is required')
 ];
-
 
 export const wailistQueryValidationRules = [
   query('email')
