@@ -61,4 +61,6 @@ jobs:
           SENTRY_DSN: ${{ secrets.SENTRY_DSN }}
           SUPPORT_EMAIL: ${{ secrets.SUPPORT_EMAIL }}
           APPLE_BUNDLE_ID: ${{ secrets.APPLE_BUNDLE_ID }}
+          TESTER_URL: ${{ secrets.TESTER_URL }}
+          WHATSAPP_GROUP_INVITE_LINK: ${{ secrets.WHATSAPP_GROUP_INVITE_LINK }}
         run: yarn test
