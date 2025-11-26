@@ -12,12 +12,25 @@ export const saveWaitlistEmail = async (req: Request, res: Response) => {
 
   const waitlistRepo = handleGetRepository(WaitlistEntity);
 
-  const existingUser = await waitlistRepo.findOne({
-    where: [{ email }, { phoneNumber }]
-  });
+  const existingUserByEmail = await waitlistRepo.findOneBy({ email });
 
-  if (existingUser) {
-    throw new BadRequestError('User has already signed up for the waitlist');
+  if (existingUserByEmail) {
+    if (existingUserByEmail.phoneNumber === phoneNumber) {
+      throw new BadRequestError('User has already signed up for the waitlist');
+    }
+
+    const existingUserByPhone = await waitlistRepo.findOneBy({ phoneNumber });
+    if (existingUserByPhone) {
+      throw new BadRequestError('Phone number is already registered');
+    }
+
+    existingUserByEmail.phoneNumber = phoneNumber;
+    await waitlistRepo.save(existingUserByEmail);
+
+    return res.status(HTTP_STATUS.OK).send({
+      message: 'Waitlist updated successfully',
+      data: { email, phoneNumber, whatsappInviteLink: WHATSAPP_GROUP_INVITE_LINK }
+    });
   }
 
   const newUser = waitlistRepo.create({ email, phoneNumber, isVerified: false });
