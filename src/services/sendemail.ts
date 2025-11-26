@@ -10,12 +10,16 @@ const { TESTER_URL, WHATSAPP_GROUP_INVITE_LINK } = envConfig;
 
 const emailServiceCon = 'Email Service Controller';
 
+const formatFromField = (email: string) => {
+  return `Lampstand <${email}>`;
+};
+
 export const sendVerificationEmail = async (user: JwtPayload) => {
   const verificationToken = JwtHelper.generateToken(user);
   const redirectURL = process.env.REDIRECT_URL;
 
   const mailData = {
-    from: SENDER_EMAIL,
+    from: formatFromField(SENDER_EMAIL),
     to: user.email,
     subject: 'Verify your email address',
     html: `
@@ -63,7 +67,7 @@ export const sendVerificationEmail = async (user: JwtPayload) => {
 
 export const sendPasswordResetEmail = async (email: string, token: number) => {
   const mailData = {
-    from: SENDER_EMAIL,
+    from: formatFromField(SENDER_EMAIL),
     to: email,
     subject: 'Reset Your Password',
     html: `
@@ -111,7 +115,7 @@ export const sendPasswordResetEmail = async (email: string, token: number) => {
 
 export const sendUserComplaintEmail = async (email: string, title: string, description: string) => {
   const mailData = {
-    from: SENDER_EMAIL,
+    from: formatFromField(SENDER_EMAIL),
     to: SUPPORT_EMAIL,
     subject: `[Lampstand Support] ${title}`,
     html: `
@@ -233,7 +237,7 @@ export const sendUserFeedbackEmail = async (
     : undefined;
 
   const mailData = {
-    from: SENDER_EMAIL,
+    from: formatFromField(SENDER_EMAIL),
     to: SUPPORT_EMAIL,
     subject: `[Lampstand Feedback] ${title}`,
     html: `
@@ -384,7 +388,7 @@ export const sendUserFeedbackEmail = async (
 
 export const sendAndroidTesterInviteEmail = async (email: string) => {
   const mailData = {
-    from: SENDER_EMAIL,
+    from: formatFromField(SENDER_EMAIL),
     to: email,
     subject: 'Join the Lampstand Android Tester Program 🎉',
     html: `
