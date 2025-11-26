@@ -6,7 +6,7 @@ import { logger } from './logger';
 
 const SENDER_EMAIL = process.env.SENDER_EMAIL;
 const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL;
-const { TESTER_URL } = envConfig;
+const { TESTER_URL, WHATSAPP_GROUP_INVITE_LINK } = envConfig;
 
 const emailServiceCon = 'Email Service Controller';
 
@@ -388,48 +388,67 @@ export const sendAndroidTesterInviteEmail = async (email: string) => {
     to: email,
     subject: 'Join the Lampstand Android Tester Program 🎉',
     html: `
-      <html lang="en">
-        <head><title>Join Lampstand Testing Program</title></head>
-        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;">
-          <h1 style="color: #333;">You're Invited to Test Lampstand 🎉</h1>
-          <p style="font-size: 16px;">
-            Thank you for joining the Lampstand waitlist! You can now get early access to new features
-            and updates by becoming an Android tester.
-          </p>
+    <html lang="en">
+      <head><title>Join Lampstand Testing Program</title></head>
+      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;">
+        <h1 style="color: #333;">You're Invited to Test Lampstand 🎉</h1>
+        <p style="font-size: 16px;">
+          Thank you for joining the Lampstand waitlist! You can now get early access to new features
+          and updates by becoming an Android tester.
+        </p>
 
-          <p style="font-size: 16px;">
-            <strong>Click the button below to join the official Lampstand testing program on Google Play:</strong>
-          </p>
+        <p style="font-size: 16px;">
+          <strong>Click the button below to join the official Lampstand testing program on Google Play:</strong>
+        </p>
 
-          <p>
-            <a href="${TESTER_URL}"
-              style="
-                display: inline-block;
-                padding: 12px 20px;
-                background-color: #E63946;
-                color: #fff;
-                text-decoration: none;
-                border-radius: 6px;
-                font-size: 16px;
-                font-weight: bold;
-              "
-            >Join Tester Program</a>
-          </p>
+        <p>
+          <a href="${TESTER_URL}"
+            style="
+              display: inline-block;
+              padding: 12px 20px;
+              background-color: #E63946;
+              color: #fff;
+              text-decoration: none;
+              border-radius: 6px;
+              font-size: 16px;
+              font-weight: bold;
+            "
+          >Join Tester Program</a>
+        </p>
 
-          <p style="font-size: 16px;">
-            After joining, Google Play will grant you access to download the testing version of the app.
-          </p>
+        <p style="font-size: 16px;">
+          After joining, Google Play will grant you access to download the testing version of the app.
+        </p>
 
-          <p style="font-size: 16px;">
-            If you didn't request early access, feel free to ignore this email.
-          </p>
+        <p style="font-size: 16px; margin-top: 24px;">
+          <strong>Join our WhatsApp group to stay updated, share feedback, and get support:</strong>
+        </p>
 
-          <p style="font-size: 16px;">
-            Best regards,<br/>The Lampstand Team ❤️
-          </p>
-        </body>
-      </html>
-    `
+        <p>
+          <a href="${WHATSAPP_GROUP_INVITE_LINK}"
+            style="
+              display: inline-block;
+              padding: 12px 20px;
+              background-color: #25D366;
+              color: #fff;
+              text-decoration: none;
+              border-radius: 6px;
+              font-size: 16px;
+              font-weight: bold;
+            "
+          >Join WhatsApp Group</a>
+        </p>
+
+        <p style="font-size: 16px; margin-top: 24px;">
+          If you didn't request early access, feel free to ignore this email.
+        </p>
+
+        <p style="font-size: 16px;">
+          Best regards,<br/>The Lampstand Team ❤️
+        </p>
+      </body>
+    </html>
+  `
   };
 
   try {

@@ -27,6 +27,8 @@ export const saveWaitlistEmail = async (req: Request, res: Response) => {
     existingUserByEmail.phoneNumber = phoneNumber;
     await waitlistRepo.save(existingUserByEmail);
 
+    await sendAndroidTesterInviteEmail(email);
+
     return res.status(HTTP_STATUS.OK).send({
       message: 'Waitlist updated successfully',
       data: { email, phoneNumber, whatsappInviteLink: WHATSAPP_GROUP_INVITE_LINK }
