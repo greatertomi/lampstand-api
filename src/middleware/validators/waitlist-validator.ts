@@ -5,7 +5,13 @@ export const waitlistValidationRules = [
     .isEmail()
     .withMessage('Email should be valid')
     .notEmpty()
-    .withMessage('Email is required')
+    .withMessage('Email is required'),
+
+  body('phoneNumber')
+    .isMobilePhone('any')
+    .withMessage('Phone number should be valid')
+    .notEmpty()
+    .withMessage('Phone number is required')
 ];
 
 export const wailistQueryValidationRules = [

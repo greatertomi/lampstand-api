@@ -1,25 +1,47 @@
 import { Request, Response } from 'express';
+import envConfig from '../config/envConfig';
 import { WaitlistEntity } from '../entities';
 import { BadRequestError, HTTP_STATUS, NotFoundError } from '../lib/responses';
+import { sendAndroidTesterInviteEmail } from '../services';
 import handleGetRepository from '../utils/handleGetRepository';
 
+const { WHATSAPP_GROUP_INVITE_LINK } = envConfig;
+
 export const saveWaitlistEmail = async (req: Request, res: Response) => {
-  const { email } = req.body;
+  const { email, phoneNumber } = req.body;
 
   const waitlistRepo = handleGetRepository(WaitlistEntity);
 
-  const existingUser = await waitlistRepo.findOneBy({ email });
+  const existingUserByEmail = await waitlistRepo.findOneBy({ email });
 
-  if (existingUser) {
-    throw new BadRequestError('User has already signed up for the waitlist');
+  if (existingUserByEmail) {
+    if (existingUserByEmail.phoneNumber === phoneNumber) {
+      throw new BadRequestError('User has already signed up for the waitlist');
+    }
+
+    const existingUserByPhone = await waitlistRepo.findOneBy({ phoneNumber });
+    if (existingUserByPhone) {
+      throw new BadRequestError('Phone number is already registered');
+    }
+
+    existingUserByEmail.phoneNumber = phoneNumber;
+    await waitlistRepo.save(existingUserByEmail);
+
+    return res.status(HTTP_STATUS.OK).send({
+      message: 'Waitlist updated successfully',
+      data: { email, phoneNumber, whatsappInviteLink: WHATSAPP_GROUP_INVITE_LINK }
+    });
   }
 
-  const newUser = waitlistRepo.create({ email, isVerified: false });
+  const newUser = waitlistRepo.create({ email, phoneNumber, isVerified: false });
   await waitlistRepo.save(newUser);
 
-  return res
-    .status(HTTP_STATUS.CREATED)
-    .send({ message: 'Waitlist Email saved successfully', data: { email } });
+  await sendAndroidTesterInviteEmail(email);
+
+  return res.status(HTTP_STATUS.CREATED).send({
+    message: 'Waitlist Email saved successfully',
+    data: { email, phoneNumber, whatsappInviteLink: WHATSAPP_GROUP_INVITE_LINK }
+  });
 };
 
 export const checkWaitlistEmail = async (req: Request, res: Response) => {

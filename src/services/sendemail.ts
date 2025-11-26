@@ -1,10 +1,14 @@
 import { mailgunClient } from '../config';
+import envConfig from '../config/envConfig';
 import { JwtHelper } from '../lib';
 import { JwtPayload } from '../types';
 import { logger } from './logger';
 
 const SENDER_EMAIL = process.env.SENDER_EMAIL;
 const SUPPORT_EMAIL = process.env.SUPPORT_EMAIL;
+const { TESTER_URL } = envConfig;
+
+const emailServiceCon = 'Email Service Controller';
 
 export const sendVerificationEmail = async (user: JwtPayload) => {
   const verificationToken = JwtHelper.generateToken(user);
@@ -45,13 +49,13 @@ export const sendVerificationEmail = async (user: JwtPayload) => {
   try {
     await mailgunClient.messages.create(process.env.MAILGUN_DOMAIN, mailData);
     logger.info('Verification email sent', {
-      location: 'Email Service Controller',
+      location: emailServiceCon,
       route: '/api/v1/signup'
     });
   } catch (error) {
     logger.error({
       message: `Error sending verification email: ${error.message}`,
-      location: 'Email Service Controller',
+      location: emailServiceCon,
       route: '/api/v1/signup'
     });
   }
@@ -375,5 +379,71 @@ export const sendUserFeedbackEmail = async (
       route: '/api/v1/support/feedback'
     });
     throw new Error('Failed to send feedback notification. Please try again later.');
+  }
+};
+
+export const sendAndroidTesterInviteEmail = async (email: string) => {
+  const mailData = {
+    from: SENDER_EMAIL,
+    to: email,
+    subject: 'Join the Lampstand Android Tester Program 🎉',
+    html: `
+      <html lang="en">
+        <head><title>Join Lampstand Testing Program</title></head>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #222;">
+          <h1 style="color: #333;">You're Invited to Test Lampstand 🎉</h1>
+          <p style="font-size: 16px;">
+            Thank you for joining the Lampstand waitlist! You can now get early access to new features
+            and updates by becoming an Android tester.
+          </p>
+
+          <p style="font-size: 16px;">
+            <strong>Click the button below to join the official Lampstand testing program on Google Play:</strong>
+          </p>
+
+          <p>
+            <a href="${TESTER_URL}"
+              style="
+                display: inline-block;
+                padding: 12px 20px;
+                background-color: #E63946;
+                color: #fff;
+                text-decoration: none;
+                border-radius: 6px;
+                font-size: 16px;
+                font-weight: bold;
+              "
+            >Join Tester Program</a>
+          </p>
+
+          <p style="font-size: 16px;">
+            After joining, Google Play will grant you access to download the testing version of the app.
+          </p>
+
+          <p style="font-size: 16px;">
+            If you didn't request early access, feel free to ignore this email.
+          </p>
+
+          <p style="font-size: 16px;">
+            Best regards,<br/>The Lampstand Team ❤️
+          </p>
+        </body>
+      </html>
+    `
+  };
+
+  try {
+    await mailgunClient.messages.create(process.env.MAILGUN_DOMAIN, mailData);
+
+    logger.info('Android tester invitation email sent', {
+      location: emailServiceCon,
+      route: '/api/v1/waitlist'
+    });
+  } catch (error) {
+    logger.error({
+      message: `Error sending tester invite email: ${error.message}`,
+      location: emailServiceCon,
+      route: '/api/v1/waitlist'
+    });
   }
 };
