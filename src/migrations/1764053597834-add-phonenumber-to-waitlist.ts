@@ -1,4 +1,3 @@
-
 import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class NewMigration1764053507834 implements MigrationInterface {
@@ -12,7 +11,8 @@ export class NewMigration1764053507834 implements MigrationInterface {
       await queryRunner.query(`ALTER TABLE "user_push_tokens" ADD CONSTRAINT "FK_784424a9b6c66123a055ea09172" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
     }
 
-    await queryRunner.query(`ALTER TABLE "email_waitlist" ADD "phoneNumber" character varying NOT NULL`);
+    // Add phoneNumber column as nullable first
+    await queryRunner.query(`ALTER TABLE "email_waitlist" ADD "phoneNumber" character varying`);
     await queryRunner.query(`ALTER TABLE "email_waitlist" ADD CONSTRAINT "UQ_fdb3a7b958476f6073669d00be8" UNIQUE ("phoneNumber")`);
   }
 
