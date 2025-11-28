@@ -1,6 +1,11 @@
 {
   "verbose": true,
-  "watch": ["src/**/*.ts"],
+  "watch": [
+    "src"
+  ],
+  "legacyWatch": true,
+  "pollingInterval": 1000,
+  "ext": "ts,js,json",
   "execMap": {
     "ts": "node --inspect=0.0.0.0:9229 --nolazy -r ts-node/register"
   }
