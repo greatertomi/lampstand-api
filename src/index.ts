@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import passport from 'passport';
 import * as Sentry from '@sentry/node';
+import 'reflect-metadata';
 import envConfig from './config/envConfig';
 import { AppDataSource } from './database';
 import { errorHandler, responseLogger } from './middleware';
