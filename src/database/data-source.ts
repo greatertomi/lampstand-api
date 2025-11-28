@@ -1,6 +1,7 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
-import 'reflect-metadata';
 import envConfig from '../config/envConfig';
+
+const isProduction = envConfig.NODE_ENV === 'production';
 
 const databaseConfig: DataSourceOptions = {
   type: 'postgres',
@@ -11,10 +12,10 @@ const databaseConfig: DataSourceOptions = {
   database: envConfig.POSTGRES_DB,
   synchronize: false,
   logging: false,
-  entities: ['dist/entities/**/*.js'],
-  migrations: ['dist/migrations/**/*.js'],
+  entities: isProduction ? ['dist/entities/**/*.js'] : ['src/entities/**/*.ts'],
+  migrations: isProduction ? ['dist/migrations/**/*.js'] : ['src/migrations/**/*.ts'],
   subscribers: [],
-  ...(envConfig.NODE_ENV === 'production' && { ssl: { rejectUnauthorized: false } })
+  ...(isProduction && { ssl: { rejectUnauthorized: false } })
 };
 
 export const AppDataSource = new DataSource(databaseConfig);
