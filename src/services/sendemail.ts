@@ -14,6 +14,8 @@ const formatFromField = (email: string) => {
   return `Lampstand <${email}>`;
 };
 
+const primaryColor = '#ea4335';
+
 export const sendVerificationEmail = async (user: JwtPayload) => {
   const verificationToken = JwtHelper.generateToken(user);
   const redirectURL = process.env.REDIRECT_URL;
@@ -35,7 +37,7 @@ export const sendVerificationEmail = async (user: JwtPayload) => {
         <p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 1.5;">
           Please click the following link or copy and paste it into your browser to verify your email address:
         </p>
-        <a href="${redirectURL}/auth/verify-email?token=${verificationToken}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #ffffff; text-decoration: none; font-family: Arial, sans-serif; font-size: 16px; border-radius: 4px;">
+        <a href="${redirectURL}/auth/verify-email?token=${verificationToken}" style="display: inline-block; padding: 10px 20px; background-color: ${primaryColor}; color: #ffffff; text-decoration: none; font-family: Arial, sans-serif; font-size: 16px; border-radius: 4px;">
           Verify Email
         </a>
         <p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 1.5;">
@@ -83,7 +85,7 @@ export const sendPasswordResetEmail = async (email: string, token: number) => {
         <p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 1.5;">
           To reset your password, use the following 4-digit code:
         </p>
-        <h2 style="font-family: Arial, sans-serif; font-size: 24px; color: #007bff; text-align: center; padding: 10px; background-color: #f0f0f0; border-radius: 4px;">
+        <h2 style="font-family: Arial, sans-serif; font-size: 24px; color: ${primaryColor}; text-align: center; padding: 10px; background-color: #f0f0f0; border-radius: 4px;">
           ${token}
         </h2>
         <p style="font-family: Arial, sans-serif; font-size: 16px; line-height: 1.5;">
