@@ -16,7 +16,8 @@ services:
     volumes:
       - ./data:/var/lib/postgresql/data
       - ./logs:/app/logs
-    command: yarn run start
+      - ./src:/app/src
+    command: yarn run dev
   postgres:
     container_name: 'lampstand-postgres'
     image: 'postgres:13'
