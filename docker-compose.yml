@@ -9,6 +9,9 @@ services:
       - postgres
     env_file:
       - .env
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
     expose:
       - ${PORT}
     ports:
