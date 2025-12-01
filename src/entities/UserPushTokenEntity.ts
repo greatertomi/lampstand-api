@@ -16,7 +16,7 @@ export class UserPushTokenEntity {
   @ManyToOne(() => UserEntity, (user) => user.pushTokens, { onDelete: 'CASCADE', nullable: true })
   user: UserEntity;
 
-  @Column()
+  @Column({ unique: true })
   pushToken: string;
 
   @Column()

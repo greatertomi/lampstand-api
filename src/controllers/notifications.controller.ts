@@ -6,17 +6,16 @@ import handleGetRepository from '../utils/handleGetRepository';
 
 export const registerUpdatePushToken = async (req: Request, res: Response) => {
   const { userId, pushToken, platform } = req.body;
-
   const userPushTokenRepository = handleGetRepository(UserPushTokenEntity);
 
   await userPushTokenRepository.upsert(
     {
-      user: { id: userId },
+      user: userId ? { id: userId } : null,
       pushToken,
       platform
     },
     {
-      conflictPaths: ['user'],
+      conflictPaths: ['pushToken'],
       skipUpdateIfNoValuesChanged: true
     }
   );
