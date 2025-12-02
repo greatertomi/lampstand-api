@@ -35,12 +35,9 @@ describe('Testing the app-version route', () => {
           .expect(HTTP_STATUS.OK);
 
         expect(res.body).toMatchObject({
-          success: true,
-          data: {
             latestVersion: expect.any(String),
             minSupportedVersion: expect.any(String),
             storeUrl: expect.stringContaining(storeUrlPart)
-          }
         });
       }
     );
@@ -49,7 +46,7 @@ describe('Testing the app-version route', () => {
       'should return 400 error when $description',
       async ({ platform }) => {
         const request = factory.app.get(appVersionRoute);
-        
+
         // Only add query parameter if platform is defined (not undefined)
         if (platform !== undefined) {
           request.query({ platform });
